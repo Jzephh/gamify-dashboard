@@ -270,24 +270,6 @@ export function ProfileTab({ userProfile, onRefresh }: ProfileTabProps) {
               </Typography>
             </CardContent>
           </Card>
-          <Card
-            elevation={8}
-            sx={{
-              background: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
-              borderRadius: 3,
-              flex: 1,
-            }}
-          >
-            <CardContent sx={{ textAlign: 'center', p: 3 }}>
-              <Mic sx={{ fontSize: 40, color: 'white', mb: 2 }} />
-              <Typography variant="h3" sx={{ color: 'white', fontWeight: 800, mb: 1 }}>
-                {user.stats.voiceMinutes}
-              </Typography>
-              <Typography variant="body1" sx={{ color: 'rgba(255, 255, 255, 0.8)' }}>
-                Voice Min
-              </Typography>
-            </CardContent>
-          </Card>
         </Stack>
       </motion.div>
 
@@ -386,71 +368,6 @@ export function ProfileTab({ userProfile, onRefresh }: ProfileTabProps) {
             <Typography variant="h6" sx={{ color: '#ef4444', fontWeight: 600 }}>
               Power Level
             </Typography>
-          </CardContent>
-        </Card>
-      </motion.div>
-
-      {/* Simulation Controls */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.5 }}
-      >
-        <Card
-          elevation={8}
-          sx={{
-            background: 'rgba(15, 15, 35, 0.8)',
-            backdropFilter: 'blur(20px)',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-            borderRadius: 3,
-          }}
-        >
-          <CardContent sx={{ p: 4 }}>
-            <Typography variant="h5" sx={{ color: 'white', fontWeight: 700, mb: 3, textAlign: 'center' }}>
-              Simulate Activity (Testing)
-            </Typography>
-            <Stack direction="row" gap={2} justifyContent="center">
-              <Button
-                variant="contained"
-                size="large"
-                onClick={() => simulateMessage(false)}
-                disabled={isSimulating}
-                startIcon={<Chat />}
-                sx={{
-                  background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
-                  borderRadius: 2,
-                  px: 4,
-                  py: 1.5,
-                  fontSize: '1.1rem',
-                  fontWeight: 600,
-                  '&:hover': {
-                    background: 'linear-gradient(135deg, #2563eb 0%, #1e40af 100%)',
-                  },
-                }}
-              >
-                Send Message (+5 XP)
-              </Button>
-              <Button
-                variant="contained"
-                size="large"
-                onClick={() => simulateMessage(true)}
-                disabled={isSimulating}
-                startIcon={<FlashOn />}
-                sx={{
-                  background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                  borderRadius: 2,
-                  px: 4,
-                  py: 1.5,
-                  fontSize: '1.1rem',
-                  fontWeight: 600,
-                  '&:hover': {
-                    background: 'linear-gradient(135deg, #059669 0%, #047857 100%)',
-                  },
-                }}
-              >
-                Success Message (+15 XP)
-              </Button>
-            </Stack>
           </CardContent>
         </Card>
       </motion.div>

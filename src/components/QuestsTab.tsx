@@ -18,6 +18,10 @@ import {
   Schedule,
   GpsFixed,
   Star,
+  Chat,
+  GpsFixed as Target,
+  Campaign,
+  EmojiEvents,
 } from '@mui/icons-material';
 
 interface QuestProgress {
@@ -95,7 +99,7 @@ export function QuestsTab({ userId }: QuestsTabProps) {
       target: 10,
       completed: progress.daily.completed.send10 || false,
       xp: 15,
-      icon: '💬',
+      icon: Chat,
     },
     {
       id: 'success1',
@@ -105,7 +109,7 @@ export function QuestsTab({ userId }: QuestsTabProps) {
       target: 1,
       completed: progress.daily.completed.success1 || false,
       xp: 10,
-      icon: '🎯',
+      icon: Target,
     },
   ];
 
@@ -118,7 +122,7 @@ export function QuestsTab({ userId }: QuestsTabProps) {
       target: 100,
       completed: progress.weekly.completed.send100 || false,
       xp: 50,
-      icon: '📢',
+      icon: Campaign,
     },
     {
       id: 'success10',
@@ -128,30 +132,40 @@ export function QuestsTab({ userId }: QuestsTabProps) {
       target: 10,
       completed: progress.weekly.completed.success10 || false,
       xp: 50,
-      icon: '🏆',
+      icon: EmojiEvents,
     },
   ];
 
-  const QuestCard = ({ quest, index }: { quest: { id: string; title: string; description: string; progress: number; target: number; completed: boolean; xp: number; icon: string }; index: number }) => (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, delay: index * 0.1 }}
-    >
+  const QuestCard = ({ quest, index }: { quest: { id: string; title: string; description: string; progress: number; target: number; completed: boolean; xp: number; icon: any }; index: number }) => {
+    const IconComponent = quest.icon;
+    
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: index * 0.1 }}
+      >
       <Card
-        elevation={8}
+        elevation={12}
         sx={{
           background: quest.completed 
             ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)'
-            : 'rgba(15, 15, 35, 0.8)',
+            : 'linear-gradient(135deg, rgba(15, 15, 35, 0.95) 0%, rgba(30, 30, 60, 0.9) 100%)',
           backdropFilter: 'blur(20px)',
           border: quest.completed 
             ? '2px solid #10b981'
-            : '1px solid rgba(255, 255, 255, 0.1)',
-          borderRadius: 3,
+            : '1px solid rgba(99, 102, 241, 0.3)',
+          borderRadius: 4,
           height: '100%',
           position: 'relative',
           overflow: 'hidden',
+          transition: 'all 0.3s ease',
+          '&:hover': {
+            transform: 'translateY(-4px)',
+            boxShadow: quest.completed 
+              ? '0 20px 40px rgba(16, 185, 129, 0.3)'
+              : '0 20px 40px rgba(99, 102, 241, 0.2)',
+          },
         }}
       >
         <CardContent sx={{ p: 3 }}>
@@ -172,7 +186,10 @@ export function QuestsTab({ userId }: QuestsTabProps) {
               sx={{
                 background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
                 color: 'white',
-                fontWeight: 600,
+                fontWeight: 700,
+                fontSize: '0.9rem',
+                boxShadow: '0 4px 12px rgba(251, 191, 36, 0.3)',
+                border: '1px solid rgba(251, 191, 36, 0.5)',
               }}
             />
           </Box>
@@ -194,23 +211,23 @@ export function QuestsTab({ userId }: QuestsTabProps) {
               variant="determinate"
               value={Math.min(100, (quest.progress / quest.target) * 100)}
               sx={{
-                height: 8,
-                borderRadius: 4,
-                background: 'rgba(255, 255, 255, 0.1)',
+                height: 10,
+                borderRadius: 5,
+                background: 'rgba(255, 255, 255, 0.15)',
+                boxShadow: 'inset 0 2px 4px rgba(0, 0, 0, 0.2)',
                 '& .MuiLinearProgress-bar': {
                   background: quest.completed 
                     ? 'linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%)'
                     : 'linear-gradient(135deg, #6366f1 0%, #ec4899 100%)',
-                  borderRadius: 4,
+                  borderRadius: 5,
+                  boxShadow: '0 2px 8px rgba(99, 102, 241, 0.4)',
                 },
               }}
             />
           </Box>
           
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Typography variant="h4" sx={{ color: 'white' }}>
-              {quest.icon}
-            </Typography>
+            <IconComponent sx={{ color: 'white', fontSize: 32 }} />
             <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.8)' }}>
               {quest.completed ? 'Completed!' : `${quest.target - quest.progress} remaining`}
             </Typography>
@@ -218,7 +235,8 @@ export function QuestsTab({ userId }: QuestsTabProps) {
         </CardContent>
       </Card>
     </motion.div>
-  );
+    );
+  };
 
   return (
     <Box sx={{ p: 3 }}>
@@ -229,13 +247,14 @@ export function QuestsTab({ userId }: QuestsTabProps) {
         transition={{ duration: 0.6 }}
       >
         <Card
-          elevation={8}
+          elevation={12}
           sx={{
-            background: 'rgba(15, 15, 35, 0.8)',
+            background: 'linear-gradient(135deg, rgba(15, 15, 35, 0.95) 0%, rgba(30, 30, 60, 0.9) 100%)',
             backdropFilter: 'blur(20px)',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-            borderRadius: 3,
+            border: '1px solid rgba(99, 102, 241, 0.3)',
+            borderRadius: 4,
             mb: 4,
+            boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3)',
           }}
         >
           <CardContent sx={{ p: 4 }}>
@@ -273,13 +292,14 @@ export function QuestsTab({ userId }: QuestsTabProps) {
         transition={{ duration: 0.6, delay: 0.1 }}
       >
         <Card
-          elevation={8}
+          elevation={12}
           sx={{
-            background: 'rgba(15, 15, 35, 0.8)',
+            background: 'linear-gradient(135deg, rgba(15, 15, 35, 0.95) 0%, rgba(30, 30, 60, 0.9) 100%)',
             backdropFilter: 'blur(20px)',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-            borderRadius: 3,
+            border: '1px solid rgba(139, 92, 246, 0.3)',
+            borderRadius: 4,
             mb: 4,
+            boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3)',
           }}
         >
           <CardContent sx={{ p: 4 }}>
@@ -317,11 +337,12 @@ export function QuestsTab({ userId }: QuestsTabProps) {
         transition={{ duration: 0.6, delay: 0.2 }}
       >
         <Card
-          elevation={8}
+          elevation={12}
           sx={{
             background: 'linear-gradient(135deg, #1f2937 0%, #111827 100%)',
             border: '2px solid #6366f1',
-            borderRadius: 3,
+            borderRadius: 4,
+            boxShadow: '0 20px 40px rgba(99, 102, 241, 0.2)',
           }}
         >
           <CardContent sx={{ p: 4 }}>
