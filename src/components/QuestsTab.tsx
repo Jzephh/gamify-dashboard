@@ -70,17 +70,20 @@ export function QuestsTab({ userId }: QuestsTabProps) {
     title: string;
     xp: number;
   }>>([]);
+  const [hasCheckedNotifications, setHasCheckedNotifications] = useState(false);
 
   useEffect(() => {
     fetchQuestProgress();
+    setHasCheckedNotifications(false); // Reset notification check for new user
   }, [userId]);
 
-  // Check for quest notifications after progress is loaded
+  // Check for quest notifications after progress is loaded (only once)
   useEffect(() => {
-    if (progress) {
+    if (progress && !hasCheckedNotifications) {
       checkForQuestNotifications(progress);
+      setHasCheckedNotifications(true);
     }
-  }, [progress]);
+  }, [progress, hasCheckedNotifications]);
 
   const fetchQuestProgress = async () => {
     try {
@@ -100,16 +103,66 @@ export function QuestsTab({ userId }: QuestsTabProps) {
   const checkForQuestNotifications = (questData: QuestProgress) => {
     console.log('Checking quest notifications:', {
       dailyQuestSeen: questData.daily.questSeen,
-      weeklyQuestSeen: questData.weekly.questSeen,
-      dailyQuests: dailyQuests,
-      weeklyQuests: weeklyQuests
+      weeklyQuestSeen: questData.weekly.questSeen
     });
+
+    // Create quest arrays here since they're not available in useEffect
+    const dailyQuests = [
+      {
+        id: 'send10',
+        title: 'Send 10 Messages',
+        description: 'Send 10 messages in any channel',
+        progress: questData.daily.msgCount,
+        target: 10,
+        completed: questData.daily.completed?.send10 || false,
+        claimed: questData.daily.claimed?.send10 || false,
+        xp: 15,
+        icon: Chat,
+      },
+      {
+        id: 'success1',
+        title: 'Send 1 Success Message',
+        description: 'Send 1 message in a success channel',
+        progress: questData.daily.successMsgCount,
+        target: 1,
+        completed: questData.daily.completed?.success1 || false,
+        claimed: questData.daily.claimed?.success1 || false,
+        xp: 10,
+        icon: Target,
+      },
+    ];
+
+    const weeklyQuests = [
+      {
+        id: 'send100',
+        title: 'Send 100 Messages',
+        description: 'Send 100 messages in any channel',
+        progress: questData.weekly.msgCount,
+        target: 100,
+        completed: questData.weekly.completed?.send100 || false,
+        claimed: questData.weekly.claimed?.send100 || false,
+        xp: 50,
+        icon: Campaign,
+      },
+      {
+        id: 'success10',
+        title: 'Send 10 Success Messages',
+        description: 'Send 10 messages in success channels',
+        progress: questData.weekly.successMsgCount,
+        target: 10,
+        completed: questData.weekly.completed?.success10 || false,
+        claimed: questData.weekly.claimed?.success10 || false,
+        xp: 50,
+        icon: EmojiEvents,
+      },
+    ];
 
     // Check daily quests
     if (!questData.daily.questSeen) {
       const completedDailyQuests = dailyQuests.filter(quest => quest.completed);
       console.log('Completed daily quests:', completedDailyQuests);
       if (completedDailyQuests.length > 0) {
+        console.log('Opening daily quest modal with:', completedDailyQuests);
         setModalType('daily');
         setCompletedQuestsForModal(completedDailyQuests.map(quest => ({
           id: quest.id,
@@ -153,7 +206,7 @@ export function QuestsTab({ userId }: QuestsTabProps) {
   const handleModalClose = async () => {
     setModalOpen(false);
     
-    // Mark quests as seen
+    // Mark quests as seen when user closes modal
     try {
       await fetch('/api/user/quest-seen', {
         method: 'POST',
