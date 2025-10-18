@@ -15,6 +15,14 @@ export interface IQuestProgress extends Document {
   };
   dailyCompleted: boolean;
   weeklyCompleted: boolean;
+  dailyClaimed: {
+    send10: boolean;
+    success1: boolean;
+  };
+  weeklyClaimed: {
+    send100: boolean;
+    success10: boolean;
+  };
   createdAt: Date;
   updatedAt: Date;
 }
@@ -34,6 +42,14 @@ const QuestProgressSchema = new Schema<IQuestProgress>({
   },
   dailyCompleted: { type: Boolean, default: false },
   weeklyCompleted: { type: Boolean, default: false },
+  dailyClaimed: {
+    send10: { type: Boolean, default: false },
+    success1: { type: Boolean, default: false },
+  },
+  weeklyClaimed: {
+    send100: { type: Boolean, default: false },
+    success10: { type: Boolean, default: false },
+  },
 }, {
   timestamps: true,
 });

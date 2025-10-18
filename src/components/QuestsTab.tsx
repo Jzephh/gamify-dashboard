@@ -9,6 +9,7 @@ import {
   Stack,
   LinearProgress,
   Chip,
+  Button,
 } from '@mui/material';
 import { motion } from 'framer-motion';
 import {
@@ -22,6 +23,7 @@ import {
   GpsFixed as Target,
   Campaign,
   EmojiEvents,
+  CardGiftcard,
 } from '@mui/icons-material';
 import { QuestCompletionModal } from './QuestCompletionModal';
 
@@ -33,11 +35,19 @@ interface QuestProgress {
       send10?: boolean;
       success1?: boolean;
     };
+    claimed: {
+      send10?: boolean;
+      success1?: boolean;
+    };
   };
   weekly: {
     msgCount: number;
     successMsgCount: number;
     completed: {
+      send100?: boolean;
+      success10?: boolean;
+    };
+    claimed: {
       send100?: boolean;
       success10?: boolean;
     };
@@ -89,6 +99,27 @@ export function QuestsTab({ userId }: QuestsTabProps) {
     setModalOpen(false);
   };
 
+  const handleClaimQuest = async (questId: string) => {
+    try {
+      const response = await fetch('/api/user/claim-quest', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ questId }),
+      });
+
+      if (response.ok) {
+        // Refresh quest progress to get updated claimed status from database
+        fetchQuestProgress();
+      } else {
+        console.error('Failed to claim quest');
+      }
+    } catch (error) {
+      console.error('Error claiming quest:', error);
+    }
+  };
+
   if (loading) {
     return (
       <Box sx={{ p: 3, textAlign: 'center' }}>
@@ -117,6 +148,7 @@ export function QuestsTab({ userId }: QuestsTabProps) {
       progress: progress.daily.msgCount,
       target: 10,
       completed: progress.daily.completed.send10 || false,
+      claimed: progress.daily.claimed.send10 || false,
       xp: 15,
       icon: Chat,
     },
@@ -127,6 +159,7 @@ export function QuestsTab({ userId }: QuestsTabProps) {
       progress: progress.daily.successMsgCount,
       target: 1,
       completed: progress.daily.completed.success1 || false,
+      claimed: progress.daily.claimed.success1 || false,
       xp: 10,
       icon: Target,
     },
@@ -140,6 +173,7 @@ export function QuestsTab({ userId }: QuestsTabProps) {
       progress: progress.weekly.msgCount,
       target: 100,
       completed: progress.weekly.completed.send100 || false,
+      claimed: progress.weekly.claimed.send100 || false,
       xp: 50,
       icon: Campaign,
     },
@@ -150,12 +184,13 @@ export function QuestsTab({ userId }: QuestsTabProps) {
       progress: progress.weekly.successMsgCount,
       target: 10,
       completed: progress.weekly.completed.success10 || false,
+      claimed: progress.weekly.claimed.success10 || false,
       xp: 50,
       icon: EmojiEvents,
     },
   ];
 
-  const QuestCard = ({ quest, index }: { quest: { id: string; title: string; description: string; progress: number; target: number; completed: boolean; xp: number; icon: React.ComponentType<{ sx?: object }> }; index: number }) => {
+  const QuestCard = ({ quest, index }: { quest: { id: string; title: string; description: string; progress: number; target: number; completed: boolean; claimed: boolean; xp: number; icon: React.ComponentType<{ sx?: object }> }; index: number }) => {
     const IconComponent = quest.icon;
     const progressPercentage = Math.min(100, (quest.progress / quest.target) * 100);
     
@@ -389,38 +424,104 @@ export function QuestsTab({ userId }: QuestsTabProps) {
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.6 + index * 0.1 }}
-            style={{ display: 'flex', alignItems: 'center', gap: 8 }}
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
           >
-            <motion.div
-              animate={quest.completed ? { 
-                rotate: [0, 10, -10, 0],
-                scale: [1, 1.1, 1]
-              } : {}}
-              transition={{ 
-                duration: 0.5,
-                repeat: quest.completed ? Infinity : 0,
-                repeatDelay: 3
-              }}
-            >
-              <IconComponent sx={{ 
-                color: quest.completed ? '#fbbf24' : 'white', 
-                fontSize: 32,
-                filter: quest.completed ? 'drop-shadow(0 0 8px rgba(251, 191, 36, 0.5))' : 'none'
-              }} />
-            </motion.div>
-            <motion.div
-              key={quest.completed ? 'completed' : 'remaining'}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3 }}
-            >
-              <Typography variant="body2" sx={{ 
-                color: quest.completed ? '#fbbf24' : 'rgba(255, 255, 255, 0.8)',
-                fontWeight: quest.completed ? 600 : 400
-              }}>
-                {quest.completed ? 'Completed!' : `${quest.target - quest.progress} remaining`}
-              </Typography>
-            </motion.div>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <motion.div
+                animate={quest.completed ? { 
+                  rotate: [0, 10, -10, 0],
+                  scale: [1, 1.1, 1]
+                } : {}}
+                transition={{ 
+                  duration: 0.5,
+                  repeat: quest.completed ? Infinity : 0,
+                  repeatDelay: 3
+                }}
+              >
+                <IconComponent sx={{ 
+                  color: quest.completed ? '#fbbf24' : 'white', 
+                  fontSize: 32,
+                  filter: quest.completed ? 'drop-shadow(0 0 8px rgba(251, 191, 36, 0.5))' : 'none'
+                }} />
+              </motion.div>
+              <motion.div
+                key={quest.completed ? 'completed' : 'remaining'}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <Typography variant="body2" sx={{ 
+                  color: quest.completed ? '#fbbf24' : 'rgba(255, 255, 255, 0.8)',
+                  fontWeight: quest.completed ? 600 : 400
+                }}>
+                  {quest.completed ? 'Completed!' : `${quest.target - quest.progress} remaining`}
+                </Typography>
+              </motion.div>
+            </Box>
+            
+            {/* Claim Button */}
+            {quest.completed && !quest.claimed && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.8 + index * 0.1, type: "spring", stiffness: 200 }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Button
+                  variant="contained"
+                  size="small"
+                  onClick={() => handleClaimQuest(quest.id)}
+                  startIcon={<CardGiftcard />}
+                  sx={{
+                    background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
+                    color: 'white',
+                    fontWeight: 700,
+                    fontSize: '0.8rem',
+                    px: 2,
+                    py: 1,
+                    borderRadius: 2,
+                    boxShadow: '0 8px 20px rgba(251, 191, 36, 0.4)',
+                    border: '1px solid rgba(251, 191, 36, 0.5)',
+                    textTransform: 'none',
+                    animation: 'claimPulse 2s infinite',
+                    '@keyframes claimPulse': {
+                      '0%, 100%': { boxShadow: '0 8px 20px rgba(251, 191, 36, 0.4)' },
+                      '50%': { boxShadow: '0 8px 30px rgba(251, 191, 36, 0.6)' },
+                    },
+                    '&:hover': {
+                      background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                      boxShadow: '0 12px 25px rgba(251, 191, 36, 0.5)',
+                      transform: 'translateY(-2px)',
+                    },
+                  }}
+                >
+                  Claim
+                </Button>
+              </motion.div>
+            )}
+            
+            {/* Claimed State */}
+            {quest.completed && quest.claimed && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.8 + index * 0.1, type: "spring", stiffness: 200 }}
+              >
+                <Chip
+                  icon={<CheckCircle />}
+                  label="Claimed"
+                  sx={{
+                    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                    color: 'white',
+                    fontWeight: 600,
+                    fontSize: '0.8rem',
+                    boxShadow: '0 4px 12px rgba(16, 185, 129, 0.4)',
+                    border: '1px solid rgba(16, 185, 129, 0.5)',
+                  }}
+                />
+              </motion.div>
+            )}
           </motion.div>
         </CardContent>
       </Card>
