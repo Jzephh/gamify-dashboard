@@ -84,8 +84,7 @@ export class QuestService {
     const progress = await QuestProgress.findOne({
       companyId: this.companyId,
       userId,
-      dateKey,
-      type: 'daily'
+      dateKey
     });
 
     if (!progress) return [];
@@ -93,15 +92,15 @@ export class QuestService {
     const completed: string[] = [];
 
     // Check send 10 messages quest
-    if (progress.msgCount >= 10 && !progress.completed.send10) {
-      progress.completed.send10 = true;
+    if ((progress.dailyQuests?.messages || 0) >= 10 && !progress.dailyCompleted) {
+      progress.dailyCompleted = true;
       await progress.save();
       completed.push('daily_send10');
     }
 
     // Check 1 success message quest
-    if (progress.successMsgCount >= 1 && !progress.completed.success1) {
-      progress.completed.success1 = true;
+    if ((progress.dailyQuests?.successMessages || 0) >= 1 && !progress.dailyCompleted) {
+      progress.dailyCompleted = true;
       await progress.save();
       completed.push('daily_success1');
     }
@@ -114,8 +113,7 @@ export class QuestService {
     const progress = await QuestProgress.findOne({
       companyId: this.companyId,
       userId,
-      dateKey: weekKey,
-      type: 'weekly'
+      weekKey
     });
 
     if (!progress) return [];
@@ -123,15 +121,15 @@ export class QuestService {
     const completed: string[] = [];
 
     // Check send 100 messages quest
-    if (progress.msgCount >= 100 && !progress.completed.send100) {
-      progress.completed.send100 = true;
+    if ((progress.weeklyQuests?.messages || 0) >= 100 && !progress.weeklyCompleted) {
+      progress.weeklyCompleted = true;
       await progress.save();
       completed.push('weekly_send100');
     }
 
     // Check 10 success messages quest
-    if (progress.successMsgCount >= 10 && !progress.completed.success10) {
-      progress.completed.success10 = true;
+    if ((progress.weeklyQuests?.successMessages || 0) >= 10 && !progress.weeklyCompleted) {
+      progress.weeklyCompleted = true;
       await progress.save();
       completed.push('weekly_success10');
     }
@@ -162,16 +160,16 @@ export class QuestService {
             msgCount: questDoc.dailyQuests?.messages || 0,
             successMsgCount: questDoc.dailyQuests?.successMessages || 0,
             completed: {
-              send10: questDoc.dailyCompleted || false,
-              success1: questDoc.dailyCompleted || false,
+              send10: (questDoc.dailyQuests?.messages || 0) >= 10,
+              success1: (questDoc.dailyQuests?.successMessages || 0) >= 1,
             }
           },
           weekly: {
             msgCount: questDoc.weeklyQuests?.messages || 0,
             successMsgCount: questDoc.weeklyQuests?.successMessages || 0,
             completed: {
-              send100: questDoc.weeklyCompleted || false,
-              success10: questDoc.weeklyCompleted || false,
+              send100: (questDoc.weeklyQuests?.messages || 0) >= 100,
+              success10: (questDoc.weeklyQuests?.successMessages || 0) >= 10,
             }
           }
         };
@@ -190,15 +188,19 @@ export class QuestService {
     }
   }
 
-  // Get date key (YYYY-MM-DD)
+  // Get date key (YYYY-MM-DD) in New York timezone
   private getDateKey(date: Date): string {
-    return date.toISOString().split('T')[0];
+    // Convert to New York timezone for consistent quest dates
+    const nyDate = new Date(date.toLocaleString("en-US", {timeZone: "America/New_York"}));
+    return nyDate.toISOString().split('T')[0];
   }
 
-  // Get week key (YYYY-WW)
+  // Get week key (YYYY-WW) in New York timezone
   private getWeekKey(date: Date): string {
-    const year = date.getFullYear();
-    const week = this.getWeekNumber(date);
+    // Convert to New York timezone for consistent quest dates
+    const nyDate = new Date(date.toLocaleString("en-US", {timeZone: "America/New_York"}));
+    const year = nyDate.getFullYear();
+    const week = this.getWeekNumber(nyDate);
     return `${year}-W${week.toString().padStart(2, '0')}`;
   }
 

@@ -23,6 +23,7 @@ import {
   Campaign,
   EmojiEvents,
 } from '@mui/icons-material';
+import { QuestCompletionModal } from './QuestCompletionModal';
 
 interface QuestProgress {
   daily: {
@@ -50,6 +51,8 @@ interface QuestsTabProps {
 export function QuestsTab({ userId }: QuestsTabProps) {
   const [progress, setProgress] = useState<QuestProgress | null>(null);
   const [loading, setLoading] = useState(true);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalType, setModalType] = useState<'daily' | 'weekly'>('daily');
 
   useEffect(() => {
     fetchQuestProgress();
@@ -68,6 +71,22 @@ export function QuestsTab({ userId }: QuestsTabProps) {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleQuestSectionClick = (questType: 'daily' | 'weekly') => {
+    if (!progress) return;
+    
+    const quests = questType === 'daily' ? dailyQuests : weeklyQuests;
+    const completedQuests = quests.filter(quest => quest.completed);
+    
+    if (completedQuests.length > 0) {
+      setModalType(questType);
+      setModalOpen(true);
+    }
+  };
+
+  const handleModalClose = () => {
+    setModalOpen(false);
   };
 
   if (loading) {
@@ -509,16 +528,29 @@ export function QuestsTab({ userId }: QuestsTabProps) {
                     filter: 'drop-shadow(0 0 8px rgba(59, 130, 246, 0.5))'
                   }} />
                 </motion.div>
-                <Typography variant="h4" sx={{ 
-                  color: 'white', 
-                  fontWeight: 700,
-                  background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
-                  backgroundClip: 'text',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                }}>
-                  Daily Quests
-                </Typography>
+                <motion.div
+                  onClick={() => handleQuestSectionClick('daily')}
+                  style={{ cursor: dailyQuests.every(quest => quest.completed) ? 'pointer' : 'default' }}
+                  whileHover={dailyQuests.every(quest => quest.completed) ? { scale: 1.05 } : {}}
+                  whileTap={dailyQuests.every(quest => quest.completed) ? { scale: 0.95 } : {}}
+                >
+                  <Typography variant="h4" sx={{ 
+                    color: 'white', 
+                    fontWeight: 700,
+                    background: dailyQuests.every(quest => quest.completed) 
+                      ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)'
+                      : 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
+                    backgroundClip: 'text',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    textShadow: dailyQuests.every(quest => quest.completed) 
+                      ? '0 0 10px rgba(16, 185, 129, 0.5)' 
+                      : 'none',
+                    transition: 'all 0.3s ease',
+                  }}>
+                    Daily Quests
+                  </Typography>
+                </motion.div>
               </Box>
             </motion.div>
             <Stack direction={{ xs: "column", md: "row" }} spacing={2} sx={{ width: '100%' }}>
@@ -614,16 +646,29 @@ export function QuestsTab({ userId }: QuestsTabProps) {
                     filter: 'drop-shadow(0 0 8px rgba(139, 92, 246, 0.5))'
                   }} />
                 </motion.div>
-                <Typography variant="h4" sx={{ 
-                  color: 'white', 
-                  fontWeight: 700,
-                  background: 'linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%)',
-                  backgroundClip: 'text',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                }}>
-                  Weekly Quests
-                </Typography>
+                <motion.div
+                  onClick={() => handleQuestSectionClick('weekly')}
+                  style={{ cursor: weeklyQuests.every(quest => quest.completed) ? 'pointer' : 'default' }}
+                  whileHover={weeklyQuests.every(quest => quest.completed) ? { scale: 1.05 } : {}}
+                  whileTap={weeklyQuests.every(quest => quest.completed) ? { scale: 0.95 } : {}}
+                >
+                  <Typography variant="h4" sx={{ 
+                    color: 'white', 
+                    fontWeight: 700,
+                    background: weeklyQuests.every(quest => quest.completed) 
+                      ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)'
+                      : 'linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%)',
+                    backgroundClip: 'text',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    textShadow: weeklyQuests.every(quest => quest.completed) 
+                      ? '0 0 10px rgba(16, 185, 129, 0.5)' 
+                      : 'none',
+                    transition: 'all 0.3s ease',
+                  }}>
+                    Weekly Quests
+                  </Typography>
+                </motion.div>
               </Box>
             </motion.div>
             <Stack direction={{ xs: "column", md: "row" }} spacing={2} sx={{ width: '100%' }}>
@@ -702,6 +747,26 @@ export function QuestsTab({ userId }: QuestsTabProps) {
           </CardContent>
         </Card>
       </motion.div>
+
+      {/* Quest Completion Modal */}
+      <QuestCompletionModal
+        open={modalOpen}
+        onClose={handleModalClose}
+        questType={modalType}
+        completedQuests={
+          modalType === 'daily' 
+            ? dailyQuests.filter(quest => quest.completed).map(quest => ({
+                id: quest.id,
+                title: quest.title,
+                xp: quest.xp,
+              }))
+            : weeklyQuests.filter(quest => quest.completed).map(quest => ({
+                id: quest.id,
+                title: quest.title,
+                xp: quest.xp,
+              }))
+        }
+      />
     </Box>
   );
 }
