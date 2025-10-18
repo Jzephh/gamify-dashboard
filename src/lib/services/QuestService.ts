@@ -1,15 +1,11 @@
 import { QuestProgress, IQuestProgress } from '@/models/QuestProgress';
-import { Settings } from '@/models/Settings';
-import { XPEngine } from './XPEngine';
 import connectDB from '@/lib/mongodb';
 
 export class QuestService {
   private companyId: string;
-  private xpEngine: XPEngine;
 
   constructor(companyId: string) {
     this.companyId = companyId;
-    this.xpEngine = new XPEngine(companyId);
   }
 
   // Update quest progress for a message
@@ -85,9 +81,6 @@ export class QuestService {
 
   // Check daily quest completion
   private async checkDailyCompletion(userId: string, dateKey: string): Promise<string[]> {
-    const settings = await Settings.findOne({ companyId: this.companyId });
-    if (!settings) return [];
-
     const progress = await QuestProgress.findOne({
       companyId: this.companyId,
       userId,
@@ -104,9 +97,6 @@ export class QuestService {
       progress.completed.send10 = true;
       await progress.save();
       completed.push('daily_send10');
-      
-      // Award XP
-      await this.xpEngine.awardXP(userId, settings.quest.daily.send10);
     }
 
     // Check 1 success message quest
@@ -114,9 +104,6 @@ export class QuestService {
       progress.completed.success1 = true;
       await progress.save();
       completed.push('daily_success1');
-      
-      // Award XP
-      await this.xpEngine.awardXP(userId, settings.quest.daily.success1);
     }
 
     return completed;
@@ -124,9 +111,6 @@ export class QuestService {
 
   // Check weekly quest completion
   private async checkWeeklyCompletion(userId: string, weekKey: string): Promise<string[]> {
-    const settings = await Settings.findOne({ companyId: this.companyId });
-    if (!settings) return [];
-
     const progress = await QuestProgress.findOne({
       companyId: this.companyId,
       userId,
@@ -143,9 +127,6 @@ export class QuestService {
       progress.completed.send100 = true;
       await progress.save();
       completed.push('weekly_send100');
-      
-      // Award XP
-      await this.xpEngine.awardXP(userId, settings.quest.weekly.send100);
     }
 
     // Check 10 success messages quest
@@ -153,9 +134,6 @@ export class QuestService {
       progress.completed.success10 = true;
       await progress.save();
       completed.push('weekly_success10');
-      
-      // Award XP
-      await this.xpEngine.awardXP(userId, settings.quest.weekly.success10);
     }
 
     return completed;
@@ -212,18 +190,15 @@ export class QuestService {
     }
   }
 
-  // Get date key (YYYY-MM-DD) in New York timezone
+  // Get date key (YYYY-MM-DD)
   private getDateKey(date: Date): string {
-    // Convert to New York timezone
-    const nyDate = new Date(date.toLocaleString("en-US", {timeZone: "America/New_York"}));
-    return nyDate.toISOString().split('T')[0];
+    return date.toISOString().split('T')[0];
   }
 
-  // Get week key (YYYY-WW) in New York timezone
+  // Get week key (YYYY-WW)
   private getWeekKey(date: Date): string {
-    const nyDate = new Date(date.toLocaleString("en-US", {timeZone: "America/New_York"}));
-    const year = nyDate.getFullYear();
-    const week = this.getWeekNumber(nyDate);
+    const year = date.getFullYear();
+    const week = this.getWeekNumber(date);
     return `${year}-W${week.toString().padStart(2, '0')}`;
   }
 
