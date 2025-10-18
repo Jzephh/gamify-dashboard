@@ -137,10 +137,92 @@ export class QuestService {
     return completed;
   }
 
+  // Claim a quest
+  async claimQuest(userId: string, questId: string): Promise<{
+    success: boolean;
+    error?: string;
+    xp: number;
+  }> {
+    try {
+      await connectDB();
+      const now = new Date();
+      const dateKey = this.getDateKey(now);
+      const weekKey = this.getWeekKey(now);
+
+      // Define quest XP rewards
+      const questRewards: Record<string, number> = {
+        'send10': 15,
+        'success1': 10,
+        'send100': 50,
+        'success10': 50,
+      };
+
+      const xp = questRewards[questId] || 0;
+      if (xp === 0) {
+        return { success: false, error: 'Invalid quest ID', xp: 0 };
+      }
+
+      // Determine if it's a daily or weekly quest
+      const isDailyQuest = ['send10', 'success1'].includes(questId);
+      const key = isDailyQuest ? dateKey : weekKey;
+
+      // Find the quest progress document
+      const questDoc = await QuestProgress.findOne({
+        companyId: this.companyId,
+        userId,
+        dateKey: key
+      });
+
+      if (!questDoc) {
+        return { success: false, error: 'Quest progress not found', xp: 0 };
+      }
+
+      // Check if quest is completed
+      let isCompleted = false;
+      if (isDailyQuest) {
+        if (questId === 'send10') {
+          isCompleted = (questDoc.dailyQuests?.messages || 0) >= 10;
+        } else if (questId === 'success1') {
+          isCompleted = (questDoc.dailyQuests?.successMessages || 0) >= 1;
+        }
+      } else {
+        if (questId === 'send100') {
+          isCompleted = (questDoc.weeklyQuests?.messages || 0) >= 100;
+        } else if (questId === 'success10') {
+          isCompleted = (questDoc.weeklyQuests?.successMessages || 0) >= 10;
+        }
+      }
+
+      if (!isCompleted) {
+        return { success: false, error: 'Quest not completed yet', xp: 0 };
+      }
+
+      // Check if already claimed
+      const claimedField = isDailyQuest ? 'dailyClaimed' : 'weeklyClaimed';
+      const claimedData = questDoc[claimedField as keyof typeof questDoc] as { [key: string]: boolean } | undefined;
+      
+      if (claimedData && claimedData[questId]) {
+        return { success: false, error: 'Quest already claimed', xp: 0 };
+      }
+
+      // Mark as claimed
+      const updateField = `${claimedField}.${questId}`;
+      await QuestProgress.findOneAndUpdate(
+        { companyId: this.companyId, userId, dateKey: key },
+        { $set: { [updateField]: true } }
+      );
+
+      return { success: true, xp };
+    } catch (error) {
+      console.error('Error claiming quest:', error);
+      return { success: false, error: 'Internal server error', xp: 0 };
+    }
+  }
+
   // Get user's quest progress
   async getUserProgress(userId: string): Promise<{
-    daily: { msgCount: number; successMsgCount: number; completed: Record<string, boolean> };
-    weekly: { msgCount: number; successMsgCount: number; completed: Record<string, boolean> };
+    daily: { msgCount: number; successMsgCount: number; completed: Record<string, boolean>; claimed: Record<string, boolean> };
+    weekly: { msgCount: number; successMsgCount: number; completed: Record<string, boolean>; claimed: Record<string, boolean> };
   }> {
     try {
       await connectDB();
@@ -162,6 +244,10 @@ export class QuestService {
             completed: {
               send10: (questDoc.dailyQuests?.messages || 0) >= 10,
               success1: (questDoc.dailyQuests?.successMessages || 0) >= 1,
+            },
+            claimed: {
+              send10: questDoc.dailyClaimed?.send10 || false,
+              success1: questDoc.dailyClaimed?.success1 || false,
             }
           },
           weekly: {
@@ -170,20 +256,24 @@ export class QuestService {
             completed: {
               send100: (questDoc.weeklyQuests?.messages || 0) >= 100,
               success10: (questDoc.weeklyQuests?.successMessages || 0) >= 10,
+            },
+            claimed: {
+              send100: questDoc.weeklyClaimed?.send100 || false,
+              success10: questDoc.weeklyClaimed?.success10 || false,
             }
           }
         };
       }
 
       return {
-        daily: { msgCount: 0, successMsgCount: 0, completed: {} },
-        weekly: { msgCount: 0, successMsgCount: 0, completed: {} },
+        daily: { msgCount: 0, successMsgCount: 0, completed: {}, claimed: {} },
+        weekly: { msgCount: 0, successMsgCount: 0, completed: {}, claimed: {} },
       };
     } catch (error) {
       console.error('Error getting user progress:', error);
       return {
-        daily: { msgCount: 0, successMsgCount: 0, completed: {} },
-        weekly: { msgCount: 0, successMsgCount: 0, completed: {} },
+        daily: { msgCount: 0, successMsgCount: 0, completed: {}, claimed: {} },
+        weekly: { msgCount: 0, successMsgCount: 0, completed: {}, claimed: {} },
       };
     }
   }
