@@ -491,7 +491,7 @@ export default function Home() {
                     lineHeight: 1.2,
                   }}
                 >
-                  If you leave eMoney, you will lose ALL your points/levels
+                  If you leave eMoney, you will lose your power level
                 </Typography>
               </Box>
             </Paper>

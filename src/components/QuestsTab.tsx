@@ -63,6 +63,11 @@ export function QuestsTab({ userId }: QuestsTabProps) {
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalType, setModalType] = useState<'daily' | 'weekly'>('daily');
+  const [completedQuestsForModal, setCompletedQuestsForModal] = useState<Array<{
+    id: string;
+    title: string;
+    xp: number;
+  }>>([]);
 
   useEffect(() => {
     fetchQuestProgress();
@@ -97,6 +102,7 @@ export function QuestsTab({ userId }: QuestsTabProps) {
 
   const handleModalClose = () => {
     setModalOpen(false);
+    setCompletedQuestsForModal([]);
   };
 
   const handleClaimQuest = async (questId: string) => {
@@ -110,8 +116,29 @@ export function QuestsTab({ userId }: QuestsTabProps) {
       });
 
       if (response.ok) {
+        const result = await response.json();
+        
         // Refresh quest progress to get updated claimed status from database
-        fetchQuestProgress();
+        await fetchQuestProgress();
+        
+        // Show completion modal for the claimed quest
+        const quests = [...dailyQuests, ...weeklyQuests];
+        const claimedQuest = quests.find(q => q.id === questId);
+        
+        if (claimedQuest) {
+          // Determine quest type for modal
+          const questType = ['send10', 'success1'].includes(questId) ? 'daily' : 'weekly';
+          setModalType(questType);
+          
+          // Set completed quests for modal (just the claimed one)
+          setCompletedQuestsForModal([{
+            id: claimedQuest.id,
+            title: claimedQuest.title,
+            xp: result.xpAwarded || claimedQuest.xp,
+          }]);
+          
+          setModalOpen(true);
+        }
       } else {
         console.error('Failed to claim quest');
       }
@@ -790,7 +817,7 @@ export function QuestsTab({ userId }: QuestsTabProps) {
         open={modalOpen}
         onClose={handleModalClose}
         questType={modalType}
-        completedQuests={
+        completedQuests={completedQuestsForModal.length > 0 ? completedQuestsForModal : (
           modalType === 'daily' 
             ? dailyQuests.filter(quest => quest.completed).map(quest => ({
                 id: quest.id,
@@ -802,7 +829,7 @@ export function QuestsTab({ userId }: QuestsTabProps) {
                 title: quest.title,
                 xp: quest.xp,
               }))
-        }
+        )}
       />
     </Box>
   );
