@@ -454,7 +454,112 @@ export function QuestsTab({ userId }: QuestsTabProps) {
         '66%': { transform: 'translateY(10px) rotate(-1deg)' },
       },
     }}>
-      {/* 2x2 Grid Layout */}
+      {/* Quest Section Headers */}
+      <Box sx={{ position: 'relative', zIndex: 1, mb: 4 }}>
+        <Stack direction={{ xs: "column", lg: "row" }} spacing={4}>
+          {/* Daily Quests Header */}
+          <motion.div
+            initial={{ opacity: 0, x: -30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.2, duration: 0.6 }}
+            style={{ flex: 1 }}
+          >
+            <Box sx={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center',
+              gap: 2,
+              p: 3,
+              background: 'linear-gradient(135deg, rgba(15, 15, 35, 0.95) 0%, rgba(30, 30, 60, 0.9) 100%)',
+              backdropFilter: 'blur(20px)',
+              border: '1px solid rgba(99, 102, 241, 0.3)',
+              borderRadius: 4,
+              boxShadow: '0 25px 50px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+            }}>
+              <CalendarToday sx={{ 
+                color: '#3b82f6', 
+                fontSize: 32,
+                filter: 'drop-shadow(0 0 8px rgba(59, 130, 246, 0.5))'
+              }} />
+              <motion.div
+                onClick={() => handleQuestSectionClick('daily')}
+                style={{ cursor: dailyQuests.every(quest => quest.completed) ? 'pointer' : 'default' }}
+                whileHover={dailyQuests.every(quest => quest.completed) ? { scale: 1.05 } : {}}
+                whileTap={dailyQuests.every(quest => quest.completed) ? { scale: 0.95 } : {}}
+              >
+                <Typography variant="h4" sx={{ 
+                  color: 'white', 
+                  fontWeight: 700,
+                  background: dailyQuests.every(quest => quest.completed) 
+                    ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)'
+                    : 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
+                  backgroundClip: 'text',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  textShadow: dailyQuests.every(quest => quest.completed) 
+                    ? '0 0 10px rgba(16, 185, 129, 0.5)' 
+                    : 'none',
+                  transition: 'all 0.3s ease',
+                }}>
+                  Daily Quests
+                </Typography>
+              </motion.div>
+            </Box>
+          </motion.div>
+
+          {/* Weekly Quests Header */}
+          <motion.div
+            initial={{ opacity: 0, x: 30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.4, duration: 0.6 }}
+            style={{ flex: 1 }}
+          >
+            <Box sx={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center',
+              gap: 2,
+              p: 3,
+              background: 'linear-gradient(135deg, rgba(15, 15, 35, 0.95) 0%, rgba(30, 30, 60, 0.9) 100%)',
+              backdropFilter: 'blur(20px)',
+              border: '1px solid rgba(139, 92, 246, 0.3)',
+              borderRadius: 4,
+              boxShadow: '0 25px 50px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+            }}>
+              <Schedule sx={{ 
+                color: '#8b5cf6', 
+                fontSize: 32,
+                filter: 'drop-shadow(0 0 8px rgba(139, 92, 246, 0.5))'
+              }} />
+              <motion.div
+                onClick={() => handleQuestSectionClick('weekly')}
+                style={{ cursor: weeklyQuests.every(quest => quest.completed) ? 'pointer' : 'default' }}
+                whileHover={weeklyQuests.every(quest => quest.completed) ? { scale: 1.05 } : {}}
+                whileTap={weeklyQuests.every(quest => quest.completed) ? { scale: 0.95 } : {}}
+              >
+                <Typography variant="h4" sx={{ 
+                  color: 'white', 
+                  fontWeight: 700,
+                  background: weeklyQuests.every(quest => quest.completed) 
+                    ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)'
+                    : 'linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%)',
+                  backgroundClip: 'text',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  textShadow: weeklyQuests.every(quest => quest.completed) 
+                    ? '0 0 10px rgba(16, 185, 129, 0.5)' 
+                    : 'none',
+                  transition: 'all 0.3s ease',
+                }}>
+                  Weekly Quests
+                </Typography>
+              </motion.div>
+            </Box>
+          </motion.div>
+        </Stack>
+      </Box>
+
+      {/* True 2x2 Grid Layout */}
       <Box sx={{ position: 'relative', zIndex: 1 }}>
         <Box sx={{ 
           display: 'grid', 
@@ -476,9 +581,9 @@ export function QuestsTab({ userId }: QuestsTabProps) {
             <QuestCard quest={dailyQuests[0]} index={0} />
           </motion.div>
 
-          {/* Daily Quest 2 - Bottom Left */}
+          {/* Weekly Quest 1 - Top Right */}
           <motion.div
-            initial={{ opacity: 0, x: -30, y: 30, scale: 0.95 }}
+            initial={{ opacity: 0, x: 30, y: -30, scale: 0.95 }}
             animate={{ opacity: 1, x: 0, y: 0, scale: 1 }}
             transition={{ 
               duration: 0.8,
@@ -488,12 +593,12 @@ export function QuestsTab({ userId }: QuestsTabProps) {
               damping: 20
             }}
           >
-            <QuestCard quest={dailyQuests[1]} index={1} />
+            <QuestCard quest={weeklyQuests[0]} index={2} />
           </motion.div>
 
-          {/* Weekly Quest 1 - Top Right */}
+          {/* Daily Quest 2 - Bottom Left */}
           <motion.div
-            initial={{ opacity: 0, x: 30, y: -30, scale: 0.95 }}
+            initial={{ opacity: 0, x: -30, y: 30, scale: 0.95 }}
             animate={{ opacity: 1, x: 0, y: 0, scale: 1 }}
             transition={{ 
               duration: 0.8,
@@ -503,7 +608,7 @@ export function QuestsTab({ userId }: QuestsTabProps) {
               damping: 20
             }}
           >
-            <QuestCard quest={weeklyQuests[0]} index={2} />
+            <QuestCard quest={dailyQuests[1]} index={1} />
           </motion.div>
 
           {/* Weekly Quest 2 - Bottom Right */}
