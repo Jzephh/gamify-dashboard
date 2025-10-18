@@ -72,7 +72,7 @@ export class UserService {
           name: whopUser.name,
           avatarUrl: whopUser.profilePicture?.sourceUrl,
           xp: 0,
-          level: 1,
+          level: 0,
           points: 0,
           badges: {
             bronze: false,

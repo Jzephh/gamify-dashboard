@@ -310,17 +310,29 @@ export default function Home() {
               damping: 20
             }}
           >
-            <Typography variant="h1" sx={{ 
-              textAlign: 'center', 
-              mb: 4,
-              background: 'linear-gradient(135deg, #6366f1 0%, #ec4899 50%, #f59e0b 100%)',
-              backgroundClip: 'text',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              filter: 'drop-shadow(0 0 20px rgba(99, 102, 241, 0.5))',
-            }}>
-              PowerLevel Dashboard
-            </Typography>
+        <Typography variant="h1" sx={{ 
+          textAlign: 'center', 
+          mb: 4,
+          background: 'linear-gradient(135deg, #8b5cf6 0%, #ec4899 50%, #f59e0b 100%)',
+          backgroundClip: 'text',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+          filter: 'drop-shadow(0 0 25px rgba(139, 92, 246, 0.8)) drop-shadow(0 0 40px rgba(236, 72, 153, 0.6))',
+          textShadow: '0 0 30px rgba(139, 92, 246, 0.5)',
+          animation: 'holographicTitle 4s ease-in-out infinite',
+          '@keyframes holographicTitle': {
+            '0%, 100%': { 
+              filter: 'drop-shadow(0 0 25px rgba(139, 92, 246, 0.8)) drop-shadow(0 0 40px rgba(236, 72, 153, 0.6))',
+              textShadow: '0 0 30px rgba(139, 92, 246, 0.5)'
+            },
+            '50%': { 
+              filter: 'drop-shadow(0 0 35px rgba(139, 92, 246, 1)) drop-shadow(0 0 60px rgba(236, 72, 153, 0.8))',
+              textShadow: '0 0 40px rgba(139, 92, 246, 0.8)'
+            },
+          },
+        }}>
+          PowerLevel Dashboard
+        </Typography>
           </motion.div>
           
           <motion.div

@@ -112,13 +112,19 @@ export function ProfileTab({ userProfile }: ProfileTabProps) {
         <Paper
           elevation={0}
           sx={{
-            background: 'linear-gradient(135deg, #6366f1 0%, #ec4899 50%, #f59e0b 100%)',
+            background: 'linear-gradient(135deg, #8b5cf6 0%, #ec4899 50%, #f59e0b 100%)',
             borderRadius: 4,
             p: 4,
             mb: 4,
             position: 'relative',
             overflow: 'hidden',
-            boxShadow: '0 25px 50px rgba(99, 102, 241, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
+            boxShadow: `
+              0 0 40px rgba(139, 92, 246, 0.6),
+              0 0 80px rgba(236, 72, 153, 0.4),
+              0 25px 50px rgba(0, 0, 0, 0.3),
+              inset 0 1px 0 rgba(255, 255, 255, 0.2)
+            `,
+            filter: 'contrast(1.1) saturate(1.2)',
             '&::before': {
               content: '""',
               position: 'absolute',
@@ -126,14 +132,35 @@ export function ProfileTab({ userProfile }: ProfileTabProps) {
               left: 0,
               right: 0,
               bottom: 0,
-              background: 'linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.1) 50%, transparent 70%)',
+              background: 'linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.2) 50%, transparent 70%)',
               transform: 'translateX(-100%)',
-              animation: 'shimmer 3s infinite',
+              animation: 'holographicShimmer 3s infinite',
               zIndex: 1,
             },
-            '@keyframes shimmer': {
+            '&::after': {
+              content: '""',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(236, 72, 153, 0.1) 100%)',
+              animation: 'holographicPulse 4s ease-in-out infinite',
+              zIndex: 0,
+            },
+            '@keyframes holographicShimmer': {
               '0%': { transform: 'translateX(-100%)' },
               '100%': { transform: 'translateX(100%)' },
+            },
+            '@keyframes holographicPulse': {
+              '0%, 100%': { 
+                opacity: 0.3,
+                filter: 'hue-rotate(0deg)'
+              },
+              '50%': { 
+                opacity: 0.6,
+                filter: 'hue-rotate(20deg)'
+              },
             },
           }}
         >
@@ -169,9 +196,50 @@ export function ProfileTab({ userProfile }: ProfileTabProps) {
                 sx={{
                   width: 120,
                   height: 120,
-                  border: '4px solid rgba(255, 255, 255, 0.3)',
-                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), 0 0 20px rgba(255, 255, 255, 0.2)',
-                  filter: 'drop-shadow(0 0 10px rgba(99, 102, 241, 0.3))',
+                  border: '4px solid transparent',
+                  background: 'linear-gradient(135deg, #8b5cf6 0%, #ec4899 50%, #f59e0b 100%)',
+                  backgroundClip: 'padding-box',
+                  boxShadow: `
+                    0 0 30px rgba(139, 92, 246, 0.6),
+                    0 0 60px rgba(236, 72, 153, 0.4),
+                    0 8px 32px rgba(0, 0, 0, 0.3),
+                    inset 0 0 20px rgba(255, 255, 255, 0.1)
+                  `,
+                  filter: `
+                    drop-shadow(0 0 15px rgba(139, 92, 246, 0.8))
+                    drop-shadow(0 0 25px rgba(236, 72, 153, 0.6))
+                    contrast(1.2)
+                    saturate(1.3)
+                  `,
+                  position: 'relative',
+                  '&::before': {
+                    content: '""',
+                    position: 'absolute',
+                    top: -4,
+                    left: -4,
+                    right: -4,
+                    bottom: -4,
+                    background: 'linear-gradient(135deg, #8b5cf6 0%, #ec4899 50%, #f59e0b 100%)',
+                    borderRadius: '50%',
+                    zIndex: -1,
+                    animation: 'holographicGlow 3s ease-in-out infinite',
+                  },
+                  '@keyframes holographicGlow': {
+                    '0%, 100%': { 
+                      filter: 'hue-rotate(0deg) brightness(1)',
+                      boxShadow: `
+                        0 0 30px rgba(139, 92, 246, 0.6),
+                        0 0 60px rgba(236, 72, 153, 0.4)
+                      `
+                    },
+                    '50%': { 
+                      filter: 'hue-rotate(20deg) brightness(1.1)',
+                      boxShadow: `
+                        0 0 40px rgba(139, 92, 246, 0.8),
+                        0 0 80px rgba(236, 72, 153, 0.6)
+                      `
+                    },
+                  },
                 }}
               />
             </motion.div>
@@ -723,10 +791,19 @@ export function ProfileTab({ userProfile }: ProfileTabProps) {
             background: 'linear-gradient(135deg, #1f2937 0%, #111827 100%)',
             borderRadius: 4,
             mb: 4,
-            border: '2px solid #6366f1',
-            boxShadow: '0 25px 50px rgba(99, 102, 241, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+            border: '2px solid transparent',
+            backgroundImage: 'linear-gradient(135deg, #1f2937 0%, #111827 100%), linear-gradient(135deg, #8b5cf6 0%, #ec4899 50%, #f59e0b 100%)',
+            backgroundOrigin: 'border-box',
+            backgroundClip: 'content-box, border-box',
+            boxShadow: `
+              0 0 40px rgba(139, 92, 246, 0.6),
+              0 0 80px rgba(236, 72, 153, 0.4),
+              0 25px 50px rgba(0, 0, 0, 0.3),
+              inset 0 1px 0 rgba(255, 255, 255, 0.1)
+            `,
             position: 'relative',
             overflow: 'hidden',
+            filter: 'contrast(1.1) saturate(1.2)',
             '&::before': {
               content: '""',
               position: 'absolute',
@@ -734,9 +811,9 @@ export function ProfileTab({ userProfile }: ProfileTabProps) {
               left: -50,
               width: '100px',
               height: '100px',
-              background: 'linear-gradient(45deg, rgba(99, 102, 241, 0.1), transparent)',
+              background: 'linear-gradient(45deg, rgba(139, 92, 246, 0.2), rgba(236, 72, 153, 0.1))',
               borderRadius: '50%',
-              animation: 'float 6s ease-in-out infinite',
+              animation: 'holographicFloat 6s ease-in-out infinite',
             },
             '&::after': {
               content: '""',
@@ -745,9 +822,19 @@ export function ProfileTab({ userProfile }: ProfileTabProps) {
               right: -50,
               width: '100px',
               height: '100px',
-              background: 'linear-gradient(45deg, rgba(236, 72, 153, 0.1), transparent)',
+              background: 'linear-gradient(45deg, rgba(236, 72, 153, 0.2), rgba(245, 158, 11, 0.1))',
               borderRadius: '50%',
-              animation: 'float 8s ease-in-out infinite reverse',
+              animation: 'holographicFloat 8s ease-in-out infinite reverse',
+            },
+            '@keyframes holographicFloat': {
+              '0%, 100%': { 
+                transform: 'translateY(0px) rotate(0deg)',
+                filter: 'hue-rotate(0deg) brightness(1)'
+              },
+              '50%': { 
+                transform: 'translateY(-20px) rotate(180deg)',
+                filter: 'hue-rotate(20deg) brightness(1.1)'
+              },
             },
           }}
         >
@@ -761,11 +848,23 @@ export function ProfileTab({ userProfile }: ProfileTabProps) {
                 color: 'white', 
                 fontWeight: 800, 
                 mb: 1,
-                background: 'linear-gradient(135deg, #6366f1 0%, #ec4899 100%)',
+                background: 'linear-gradient(135deg, #8b5cf6 0%, #ec4899 50%, #f59e0b 100%)',
                 backgroundClip: 'text',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
-                filter: 'drop-shadow(0 0 10px rgba(99, 102, 241, 0.5))',
+                filter: 'drop-shadow(0 0 15px rgba(139, 92, 246, 0.8)) drop-shadow(0 0 25px rgba(236, 72, 153, 0.6))',
+                textShadow: '0 0 20px rgba(139, 92, 246, 0.5)',
+                animation: 'holographicText 3s ease-in-out infinite',
+                '@keyframes holographicText': {
+                  '0%, 100%': { 
+                    filter: 'drop-shadow(0 0 15px rgba(139, 92, 246, 0.8)) drop-shadow(0 0 25px rgba(236, 72, 153, 0.6))',
+                    textShadow: '0 0 20px rgba(139, 92, 246, 0.5)'
+                  },
+                  '50%': { 
+                    filter: 'drop-shadow(0 0 20px rgba(139, 92, 246, 1)) drop-shadow(0 0 35px rgba(236, 72, 153, 0.8))',
+                    textShadow: '0 0 30px rgba(139, 92, 246, 0.8)'
+                  },
+                },
               }}>
                 POWER LEVEL: {user.level}
               </Typography>
