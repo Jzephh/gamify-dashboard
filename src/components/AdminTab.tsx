@@ -1,8 +1,40 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Award, Star, Crown, Shield, Zap } from 'lucide-react';
+import {
+  Box,
+  Typography,
+  Card,
+  CardContent,
+  Stack,
+  Button,
+  TextField,
+  Avatar,
+  Chip,
+  Paper,
+  List,
+  ListItem,
+  ListItemAvatar,
+  ListItemText,
+  ListItemSecondaryAction,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Alert,
+} from '@mui/material';
+import { motion } from 'framer-motion';
+import {
+  WorkspacePremium,
+  Security,
+  FlashOn,
+  Add,
+  AdminPanelSettings,
+} from '@mui/icons-material';
 
 interface AdminUser {
   _id: string;
@@ -33,6 +65,10 @@ export function AdminTab() {
   const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
   const [xpAmount, setXpAmount] = useState(10);
   const [actionLoading, setActionLoading] = useState(false);
+  const [openDialog, setOpenDialog] = useState(false);
+  const [selectedBadge, setSelectedBadge] = useState('');
+  const [selectedAction, setSelectedAction] = useState('');
+  const [alert, setAlert] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   useEffect(() => {
     fetchUsers();
@@ -48,6 +84,7 @@ export function AdminTab() {
       }
     } catch (error) {
       console.error('Error fetching users:', error);
+      setAlert({ type: 'error', message: 'Failed to fetch users' });
     } finally {
       setLoading(false);
     }
@@ -63,11 +100,15 @@ export function AdminTab() {
       });
       
       if (response.ok) {
-        fetchUsers(); // Refresh the list
+        fetchUsers();
+        setAlert({ type: 'success', message: `Awarded ${amount} XP successfully!` });
         setSelectedUser(null);
+      } else {
+        setAlert({ type: 'error', message: 'Failed to award XP' });
       }
     } catch (error) {
       console.error('Error awarding XP:', error);
+      setAlert({ type: 'error', message: 'Failed to award XP' });
     } finally {
       setActionLoading(false);
     }
@@ -83,174 +124,390 @@ export function AdminTab() {
       });
       
       if (response.ok) {
-        fetchUsers(); // Refresh the list
+        fetchUsers();
+        setAlert({ type: 'success', message: `Badge ${action}ed successfully!` });
+        setOpenDialog(false);
+      } else {
+        setAlert({ type: 'error', message: `Failed to ${action} badge` });
       }
     } catch (error) {
       console.error('Error updating badge:', error);
+      setAlert({ type: 'error', message: `Failed to ${action} badge` });
     } finally {
       setActionLoading(false);
     }
   };
 
+  const handleBadgeAction = () => {
+    if (selectedUser && selectedBadge && selectedAction) {
+      updateBadge(selectedUser.userId, selectedBadge, selectedAction as 'unlock' | 'lock');
+    }
+  };
+
   const badgeTypes = [
-    { key: 'bronze', name: 'Bronze', emoji: '🥉' },
-    { key: 'silver', name: 'Silver', emoji: '🥈' },
-    { key: 'gold', name: 'Gold', emoji: '🥇' },
-    { key: 'platinum', name: 'Platinum', emoji: '💎' },
-    { key: 'apex', name: 'Apex', emoji: '👑' },
+    { key: 'bronze', name: 'Bronze', emoji: '🥉', color: '#cd7f32' },
+    { key: 'silver', name: 'Silver', emoji: '🥈', color: '#c0c0c0' },
+    { key: 'gold', name: 'Gold', emoji: '🥇', color: '#ffd700' },
+    { key: 'platinum', name: 'Platinum', emoji: '💎', color: '#e5e4e2' },
+    { key: 'apex', name: 'Apex', emoji: '👑', color: '#ff6b35' },
   ];
 
   if (loading) {
     return (
-      <div className="bg-white/10 backdrop-blur-lg rounded-xl p-6 text-white">
-        <div className="text-center">Loading admin panel...</div>
-      </div>
+      <Box sx={{ p: 3, textAlign: 'center' }}>
+        <Typography variant="h4" sx={{ color: 'white' }}>
+          Loading admin panel...
+        </Typography>
+      </Box>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <Box sx={{ p: 3 }}>
+      {alert && (
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+        >
+          <Alert
+            severity={alert.type}
+            onClose={() => setAlert(null)}
+            sx={{ mb: 3 }}
+          >
+            {alert.message}
+          </Alert>
+        </motion.div>
+      )}
+
       {/* Admin Header */}
-      <div className="bg-white/10 backdrop-blur-lg rounded-xl p-6 text-white">
-        <div className="flex items-center space-x-3 mb-4">
-          <Shield className="w-8 h-8 text-red-400" />
-          <h2 className="text-2xl font-bold">Admin Panel</h2>
-        </div>
-        <p className="text-white/70">
-          Manage user XP, badges, and roles. Use with caution - these actions affect user progression.
-        </p>
-      </div>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+      >
+        <Card
+          elevation={8}
+          sx={{
+            background: 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)',
+            borderRadius: 3,
+            mb: 4,
+          }}
+        >
+          <CardContent sx={{ p: 4 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+              <Security sx={{ fontSize: 48, color: 'white' }} />
+              <Box>
+                <Typography variant="h4" sx={{ color: 'white', fontWeight: 800, mb: 1 }}>
+                  Admin Panel
+                </Typography>
+                <Typography variant="body1" sx={{ color: 'rgba(255, 255, 255, 0.8)' }}>
+                  Manage user XP, badges, and roles. Use with caution - these actions affect user progression.
+                </Typography>
+              </Box>
+            </Box>
+          </CardContent>
+        </Card>
+      </motion.div>
 
       {/* Users List */}
-      <div className="bg-white/10 backdrop-blur-lg rounded-xl p-6 text-white">
-        <h3 className="text-xl font-bold mb-4">Users ({users.length})</h3>
-        
-        <div className="space-y-3 max-h-96 overflow-y-auto">
-          {users.map((user) => (
-            <div
-              key={user._id}
-              className={`bg-white/10 rounded-lg p-4 cursor-pointer transition-all ${
-                selectedUser?._id === user._id ? 'ring-2 ring-blue-400' : 'hover:bg-white/20'
-              }`}
-              onClick={() => setSelectedUser(user)}
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center text-white font-bold">
-                    {user.name.charAt(0).toUpperCase()}
-                  </div>
-                  <div>
-                    <div className="font-semibold">{user.name}</div>
-                    <div className="text-sm text-white/70">@{user.username}</div>
-                  </div>
-                </div>
-                
-                <div className="text-right">
-                  <div className="flex items-center space-x-1">
-                    <Star className="w-4 h-4 text-yellow-400" />
-                    <span className="font-semibold">Lv.{user.level}</span>
-                  </div>
-                  <div className="text-sm text-white/70">{user.xp} XP</div>
-                </div>
-              </div>
-              
-              {/* Badge Status */}
-              <div className="flex space-x-1 mt-2">
-                {badgeTypes.map((badge) => (
-                  <div
-                    key={badge.key}
-                    className={`text-lg ${user.badges[badge.key as keyof typeof user.badges] ? 'opacity-100' : 'opacity-30'}`}
-                    title={`${badge.name} Badge`}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.1 }}
+      >
+        <Card
+          elevation={8}
+          sx={{
+            background: 'rgba(15, 15, 35, 0.8)',
+            backdropFilter: 'blur(20px)',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            borderRadius: 3,
+            mb: 4,
+          }}
+        >
+          <CardContent sx={{ p: 4 }}>
+            <Typography variant="h5" sx={{ color: 'white', fontWeight: 700, mb: 3 }}>
+              Users ({users.length})
+            </Typography>
+            
+            <List sx={{ maxHeight: 400, overflow: 'auto' }}>
+              {users.map((user, index) => (
+                <motion.div
+                  key={user._id}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.4, delay: index * 0.05 }}
+                >
+                  <ListItem
+                    component="div"
+                    onClick={() => setSelectedUser(user)}
+                    sx={{
+                      cursor: 'pointer',
+                      borderRadius: 2,
+                      mb: 1,
+                      background: selectedUser?._id === user._id 
+                        ? 'rgba(99, 102, 241, 0.2)' 
+                        : 'rgba(255, 255, 255, 0.05)',
+                      border: selectedUser?._id === user._id 
+                        ? '2px solid #6366f1' 
+                        : '1px solid rgba(255, 255, 255, 0.1)',
+                      '&:hover': {
+                        background: 'rgba(99, 102, 241, 0.1)',
+                      },
+                    }}
                   >
-                    {badge.emoji}
-                  </div>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+                    <ListItemAvatar>
+                      <Avatar
+                        sx={{
+                          background: 'linear-gradient(135deg, #6366f1 0%, #ec4899 100%)',
+                          width: 56,
+                          height: 56,
+                        }}
+                      >
+                        {user.name.charAt(0).toUpperCase()}
+                      </Avatar>
+                    </ListItemAvatar>
+                    
+                    <ListItemText
+                      primary={
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                          <Typography variant="h6" sx={{ color: 'white', fontWeight: 600 }}>
+                            {user.name}
+                          </Typography>
+                          <Chip
+                            label={`Lv.${user.level}`}
+                            size="small"
+                            sx={{
+                              background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
+                              color: 'white',
+                              fontWeight: 600,
+                            }}
+                          />
+                        </Box>
+                      }
+                      secondary={
+                        <Box>
+                          <Typography variant="body2" sx={{ color: '#a1a1aa', mb: 1 }}>
+                            @{user.username}
+                          </Typography>
+                          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                            {badgeTypes.map((badge) => (
+                              <Box
+                                key={badge.key}
+                                sx={{
+                                  opacity: user.badges[badge.key as keyof typeof user.badges] ? 1 : 0.3,
+                                  fontSize: '1.2rem',
+                                }}
+                                title={`${badge.name} Badge`}
+                              >
+                                {badge.emoji}
+                              </Box>
+                            ))}
+                          </Box>
+                        </Box>
+                      }
+                    />
+                    
+                    <ListItemSecondaryAction>
+                      <Box sx={{ textAlign: 'right' }}>
+                        <Typography variant="body2" sx={{ color: '#a1a1aa' }}>
+                          {user.xp} XP
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: '#a1a1aa' }}>
+                          {user.stats.messages} msgs
+                        </Typography>
+                      </Box>
+                    </ListItemSecondaryAction>
+                  </ListItem>
+                </motion.div>
+              ))}
+            </List>
+          </CardContent>
+        </Card>
+      </motion.div>
 
       {/* User Actions */}
       {selectedUser && (
-        <div className="bg-white/10 backdrop-blur-lg rounded-xl p-6 text-white">
-          <h3 className="text-xl font-bold mb-4">
-            Manage: {selectedUser.name}
-          </h3>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* XP Management */}
-            <div className="space-y-4">
-              <h4 className="font-semibold flex items-center space-x-2">
-                <Zap className="w-5 h-5 text-yellow-400" />
-                <span>XP Management</span>
-              </h4>
-              
-              <div className="space-y-2">
-                <label className="text-sm text-white/70">XP Amount</label>
-                <input
-                  type="number"
-                  value={xpAmount}
-                  onChange={(e) => setXpAmount(parseInt(e.target.value) || 0)}
-                  className="w-full bg-white/20 border border-white/30 rounded-lg px-3 py-2 text-white placeholder-white/50"
-                  min="1"
-                  max="1000"
-                />
-              </div>
-              
-              <Button
-                onClick={() => awardXP(selectedUser.userId, xpAmount)}
-                disabled={actionLoading || xpAmount <= 0}
-                className="w-full bg-yellow-600 hover:bg-yellow-700"
-              >
-                Award {xpAmount} XP
-              </Button>
-            </div>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+        >
+          <Card
+            elevation={8}
+            sx={{
+              background: 'rgba(15, 15, 35, 0.8)',
+              backdropFilter: 'blur(20px)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              borderRadius: 3,
+            }}
+          >
+            <CardContent sx={{ p: 4 }}>
+              <Typography variant="h5" sx={{ color: 'white', fontWeight: 700, mb: 3 }}>
+                Manage: {selectedUser.name}
+              </Typography>
 
-            {/* Badge Management */}
-            <div className="space-y-4">
-              <h4 className="font-semibold flex items-center space-x-2">
-                <Award className="w-5 h-5 text-purple-400" />
-                <span>Badge Management</span>
-              </h4>
-              
-              <div className="space-y-2">
-                {badgeTypes.map((badge) => {
-                  const hasBadge = selectedUser.badges[badge.key as keyof typeof selectedUser.badges];
-                  return (
-                    <div key={badge.key} className="flex items-center justify-between bg-white/10 rounded-lg p-3">
-                      <div className="flex items-center space-x-2">
-                        <span className="text-lg">{badge.emoji}</span>
-                        <span className="text-sm">{badge.name}</span>
-                        {hasBadge && <Crown className="w-4 h-4 text-yellow-400" />}
-                      </div>
-                      
-                      <div className="flex space-x-1">
-                        <Button
-                          size="sm"
-                          onClick={() => updateBadge(selectedUser.userId, badge.key, 'unlock')}
-                          disabled={actionLoading || hasBadge}
-                          className="bg-green-600 hover:bg-green-700 text-xs px-2 py-1"
-                        >
-                          Unlock
-                        </Button>
-                        <Button
-                          size="sm"
-                          onClick={() => updateBadge(selectedUser.userId, badge.key, 'lock')}
-                          disabled={actionLoading || !hasBadge}
-                          className="bg-red-600 hover:bg-red-700 text-xs px-2 py-1"
-                        >
-                          Lock
-                        </Button>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        </div>
+              <Stack direction={{ xs: 'column', md: 'row' }} spacing={4}>
+                {/* XP Management */}
+                <Paper
+                  elevation={4}
+                  sx={{
+                    background: 'linear-gradient(135deg, #1f2937 0%, #111827 100%)',
+                    p: 3,
+                    borderRadius: 2,
+                    flex: 1,
+                  }}
+                >
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
+                    <FlashOn sx={{ color: '#fbbf24', fontSize: 28 }} />
+                    <Typography variant="h6" sx={{ color: 'white', fontWeight: 600 }}>
+                      XP Management
+                    </Typography>
+                  </Box>
+                  <TextField
+                    label="XP Amount"
+                    type="number"
+                    value={xpAmount}
+                    onChange={(e) => setXpAmount(parseInt(e.target.value) || 0)}
+                    fullWidth
+                    sx={{ mb: 3 }}
+                    inputProps={{ min: 1, max: 1000 }}
+                  />
+                  <Button
+                    variant="contained"
+                    onClick={() => awardXP(selectedUser.userId, xpAmount)}
+                    disabled={actionLoading || xpAmount <= 0}
+                    fullWidth
+                    startIcon={<Add />}
+                    sx={{
+                      background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
+                      '&:hover': {
+                        background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                      },
+                    }}
+                  >
+                    Award {xpAmount} XP
+                  </Button>
+                </Paper>
+
+                {/* Badge Management */}
+                <Paper
+                  elevation={4}
+                  sx={{
+                    background: 'linear-gradient(135deg, #1f2937 0%, #111827 100%)',
+                    p: 3,
+                    borderRadius: 2,
+                    flex: 1,
+                  }}
+                >
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
+                    <WorkspacePremium sx={{ color: '#8b5cf6', fontSize: 28 }} />
+                    <Typography variant="h6" sx={{ color: 'white', fontWeight: 600 }}>
+                      Badge Management
+                    </Typography>
+                  </Box>
+
+                  <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 3 }}>
+                    {badgeTypes.map((badge) => {
+                      const hasBadge = selectedUser.badges[badge.key as keyof typeof selectedUser.badges];
+                      return (
+                        <Chip
+                          key={badge.key}
+                          label={`${badge.emoji} ${badge.name}`}
+                          variant={hasBadge ? 'filled' : 'outlined'}
+                          color={hasBadge ? 'success' : 'default'}
+                          onClick={() => {
+                            setSelectedBadge(badge.key);
+                            setSelectedAction(hasBadge ? 'lock' : 'unlock');
+                            setOpenDialog(true);
+                          }}
+                          sx={{
+                            mb: 1,
+                            cursor: 'pointer',
+                            '&:hover': {
+                              transform: 'scale(1.05)',
+                            },
+                          }}
+                        />
+                      );
+                    })}
+                  </Box>
+
+                  <Button
+                    variant="outlined"
+                    onClick={() => setOpenDialog(true)}
+                    fullWidth
+                    startIcon={<AdminPanelSettings />}
+                    sx={{
+                      borderColor: '#8b5cf6',
+                      color: '#8b5cf6',
+                      '&:hover': {
+                        borderColor: '#7c3aed',
+                        background: 'rgba(139, 92, 246, 0.1)',
+                      },
+                    }}
+                  >
+                    Manage Badges
+                  </Button>
+                </Paper>
+              </Stack>
+            </CardContent>
+          </Card>
+        </motion.div>
       )}
-    </div>
+
+      {/* Badge Management Dialog */}
+      <Dialog open={openDialog} onClose={() => setOpenDialog(false)} maxWidth="sm" fullWidth>
+        <DialogTitle sx={{ color: 'white', background: 'rgba(15, 15, 35, 0.9)' }}>
+          Manage Badge
+        </DialogTitle>
+        <DialogContent sx={{ background: 'rgba(15, 15, 35, 0.9)' }}>
+          <Box sx={{ pt: 2 }}>
+            <FormControl fullWidth sx={{ mb: 3 }}>
+              <InputLabel>Badge</InputLabel>
+              <Select
+                value={selectedBadge}
+                onChange={(e) => setSelectedBadge(e.target.value)}
+                label="Badge"
+              >
+                {badgeTypes.map((badge) => (
+                  <MenuItem key={badge.key} value={badge.key}>
+                    {badge.emoji} {badge.name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            
+            <FormControl fullWidth>
+              <InputLabel>Action</InputLabel>
+              <Select
+                value={selectedAction}
+                onChange={(e) => setSelectedAction(e.target.value)}
+                label="Action"
+              >
+                <MenuItem value="unlock">Unlock Badge</MenuItem>
+                <MenuItem value="lock">Lock Badge</MenuItem>
+              </Select>
+            </FormControl>
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ background: 'rgba(15, 15, 35, 0.9)' }}>
+          <Button onClick={() => setOpenDialog(false)} sx={{ color: '#a1a1aa' }}>
+            Cancel
+          </Button>
+          <Button
+            onClick={handleBadgeAction}
+            disabled={!selectedBadge || !selectedAction || actionLoading}
+            variant="contained"
+            sx={{
+              background: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
+            }}
+          >
+            {actionLoading ? 'Processing...' : 'Apply'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </Box>
   );
 }

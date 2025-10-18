@@ -1,8 +1,28 @@
 'use client';
 
+import { useState } from 'react';
+import {
+  Box,
+  Typography,
+  Avatar,
+  LinearProgress,
+  Card,
+  CardContent,
+  Stack,
+  Button,
+  Chip,
+  Paper,
+} from '@mui/material';
+import { motion } from 'framer-motion';
+import {
+  Star,
+  EmojiEvents,
+  Chat,
+  WorkspacePremium,
+  Mic,
+  FlashOn,
+} from '@mui/icons-material';
 import { UserProfile } from '@/lib/services/UserService';
-import { Button } from '@/components/ui/button';
-import { Trophy, Star, MessageSquare, Mic, Award } from 'lucide-react';
 
 interface ProfileTabProps {
   userProfile: UserProfile;
@@ -11,43 +31,54 @@ interface ProfileTabProps {
 
 export function ProfileTab({ userProfile, onRefresh }: ProfileTabProps) {
   const { user, levelInfo } = userProfile;
-  
-  // Define badges directly to avoid importing BadgeService at module level
+  const [isSimulating, setIsSimulating] = useState(false);
+
   const badges = [
     {
+      id: 'bronze',
       name: 'Bronze',
       emoji: '🥉',
       description: 'Reach Level 1',
       unlocked: user.badges.bronze,
+      image: '/badge/1.webp',
     },
     {
+      id: 'silver',
       name: 'Silver',
       emoji: '🥈',
       description: 'Reach Level 5',
       unlocked: user.badges.silver,
+      image: '/badge/2.webp',
     },
     {
+      id: 'gold',
       name: 'Gold',
       emoji: '🥇',
       description: 'Reach Level 10',
       unlocked: user.badges.gold,
+      image: '/badge/3.webp',
     },
     {
+      id: 'platinum',
       name: 'Platinum',
       emoji: '💎',
       description: 'Reach Level 20',
       unlocked: user.badges.platinum,
+      image: '/badge/4.webp',
     },
     {
+      id: 'apex',
       name: 'Apex Reseller',
       emoji: '👑',
       description: 'Admin-allowed Apex Role',
       unlocked: user.badges.apex,
+      image: '/badge/5.webp',
     },
   ];
 
   const simulateMessage = async (isSuccess = false) => {
     try {
+      setIsSimulating(true);
       const response = await fetch('/api/user/simulate-message', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -59,113 +90,370 @@ export function ProfileTab({ userProfile, onRefresh }: ProfileTabProps) {
       }
     } catch (error) {
       console.error('Error simulating message:', error);
+    } finally {
+      setIsSimulating(false);
     }
   };
 
   return (
-    <div className="bg-white/10 backdrop-blur-lg rounded-xl p-6 text-white">
-      <div className="flex items-center space-x-6 mb-8">
-        <div className="relative">
-          <img
-            src={user.avatarUrl || '/default-avatar.png'}
-            alt={user.name}
-            className="w-24 h-24 rounded-full border-4 border-white/20"
+    <Box sx={{ p: 3 }}>
+      {/* Header Banner */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+      >
+        <Paper
+          elevation={8}
+          sx={{
+            background: 'linear-gradient(135deg, #6366f1 0%, #ec4899 50%, #f59e0b 100%)',
+            borderRadius: 4,
+            p: 4,
+            mb: 4,
+            position: 'relative',
+            overflow: 'hidden',
+          }}
+        >
+          <Box
+            sx={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: 'url(/banner.png)',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              opacity: 0.2,
+              zIndex: 0,
+            }}
           />
-          <div className="absolute -bottom-2 -right-2 bg-yellow-500 text-black text-xs font-bold px-2 py-1 rounded-full">
-            Lv.{user.level}
-          </div>
-        </div>
-        <div>
-          <h2 className="text-3xl font-bold">{user.name}</h2>
-          <p className="text-white/70">@{user.username}</p>
-          <div className="flex items-center space-x-4 mt-2">
-            <div className="flex items-center space-x-1">
-              <Star className="w-4 h-4 text-yellow-400" />
-              <span>{user.xp} XP</span>
-            </div>
-            <div className="flex items-center space-x-1">
-              <Trophy className="w-4 h-4 text-blue-400" />
-              <span>{user.points} Points</span>
-            </div>
-          </div>
-        </div>
-      </div>
+          <Box sx={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', gap: 3, flexWrap: 'wrap' }}>
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              transition={{ type: 'spring', stiffness: 300 }}
+            >
+              <Avatar
+                src={user.avatarUrl || '/default-avatar.png'}
+                sx={{
+                  width: 120,
+                  height: 120,
+                  border: '4px solid rgba(255, 255, 255, 0.3)',
+                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+                }}
+              />
+            </motion.div>
+            <Box sx={{ flex: 1, minWidth: 200 }}>
+              <Typography variant="h3" sx={{ color: 'white', fontWeight: 800, mb: 1 }}>
+                {user.name}
+              </Typography>
+              <Typography variant="h6" sx={{ color: 'rgba(255, 255, 255, 0.8)', mb: 2 }}>
+                @{user.username}
+              </Typography>
+              <Stack direction={{ xs: 'column', sm: 'row' }} gap={3} alignItems="center">
+                <Stack direction="row" alignItems="center" gap={1}>
+                  <Star sx={{ color: '#fbbf24' }} />
+                  <Typography variant="h6" sx={{ color: 'white', fontWeight: 600 }}>
+                    {user.xp} XP
+                  </Typography>
+                </Stack>
+                <Stack direction="row" alignItems="center" gap={1}>
+                  <EmojiEvents sx={{ color: '#f59e0b' }} />
+                  <Typography variant="h6" sx={{ color: 'white', fontWeight: 600 }}>
+                    {user.points} Points
+                  </Typography>
+                </Stack>
+              </Stack>
+            </Box>
+          </Box>
+        </Paper>
+      </motion.div>
 
       {/* Level Progress */}
-      <div className="mb-8">
-        <div className="flex justify-between items-center mb-2">
-          <span className="text-lg font-semibold">Level {levelInfo.level}</span>
-          <span className="text-sm text-white/70">
-            {levelInfo.xp - levelInfo.currentLevelXP} / {levelInfo.nextLevelXP} XP
-          </span>
-        </div>
-        <div className="w-full bg-white/20 rounded-full h-4">
-          <div
-            className="bg-gradient-to-r from-yellow-400 to-orange-500 h-4 rounded-full transition-all duration-500"
-            style={{ width: `${levelInfo.progress}%` }}
-          />
-        </div>
-        <p className="text-sm text-white/70 mt-1">
-          {Math.round(levelInfo.nextLevelXP - (levelInfo.xp - levelInfo.currentLevelXP))} XP to next level
-        </p>
-      </div>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.1 }}
+      >
+        <Card
+          elevation={8}
+          sx={{
+            background: 'rgba(15, 15, 35, 0.8)',
+            backdropFilter: 'blur(20px)',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            borderRadius: 3,
+            mb: 4,
+          }}
+        >
+          <CardContent sx={{ p: 4 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, flexWrap: 'wrap' }}>
+              <Typography variant="h4" sx={{ fontWeight: 700, color: 'white' }}>
+                Level {levelInfo.level}
+              </Typography>
+              <Chip
+                label={`${Math.round(levelInfo.nextLevelXP - (levelInfo.xp - levelInfo.currentLevelXP))} XP to next level`}
+                sx={{
+                  background: 'linear-gradient(135deg, #6366f1 0%, #ec4899 100%)',
+                  color: 'white',
+                  fontWeight: 600,
+                  mt: { xs: 2, md: 0 },
+                }}
+              />
+            </Box>
+            <Box sx={{ mb: 2 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                <Typography variant="body2" sx={{ color: '#a1a1aa' }}>
+                  {levelInfo.xp - levelInfo.currentLevelXP} / {levelInfo.nextLevelXP} XP
+                </Typography>
+                <Typography variant="body2" sx={{ color: '#a1a1aa' }}>
+                  {Math.round(levelInfo.progress)}%
+                </Typography>
+              </Box>
+              <LinearProgress
+                variant="determinate"
+                value={levelInfo.progress}
+                sx={{
+                  height: 12,
+                  borderRadius: 6,
+                  background: 'rgba(255, 255, 255, 0.1)',
+                  '& .MuiLinearProgress-bar': {
+                    background: 'linear-gradient(135deg, #6366f1 0%, #ec4899 100%)',
+                    borderRadius: 6,
+                  },
+                }}
+              />
+            </Box>
+          </CardContent>
+        </Card>
+      </motion.div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-3 gap-4 mb-8">
-        <div className="bg-white/10 rounded-lg p-4 text-center">
-          <MessageSquare className="w-6 h-6 mx-auto mb-2 text-blue-400" />
-          <div className="text-2xl font-bold">{user.stats.messages}</div>
-          <div className="text-sm text-white/70">Messages</div>
-        </div>
-        <div className="bg-white/10 rounded-lg p-4 text-center">
-          <Award className="w-6 h-6 mx-auto mb-2 text-green-400" />
-          <div className="text-2xl font-bold">{user.stats.successMessages}</div>
-          <div className="text-sm text-white/70">Success</div>
-        </div>
-        <div className="bg-white/10 rounded-lg p-4 text-center">
-          <Mic className="w-6 h-6 mx-auto mb-2 text-purple-400" />
-          <div className="text-2xl font-bold">{user.stats.voiceMinutes}</div>
-          <div className="text-sm text-white/70">Voice Min</div>
-        </div>
-      </div>
-
-      {/* Badges */}
-      <div className="mb-8">
-        <h3 className="text-xl font-bold mb-4">Badges</h3>
-        <div className="grid grid-cols-5 gap-4">
-          {badges.map((badge, index) => (
-            <div
-              key={index}
-              className={`bg-white/10 rounded-lg p-4 text-center transition-all ${
-                badge.unlocked ? 'opacity-100' : 'opacity-30'
-              }`}
-            >
-              <div className="text-3xl mb-2">{badge.emoji}</div>
-              <div className="text-sm font-semibold">{badge.name}</div>
-              <div className="text-xs text-white/70">{badge.description}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Simulation Controls (for testing) */}
-      <div className="border-t border-white/20 pt-6">
-        <h3 className="text-lg font-semibold mb-4">Simulate Activity (Testing)</h3>
-        <div className="flex space-x-4">
-          <Button
-            onClick={() => simulateMessage(false)}
-            className="bg-blue-600 hover:bg-blue-700"
+      {/* Stats Section - Replaces Grid with Stack */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.2 }}
+      >
+        <Stack direction={{ xs: 'column', md: 'row' }} spacing={3} sx={{ mb: 4, width: '100%' }}>
+          <Card
+            elevation={8}
+            sx={{
+              background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
+              borderRadius: 3,
+              flex: 1,
+            }}
           >
-            Send Message (+5 XP)
-          </Button>
-          <Button
-            onClick={() => simulateMessage(true)}
-            className="bg-green-600 hover:bg-green-700"
+            <CardContent sx={{ textAlign: 'center', p: 3 }}>
+              <Chat sx={{ fontSize: 40, color: 'white', mb: 2 }} />
+              <Typography variant="h3" sx={{ color: 'white', fontWeight: 800, mb: 1 }}>
+                {user.stats.messages}
+              </Typography>
+              <Typography variant="body1" sx={{ color: 'rgba(255, 255, 255, 0.8)' }}>
+                Messages
+              </Typography>
+            </CardContent>
+          </Card>
+          <Card
+            elevation={8}
+            sx={{
+              background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+              borderRadius: 3,
+              flex: 1,
+            }}
           >
-            Success Message (+15 XP)
-          </Button>
-        </div>
-      </div>
-    </div>
+            <CardContent sx={{ textAlign: 'center', p: 3 }}>
+              <WorkspacePremium sx={{ fontSize: 40, color: 'white', mb: 2 }} />
+              <Typography variant="h3" sx={{ color: 'white', fontWeight: 800, mb: 1 }}>
+                {user.stats.successMessages}
+              </Typography>
+              <Typography variant="body1" sx={{ color: 'rgba(255, 255, 255, 0.8)' }}>
+                Success
+              </Typography>
+            </CardContent>
+          </Card>
+          <Card
+            elevation={8}
+            sx={{
+              background: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
+              borderRadius: 3,
+              flex: 1,
+            }}
+          >
+            <CardContent sx={{ textAlign: 'center', p: 3 }}>
+              <Mic sx={{ fontSize: 40, color: 'white', mb: 2 }} />
+              <Typography variant="h3" sx={{ color: 'white', fontWeight: 800, mb: 1 }}>
+                {user.stats.voiceMinutes}
+              </Typography>
+              <Typography variant="body1" sx={{ color: 'rgba(255, 255, 255, 0.8)' }}>
+                Voice Min
+              </Typography>
+            </CardContent>
+          </Card>
+        </Stack>
+      </motion.div>
+
+      {/* Badges Section - Also with Stack */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.3 }}
+      >
+        <Card
+          elevation={8}
+          sx={{
+            background: 'rgba(15, 15, 35, 0.8)',
+            backdropFilter: 'blur(20px)',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            borderRadius: 3,
+            mb: 4,
+          }}
+        >
+          <CardContent sx={{ p: 4 }}>
+            <Typography variant="h4" sx={{ color: 'white', fontWeight: 700, mb: 3, textAlign: 'center' }}>
+              BADGES
+            </Typography>
+            <Stack direction="row" spacing={3} flexWrap="wrap" justifyContent="center" alignItems="stretch">
+              {badges.map((badge, index) => (
+                <motion.div
+                  key={badge.id}
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.4, delay: index * 0.1 }}
+                  whileHover={{ scale: 1.05 }}
+                  style={{ width: '160px', flex: '1 1 160px', marginBottom: 16 }}
+                >
+                  <Card
+                    elevation={8}
+                    sx={{
+                      background: badge.unlocked
+                        ? 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)'
+                        : 'rgba(75, 85, 99, 0.3)',
+                      borderRadius: 3,
+                      textAlign: 'center',
+                      p: 2,
+                      height: '100%',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'center',
+                      opacity: badge.unlocked ? 1 : 0.5,
+                      border: badge.unlocked ? '2px solid #fbbf24' : '2px solid transparent',
+                    }}
+                  >
+                    <Box
+                      component="img"
+                      src={badge.image}
+                      alt={badge.name}
+                      sx={{
+                        width: 60,
+                        height: 60,
+                        mx: 'auto',
+                        mb: 2,
+                        filter: badge.unlocked ? 'none' : 'grayscale(100%)',
+                      }}
+                    />
+                    <Typography variant="h6" sx={{ color: 'white', fontWeight: 600, mb: 1 }}>
+                      {badge.name}
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.8)' }}>
+                      {badge.description}
+                    </Typography>
+                  </Card>
+                </motion.div>
+              ))}
+            </Stack>
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      {/* Power Level Display */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.4 }}
+      >
+        <Card
+          elevation={8}
+          sx={{
+            background: 'linear-gradient(135deg, #1f2937 0%, #111827 100%)',
+            borderRadius: 3,
+            mb: 4,
+            border: '2px solid #6366f1',
+          }}
+        >
+          <CardContent sx={{ textAlign: 'center', p: 4 }}>
+            <Typography variant="h2" sx={{ color: 'white', fontWeight: 800, mb: 1 }}>
+              POWER LEVEL: {user.level}
+            </Typography>
+            <Typography variant="h6" sx={{ color: '#ef4444', fontWeight: 600 }}>
+              Power Level
+            </Typography>
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      {/* Simulation Controls */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.5 }}
+      >
+        <Card
+          elevation={8}
+          sx={{
+            background: 'rgba(15, 15, 35, 0.8)',
+            backdropFilter: 'blur(20px)',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            borderRadius: 3,
+          }}
+        >
+          <CardContent sx={{ p: 4 }}>
+            <Typography variant="h5" sx={{ color: 'white', fontWeight: 700, mb: 3, textAlign: 'center' }}>
+              Simulate Activity (Testing)
+            </Typography>
+            <Stack direction="row" gap={2} justifyContent="center">
+              <Button
+                variant="contained"
+                size="large"
+                onClick={() => simulateMessage(false)}
+                disabled={isSimulating}
+                startIcon={<Chat />}
+                sx={{
+                  background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
+                  borderRadius: 2,
+                  px: 4,
+                  py: 1.5,
+                  fontSize: '1.1rem',
+                  fontWeight: 600,
+                  '&:hover': {
+                    background: 'linear-gradient(135deg, #2563eb 0%, #1e40af 100%)',
+                  },
+                }}
+              >
+                Send Message (+5 XP)
+              </Button>
+              <Button
+                variant="contained"
+                size="large"
+                onClick={() => simulateMessage(true)}
+                disabled={isSimulating}
+                startIcon={<FlashOn />}
+                sx={{
+                  background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                  borderRadius: 2,
+                  px: 4,
+                  py: 1.5,
+                  fontSize: '1.1rem',
+                  fontWeight: 600,
+                  '&:hover': {
+                    background: 'linear-gradient(135deg, #059669 0%, #047857 100%)',
+                  },
+                }}
+              >
+                Success Message (+15 XP)
+              </Button>
+            </Stack>
+          </CardContent>
+        </Card>
+      </motion.div>
+    </Box>
   );
 }

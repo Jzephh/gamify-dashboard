@@ -1,7 +1,24 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { CheckCircle, Circle, Target, Calendar, Clock } from 'lucide-react';
+import {
+  Box,
+  Typography,
+  Card,
+  CardContent,
+  Stack,
+  LinearProgress,
+  Chip,
+} from '@mui/material';
+import { motion } from 'framer-motion';
+import {
+  CheckCircle,
+  RadioButtonUnchecked,
+  CalendarToday,
+  Schedule,
+  GpsFixed,
+  Star,
+} from '@mui/icons-material';
 
 interface QuestProgress {
   daily: {
@@ -51,17 +68,21 @@ export function QuestsTab({ userId }: QuestsTabProps) {
 
   if (loading) {
     return (
-      <div className="bg-white/10 backdrop-blur-lg rounded-xl p-6 text-white">
-        <div className="text-center">Loading quest progress...</div>
-      </div>
+      <Box sx={{ p: 3, textAlign: 'center' }}>
+        <Typography variant="h4" sx={{ color: 'white' }}>
+          Loading quest progress...
+        </Typography>
+      </Box>
     );
   }
 
   if (!progress) {
     return (
-      <div className="bg-white/10 backdrop-blur-lg rounded-xl p-6 text-white">
-        <div className="text-center">Failed to load quest progress</div>
-      </div>
+      <Box sx={{ p: 3, textAlign: 'center' }}>
+        <Typography variant="h4" sx={{ color: 'white' }}>
+          Failed to load quest progress
+        </Typography>
+      </Box>
     );
   }
 
@@ -74,6 +95,7 @@ export function QuestsTab({ userId }: QuestsTabProps) {
       target: 10,
       completed: progress.daily.completed.send10 || false,
       xp: 15,
+      icon: '💬',
     },
     {
       id: 'success1',
@@ -83,6 +105,7 @@ export function QuestsTab({ userId }: QuestsTabProps) {
       target: 1,
       completed: progress.daily.completed.success1 || false,
       xp: 10,
+      icon: '🎯',
     },
   ];
 
@@ -95,6 +118,7 @@ export function QuestsTab({ userId }: QuestsTabProps) {
       target: 100,
       completed: progress.weekly.completed.send100 || false,
       xp: 50,
+      icon: '📢',
     },
     {
       id: 'success10',
@@ -104,93 +128,242 @@ export function QuestsTab({ userId }: QuestsTabProps) {
       target: 10,
       completed: progress.weekly.completed.success10 || false,
       xp: 50,
+      icon: '🏆',
     },
   ];
 
-  const QuestCard = ({ quest }: { quest: { id: string; title: string; description: string; progress: number; target: number; completed: boolean; xp: number } }) => (
-    <div className={`bg-white/10 rounded-lg p-4 ${quest.completed ? 'ring-2 ring-green-400' : ''}`}>
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center space-x-2">
-          {quest.completed ? (
-            <CheckCircle className="w-5 h-5 text-green-400" />
-          ) : (
-            <Circle className="w-5 h-5 text-white/50" />
-          )}
-          <h3 className="font-semibold">{quest.title}</h3>
-        </div>
-        <div className="text-sm text-yellow-400 font-semibold">+{quest.xp} XP</div>
-      </div>
-      
-      <p className="text-sm text-white/70 mb-3">{quest.description}</p>
-      
-      <div className="space-y-2">
-        <div className="flex justify-between text-sm">
-          <span>Progress</span>
-          <span>{quest.progress} / {quest.target}</span>
-        </div>
-        <div className="w-full bg-white/20 rounded-full h-2">
-          <div
-            className={`h-2 rounded-full transition-all duration-300 ${
-              quest.completed ? 'bg-green-400' : 'bg-blue-400'
-            }`}
-            style={{ width: `${Math.min(100, (quest.progress / quest.target) * 100)}%` }}
-          />
-        </div>
-      </div>
-    </div>
+  const QuestCard = ({ quest, index }: { quest: { id: string; title: string; description: string; progress: number; target: number; completed: boolean; xp: number; icon: string }; index: number }) => (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, delay: index * 0.1 }}
+    >
+      <Card
+        elevation={8}
+        sx={{
+          background: quest.completed 
+            ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)'
+            : 'rgba(15, 15, 35, 0.8)',
+          backdropFilter: 'blur(20px)',
+          border: quest.completed 
+            ? '2px solid #10b981'
+            : '1px solid rgba(255, 255, 255, 0.1)',
+          borderRadius: 3,
+          height: '100%',
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+      >
+        <CardContent sx={{ p: 3 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              {quest.completed ? (
+                <CheckCircle sx={{ color: 'white', fontSize: 28 }} />
+              ) : (
+                <RadioButtonUnchecked sx={{ color: '#a1a1aa', fontSize: 28 }} />
+              )}
+              <Typography variant="h6" sx={{ color: 'white', fontWeight: 600 }}>
+                {quest.title}
+              </Typography>
+            </Box>
+            
+            <Chip
+              label={`+${quest.xp} XP`}
+              sx={{
+                background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
+                color: 'white',
+                fontWeight: 600,
+              }}
+            />
+          </Box>
+          
+          <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.8)', mb: 3 }}>
+            {quest.description}
+          </Typography>
+          
+          <Box sx={{ mb: 2 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+              <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.8)' }}>
+                Progress
+              </Typography>
+              <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.8)' }}>
+                {quest.progress} / {quest.target}
+              </Typography>
+            </Box>
+            <LinearProgress
+              variant="determinate"
+              value={Math.min(100, (quest.progress / quest.target) * 100)}
+              sx={{
+                height: 8,
+                borderRadius: 4,
+                background: 'rgba(255, 255, 255, 0.1)',
+                '& .MuiLinearProgress-bar': {
+                  background: quest.completed 
+                    ? 'linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%)'
+                    : 'linear-gradient(135deg, #6366f1 0%, #ec4899 100%)',
+                  borderRadius: 4,
+                },
+              }}
+            />
+          </Box>
+          
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Typography variant="h4" sx={{ color: 'white' }}>
+              {quest.icon}
+            </Typography>
+            <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.8)' }}>
+              {quest.completed ? 'Completed!' : `${quest.target - quest.progress} remaining`}
+            </Typography>
+          </Box>
+        </CardContent>
+      </Card>
+    </motion.div>
   );
 
   return (
-    <div className="space-y-6">
+    <Box sx={{ p: 3 }}>
       {/* Daily Quests */}
-      <div className="bg-white/10 backdrop-blur-lg rounded-xl p-6 text-white">
-        <div className="flex items-center space-x-2 mb-6">
-          <Calendar className="w-6 h-6 text-blue-400" />
-          <h2 className="text-2xl font-bold">Daily Quests</h2>
-        </div>
-        
-        <div className="grid gap-4">
-          {dailyQuests.map((quest) => (
-            <QuestCard key={quest.id} quest={quest} />
-          ))}
-        </div>
-        
-        <div className="mt-4 text-sm text-white/70">
-          Daily quests reset every day at midnight.
-        </div>
-      </div>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+      >
+        <Card
+          elevation={8}
+          sx={{
+            background: 'rgba(15, 15, 35, 0.8)',
+            backdropFilter: 'blur(20px)',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            borderRadius: 3,
+            mb: 4,
+          }}
+        >
+          <CardContent sx={{ p: 4 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 4 }}>
+              <CalendarToday sx={{ color: '#3b82f6', fontSize: 32 }} />
+              <Typography variant="h4" sx={{ color: 'white', fontWeight: 700 }}>
+                Daily Quests
+              </Typography>
+            </Box>
+            <Stack direction={{ xs: "column", md: "row" }} spacing={3} flexWrap="wrap">
+              {dailyQuests.map((quest, index) => (
+                <Box key={quest.id} sx={{ width: { xs: '100%', md: '50%' }, mb: { xs: 3, md: 0 } }}>
+                  <QuestCard quest={quest} index={index} />
+                </Box>
+              ))}
+            </Stack>
+            <Box sx={{ mt: 3, textAlign: 'center' }}>
+              <Chip
+                label="Daily quests reset every day at midnight"
+                sx={{
+                  background: 'rgba(59, 130, 246, 0.2)',
+                  color: '#93c5fd',
+                  border: '1px solid rgba(59, 130, 246, 0.3)',
+                }}
+              />
+            </Box>
+          </CardContent>
+        </Card>
+      </motion.div>
 
       {/* Weekly Quests */}
-      <div className="bg-white/10 backdrop-blur-lg rounded-xl p-6 text-white">
-        <div className="flex items-center space-x-2 mb-6">
-          <Clock className="w-6 h-6 text-purple-400" />
-          <h2 className="text-2xl font-bold">Weekly Quests</h2>
-        </div>
-        
-        <div className="grid gap-4">
-          {weeklyQuests.map((quest) => (
-            <QuestCard key={quest.id} quest={quest} />
-          ))}
-        </div>
-        
-        <div className="mt-4 text-sm text-white/70">
-          Weekly quests reset every Monday at midnight.
-        </div>
-      </div>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.1 }}
+      >
+        <Card
+          elevation={8}
+          sx={{
+            background: 'rgba(15, 15, 35, 0.8)',
+            backdropFilter: 'blur(20px)',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            borderRadius: 3,
+            mb: 4,
+          }}
+        >
+          <CardContent sx={{ p: 4 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 4 }}>
+              <Schedule sx={{ color: '#8b5cf6', fontSize: 32 }} />
+              <Typography variant="h4" sx={{ color: 'white', fontWeight: 700 }}>
+                Weekly Quests
+              </Typography>
+            </Box>
+            <Stack direction={{ xs: "column", md: "row" }} spacing={3} flexWrap="wrap">
+              {weeklyQuests.map((quest, index) => (
+                <Box key={quest.id} sx={{ width: { xs: '100%', md: '50%' }, mb: { xs: 3, md: 0 } }}>
+                  <QuestCard quest={quest} index={index} />
+                </Box>
+              ))}
+            </Stack>
+            <Box sx={{ mt: 3, textAlign: 'center' }}>
+              <Chip
+                label="Weekly quests reset every Monday at midnight"
+                sx={{
+                  background: 'rgba(139, 92, 246, 0.2)',
+                  color: '#c4b5fd',
+                  border: '1px solid rgba(139, 92, 246, 0.3)',
+                }}
+              />
+            </Box>
+          </CardContent>
+        </Card>
+      </motion.div>
 
       {/* Quest Tips */}
-      <div className="bg-white/10 backdrop-blur-lg rounded-xl p-6 text-white">
-        <div className="flex items-center space-x-2 mb-4">
-          <Target className="w-6 h-6 text-yellow-400" />
-          <h3 className="text-lg font-semibold">Quest Tips</h3>
-        </div>
-        <ul className="space-y-2 text-sm text-white/70">
-          <li>• Complete daily quests for consistent XP gains</li>
-          <li>• Focus on weekly quests for larger XP rewards</li>
-          <li>• Success messages give bonus XP</li>
-          <li>• Quest progress is tracked automatically</li>
-        </ul>
-      </div>
-    </div>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.2 }}
+      >
+        <Card
+          elevation={8}
+          sx={{
+            background: 'linear-gradient(135deg, #1f2937 0%, #111827 100%)',
+            border: '2px solid #6366f1',
+            borderRadius: 3,
+          }}
+        >
+          <CardContent sx={{ p: 4 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
+              <GpsFixed sx={{ color: '#fbbf24', fontSize: 32 }} />
+              <Typography variant="h4" sx={{ color: 'white', fontWeight: 700 }}>
+                Quest Tips
+              </Typography>
+            </Box>
+            <Stack direction={{ xs: 'column', md: 'row' }} spacing={4}>
+              <Box sx={{ flex: 1 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                  <Star sx={{ color: '#10b981', fontSize: 20 }} />
+                  <Typography variant="body1" sx={{ color: 'rgba(255, 255, 255, 0.8)' }}>
+                    Complete daily quests for consistent XP gains
+                  </Typography>
+                </Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                  <Star sx={{ color: '#10b981', fontSize: 20 }} />
+                  <Typography variant="body1" sx={{ color: 'rgba(255, 255, 255, 0.8)' }}>
+                    Focus on weekly quests for larger XP rewards
+                  </Typography>
+                </Box>
+              </Box>
+              <Box sx={{ flex: 1 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                  <Star sx={{ color: '#10b981', fontSize: 20 }} />
+                  <Typography variant="body1" sx={{ color: 'rgba(255, 255, 255, 0.8)' }}>
+                    Success messages give bonus XP
+                  </Typography>
+                </Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                  <Star sx={{ color: '#10b981', fontSize: 20 }} />
+                  <Typography variant="body1" sx={{ color: 'rgba(255, 255, 255, 0.8)' }}>
+                    Quest progress is tracked automatically
+                  </Typography>
+                </Box>
+              </Box>
+            </Stack>
+          </CardContent>
+        </Card>
+      </motion.div>
+    </Box>
   );
 }
