@@ -305,7 +305,7 @@ export function QuestsTab({ userId }: QuestsTabProps) {
                 sx={{
                   height: 12,
                   borderRadius: 6,
-                  backgroundColor: 'rgba(0, 0, 0, 0.3) !important',
+                  backgroundColor: 'rgba(226, 2, 255, 0.97) !important',
                   boxShadow: 'inset 0 2px 4px rgba(0, 0, 0, 0.4)',
                   '& .MuiLinearProgress-bar': {
                     backgroundColor: 'transparent !important',
@@ -455,20 +455,21 @@ export function QuestsTab({ userId }: QuestsTabProps) {
         '66%': { transform: 'translateY(10px) rotate(-1deg)' },
       },
     }}>
-      {/* Quests Side by Side */}
-      <Stack direction={{ xs: "column", lg: "row" }} spacing={4} sx={{ position: 'relative', zIndex: 1 }}>
-        {/* Daily Quests - Left Side */}
-        <motion.div
-          initial={{ opacity: 0, y: 30, scale: 0.95 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ 
-            duration: 0.8,
-            type: "spring",
-            stiffness: 100,
-            damping: 20
-          }}
-          style={{ flex: 1 }}
-        >
+      {/* Quests in 2x2 Grid Layout */}
+      <Box sx={{ position: 'relative', zIndex: 1 }}>
+        <Stack direction={{ xs: "column", lg: "row" }} spacing={4}>
+          {/* Daily Quests - Left Side */}
+          <motion.div
+            initial={{ opacity: 0, x: -30, scale: 0.95 }}
+            animate={{ opacity: 1, x: 0, scale: 1 }}
+            transition={{ 
+              duration: 0.8,
+              type: "spring",
+              stiffness: 100,
+              damping: 20
+            }}
+            style={{ flex: 1 }}
+          >
         <Card
           elevation={0}
           sx={{
@@ -578,19 +579,19 @@ export function QuestsTab({ userId }: QuestsTabProps) {
         </Card>
         </motion.div>
 
-        {/* Weekly Quests - Right Side */}
-        <motion.div
-          initial={{ opacity: 0, y: 30, scale: 0.95 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ 
-            duration: 0.8,
-            delay: 0.2,
-            type: "spring",
-            stiffness: 100,
-            damping: 20
-          }}
-          style={{ flex: 1 }}
-        >
+          {/* Weekly Quests - Right Side */}
+          <motion.div
+            initial={{ opacity: 0, x: 30, scale: 0.95 }}
+            animate={{ opacity: 1, x: 0, scale: 1 }}
+            transition={{ 
+              duration: 0.8,
+              delay: 0.2,
+              type: "spring",
+              stiffness: 100,
+              damping: 20
+            }}
+            style={{ flex: 1 }}
+          >
         <Card
           elevation={0}
           sx={{
@@ -693,9 +694,10 @@ export function QuestsTab({ userId }: QuestsTabProps) {
               />
             </Box>
           </CardContent>
-        </Card>
-        </motion.div>
-      </Stack>
+          </Card>
+          </motion.div>
+        </Stack>
+      </Box>
 
       {/* Quest Tips */}
       <motion.div
