@@ -32,9 +32,15 @@ async function connectDB() {
       bufferCommands: false,
     };
 
-    cached.promise = mongoose.connect(MONGODB_URI as string, opts).then((mongooseInstance) => {
-      return mongooseInstance.connection;
-    });
+    try {
+      await mongoose.connect(MONGODB_URI as string, {
+        dbName: MONGODB_DB,
+      });
+      console.log('✅ Connected to MongoDB');
+    } catch (error) {
+      console.error('❌ MongoDB connection error:', error);
+      throw error;
+    }
   }
 
   try {
