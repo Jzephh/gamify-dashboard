@@ -744,58 +744,22 @@ export function QuestsTab({ userId, onQuestUpdate }: QuestsTabProps) {
                 whileHover={dailyQuests.every(quest => quest.completed) ? { scale: 1.05 } : {}}
                 whileTap={dailyQuests.every(quest => quest.completed) ? { scale: 0.95 } : {}}
               >
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                  <Typography variant="h4" sx={{ 
-                    color: 'white', 
-                    fontWeight: 700,
-                    background: dailyQuests.every(quest => quest.completed) 
-                      ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)'
-                      : 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
-                    backgroundClip: 'text',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    textShadow: dailyQuests.every(quest => quest.completed) 
-                      ? '0 0 10px rgba(16, 185, 129, 0.5)' 
-                      : 'none',
-                    transition: 'all 0.3s ease',
-                  }}>
-                    Daily Quests
-                  </Typography>
-                  
-                  {/* Daily Quest Notification Badge */}
-                  {(progress.daily.notificationCount || 0) > 0 && (
-                    <motion.div
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      transition={{ type: "spring", stiffness: 200 }}
-                    >
-                      <Chip
-                        label={progress.daily.notificationCount || 0}
-                        sx={{
-                          background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
-                          color: 'white',
-                          fontWeight: 700,
-                          fontSize: '0.8rem',
-                          minWidth: '24px',
-                          height: '24px',
-                          boxShadow: '0 4px 12px rgba(239, 68, 68, 0.4)',
-                          border: '1px solid rgba(239, 68, 68, 0.5)',
-                          animation: 'notificationPulse 2s infinite',
-                          '@keyframes notificationPulse': {
-                            '0%, 100%': { 
-                              boxShadow: '0 4px 12px rgba(239, 68, 68, 0.4)',
-                              transform: 'scale(1)'
-                            },
-                            '50%': { 
-                              boxShadow: '0 6px 20px rgba(239, 68, 68, 0.6)',
-                              transform: 'scale(1.05)'
-                            },
-                          },
-                        }}
-                      />
-                    </motion.div>
-                  )}
-                </Box>
+                <Typography variant="h4" sx={{ 
+                  color: 'white', 
+                  fontWeight: 700,
+                  background: dailyQuests.every(quest => quest.completed) 
+                    ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)'
+                    : 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
+                  backgroundClip: 'text',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  textShadow: dailyQuests.every(quest => quest.completed) 
+                    ? '0 0 10px rgba(16, 185, 129, 0.5)' 
+                    : 'none',
+                  transition: 'all 0.3s ease',
+                }}>
+                  Daily Quests
+                </Typography>
               </motion.div>
             </Box>
           </motion.div>
@@ -830,58 +794,22 @@ export function QuestsTab({ userId, onQuestUpdate }: QuestsTabProps) {
                 whileHover={weeklyQuests.every(quest => quest.completed) ? { scale: 1.05 } : {}}
                 whileTap={weeklyQuests.every(quest => quest.completed) ? { scale: 0.95 } : {}}
               >
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                  <Typography variant="h4" sx={{ 
-                    color: 'white', 
-                    fontWeight: 700,
-                    background: weeklyQuests.every(quest => quest.completed) 
-                      ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)'
-                      : 'linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%)',
-                    backgroundClip: 'text',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    textShadow: weeklyQuests.every(quest => quest.completed) 
-                      ? '0 0 10px rgba(16, 185, 129, 0.5)' 
-                      : 'none',
-                    transition: 'all 0.3s ease',
-                  }}>
-                    Weekly Quests
-                  </Typography>
-                  
-                  {/* Weekly Quest Notification Badge */}
-                  {(progress.weekly.notificationCount || 0) > 0 && (
-                    <motion.div
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      transition={{ type: "spring", stiffness: 200 }}
-                    >
-                      <Chip
-                        label={progress.weekly.notificationCount || 0}
-                        sx={{
-                          background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
-                          color: 'white',
-                          fontWeight: 700,
-                          fontSize: '0.8rem',
-                          minWidth: '24px',
-                          height: '24px',
-                          boxShadow: '0 4px 12px rgba(239, 68, 68, 0.4)',
-                          border: '1px solid rgba(239, 68, 68, 0.5)',
-                          animation: 'notificationPulse 2s infinite',
-                          '@keyframes notificationPulse': {
-                            '0%, 100%': { 
-                              boxShadow: '0 4px 12px rgba(239, 68, 68, 0.4)',
-                              transform: 'scale(1)'
-                            },
-                            '50%': { 
-                              boxShadow: '0 6px 20px rgba(239, 68, 68, 0.6)',
-                              transform: 'scale(1.05)'
-                            },
-                          },
-                        }}
-                      />
-                    </motion.div>
-                  )}
-                </Box>
+                <Typography variant="h4" sx={{ 
+                  color: 'white', 
+                  fontWeight: 700,
+                  background: weeklyQuests.every(quest => quest.completed) 
+                    ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)'
+                    : 'linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%)',
+                  backgroundClip: 'text',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  textShadow: weeklyQuests.every(quest => quest.completed) 
+                    ? '0 0 10px rgba(16, 185, 129, 0.5)' 
+                    : 'none',
+                  transition: 'all 0.3s ease',
+                }}>
+                  Weekly Quests
+                </Typography>
               </motion.div>
             </Box>
           </motion.div>
