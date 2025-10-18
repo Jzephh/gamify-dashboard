@@ -430,10 +430,26 @@ export function ProfileTab({ userProfile }: ProfileTabProps) {
                       background: 'rgba(255, 255, 255, 0.15)',
                       boxShadow: 'inset 0 2px 4px rgba(0, 0, 0, 0.2)',
                       '& .MuiLinearProgress-bar': {
-                        background: 'linear-gradient(135deg, #6366f1 0%, #ec4899 100%)',
+                        background: 'linear-gradient(135deg, #8b5cf6 0%, #ec4899 50%,rgb(226, 11, 245) 100%)',
                         borderRadius: 6,
-                        boxShadow: '0 2px 8px rgba(99, 102, 241, 0.4)',
+                        boxShadow: `
+                          0 0 20px rgba(139, 92, 246, 0.6),
+                          0 0 40px rgba(236, 72, 153, 0.4),
+                          0 2px 8px rgba(245, 158, 11, 0.3)
+                        `,
                         position: 'relative',
+                        filter: 'contrast(1.1) saturate(1.2)',
+                        '&::before': {
+                          content: '""',
+                          position: 'absolute',
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.3) 0%, rgba(236, 72, 153, 0.3) 50%, rgba(245, 158, 11, 0.3) 100%)',
+                          borderRadius: 6,
+                          animation: 'holographicPulse 3s ease-in-out infinite',
+                        },
                         '&::after': {
                           content: '""',
                           position: 'absolute',
@@ -441,13 +457,23 @@ export function ProfileTab({ userProfile }: ProfileTabProps) {
                           left: 0,
                           right: 0,
                           bottom: 0,
-                          background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent)',
+                          background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent)',
                           animation: 'progressShine 2s infinite',
                         },
                       },
                       '@keyframes progressShine': {
                         '0%': { transform: 'translateX(-100%)' },
                         '100%': { transform: 'translateX(100%)' },
+                      },
+                      '@keyframes holographicPulse': {
+                        '0%, 100%': { 
+                          opacity: 0.3,
+                          filter: 'hue-rotate(0deg) brightness(1)'
+                        },
+                        '50%': { 
+                          opacity: 0.6,
+                          filter: 'hue-rotate(20deg) brightness(1.1)'
+                        },
                       },
                     }}
                   />

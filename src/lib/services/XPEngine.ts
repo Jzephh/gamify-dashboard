@@ -9,14 +9,34 @@ export class XPEngine {
     this.companyId = companyId;
   }
 
-  // Calculate XP needed to reach a level (simple progression: 100, 200, 300, 400, 500...)
+  // Calculate total XP needed to reach a level (cumulative: 100, 300, 600, 1000, 1500, 2100...)
   private calculateXPForLevel(level: number): number {
-    return 100 * level;
+    if (level === 0) return 0;
+    if (level === 1) return 100;
+    if (level === 2) return 300;
+    if (level === 3) return 600;
+    if (level === 4) return 1000;
+    if (level === 5) return 1500;
+    // For level 6+: 1500 + sum of (500 + 100*i) for i from 0 to (level-6)
+    // This gives: 1500 + 600 + 700 + 800 + ... = 1500 + 600*(level-5) + 100*(level-5)*(level-6)/2
+    const levelDiff = level - 5;
+    return 1500 + 600 * levelDiff + 100 * levelDiff * (levelDiff - 1) / 2;
   }
 
-  // Calculate level from XP (simple: level = floor(xp / 100))
+  // Calculate level from XP (cumulative system)
   private calculateLevelFromXP(xp: number): number {
-    return Math.floor(xp / 100);
+    if (xp < 100) return 0;
+    if (xp < 300) return 1;
+    if (xp < 600) return 2;
+    if (xp < 1000) return 3;
+    if (xp < 1500) return 4;
+    if (xp < 2100) return 5;
+    // For higher levels: solve quadratic equation to find level
+    // 1500 + 600*(level-5) + 100*(level-5)*(level-6)/2 >= xp
+    // This simplifies to: level^2 + 5*level - 2*(xp-1500)/100 - 30 >= 0
+    const discriminant = 25 + 8 * (xp - 1500) / 100 + 120;
+    const level = Math.floor((-5 + Math.sqrt(discriminant)) / 2);
+    return Math.max(6, level);
   }
 
   // Award XP to user (simulated message)
@@ -147,8 +167,8 @@ export class XPEngine {
         await user.save();
       }
 
-      const currentLevelXP = this.calculateXPForLevel(user.level); // XP at start of current level
-      const nextLevelXP = this.calculateXPForLevel(user.level + 1); // XP needed for next level
+      const currentLevelXP = this.calculateXPForLevel(user.level); // Total XP needed for current level
+      const nextLevelXP = this.calculateXPForLevel(user.level + 1); // Total XP needed for next level
       const progress = ((user.xp - currentLevelXP) / (nextLevelXP - currentLevelXP)) * 100;
 
       return {
