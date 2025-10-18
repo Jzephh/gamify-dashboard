@@ -25,6 +25,8 @@ export interface IQuestProgress extends Document {
   };
   dailyQuestSeen: boolean;
   weeklyQuestSeen: boolean;
+  dailyNotificationCount: number;
+  weeklyNotificationCount: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -54,6 +56,8 @@ const QuestProgressSchema = new Schema<IQuestProgress>({
   },
   dailyQuestSeen: { type: Boolean, default: true },
   weeklyQuestSeen: { type: Boolean, default: true },
+  dailyNotificationCount: { type: Number, default: 0 },
+  weeklyNotificationCount: { type: Number, default: 0 },
 }, {
   timestamps: true,
 });

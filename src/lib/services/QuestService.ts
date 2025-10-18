@@ -235,8 +235,8 @@ export class QuestService {
 
   // Get user's quest progress
   async getUserProgress(userId: string): Promise<{
-    daily: { msgCount: number; successMsgCount: number; completed: Record<string, boolean>; claimed: Record<string, boolean>; questSeen: boolean };
-    weekly: { msgCount: number; successMsgCount: number; completed: Record<string, boolean>; claimed: Record<string, boolean>; questSeen: boolean };
+    daily: { msgCount: number; successMsgCount: number; completed: Record<string, boolean>; claimed: Record<string, boolean>; questSeen: boolean; notificationCount: number };
+    weekly: { msgCount: number; successMsgCount: number; completed: Record<string, boolean>; claimed: Record<string, boolean>; questSeen: boolean; notificationCount: number };
   }> {
     try {
       await connectDB();
@@ -251,6 +251,17 @@ export class QuestService {
       });
 
       if (questDoc) {
+        // Calculate completed quest counts
+        const dailyCompletedCount = [
+          (questDoc.dailyQuests?.messages || 0) >= 10,
+          (questDoc.dailyQuests?.successMessages || 0) >= 1,
+        ].filter(Boolean).length;
+
+        const weeklyCompletedCount = [
+          (questDoc.weeklyQuests?.messages || 0) >= 100,
+          (questDoc.weeklyQuests?.successMessages || 0) >= 10,
+        ].filter(Boolean).length;
+
         return {
           daily: {
             msgCount: questDoc.dailyQuests?.messages || 0,
@@ -263,7 +274,8 @@ export class QuestService {
               send10: questDoc.dailyClaimed?.send10 || false,
               success1: questDoc.dailyClaimed?.success1 || false,
             },
-            questSeen: questDoc.dailyQuestSeen ?? false
+            questSeen: questDoc.dailyQuestSeen ?? false,
+            notificationCount: dailyCompletedCount
           },
           weekly: {
             msgCount: questDoc.weeklyQuests?.messages || 0,
@@ -276,20 +288,21 @@ export class QuestService {
               send100: questDoc.weeklyClaimed?.send100 || false,
               success10: questDoc.weeklyClaimed?.success10 || false,
             },
-            questSeen: questDoc.weeklyQuestSeen ?? false
+            questSeen: questDoc.weeklyQuestSeen ?? false,
+            notificationCount: weeklyCompletedCount
           }
         };
       }
 
       return {
-        daily: { msgCount: 0, successMsgCount: 0, completed: {}, claimed: {}, questSeen: false },
-        weekly: { msgCount: 0, successMsgCount: 0, completed: {}, claimed: {}, questSeen: false },
+        daily: { msgCount: 0, successMsgCount: 0, completed: {}, claimed: {}, questSeen: false, notificationCount: 0 },
+        weekly: { msgCount: 0, successMsgCount: 0, completed: {}, claimed: {}, questSeen: false, notificationCount: 0 },
       };
     } catch (error) {
       console.error('Error getting user progress:', error);
       return {
-        daily: { msgCount: 0, successMsgCount: 0, completed: {}, claimed: {}, questSeen: false },
-        weekly: { msgCount: 0, successMsgCount: 0, completed: {}, claimed: {}, questSeen: false },
+        daily: { msgCount: 0, successMsgCount: 0, completed: {}, claimed: {}, questSeen: false, notificationCount: 0 },
+        weekly: { msgCount: 0, successMsgCount: 0, completed: {}, claimed: {}, questSeen: false, notificationCount: 0 },
       };
     }
   }

@@ -677,7 +677,7 @@ export function ProfileTab({ userProfile }: ProfileTabProps) {
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
               }}>
-                BADGES ({badges.length} total)
+                BADGES
               </Typography>
             </motion.div>
             <Stack direction="row" spacing={3} flexWrap="wrap" justifyContent="center" alignItems="stretch">
