@@ -163,33 +163,45 @@ export class QuestService {
 
   // Get user's quest progress
   async getUserProgress(userId: string): Promise<{
-    daily: IQuestProgress | { msgCount: number; successMsgCount: number; completed: Record<string, boolean> };
-    weekly: IQuestProgress | { msgCount: number; successMsgCount: number; completed: Record<string, boolean> };
+    daily: { msgCount: number; successMsgCount: number; completed: Record<string, boolean> };
+    weekly: { msgCount: number; successMsgCount: number; completed: Record<string, boolean> };
   }> {
     try {
       await connectDB();
       const now = new Date();
       const dateKey = this.getDateKey(now);
-      const weekKey = this.getWeekKey(now);
 
-      const [daily, weekly] = await Promise.all([
-        QuestProgress.findOne({
-          companyId: this.companyId,
-          userId,
-          dateKey,
-          type: 'daily'
-        }),
-        QuestProgress.findOne({
-          companyId: this.companyId,
-          userId,
-          dateKey: weekKey,
-          type: 'weekly'
-        })
-      ]);
+      // Find quest progress document for the current date
+      const questDoc = await QuestProgress.findOne({
+        companyId: this.companyId,
+        userId,
+        dateKey
+      });
+
+      if (questDoc) {
+        return {
+          daily: {
+            msgCount: questDoc.dailyQuests?.messages || 0,
+            successMsgCount: questDoc.dailyQuests?.successMessages || 0,
+            completed: {
+              send10: questDoc.dailyCompleted || false,
+              success1: questDoc.dailyCompleted || false,
+            }
+          },
+          weekly: {
+            msgCount: questDoc.weeklyQuests?.messages || 0,
+            successMsgCount: questDoc.weeklyQuests?.successMessages || 0,
+            completed: {
+              send100: questDoc.weeklyCompleted || false,
+              success10: questDoc.weeklyCompleted || false,
+            }
+          }
+        };
+      }
 
       return {
-        daily: daily || { msgCount: 0, successMsgCount: 0, completed: {} },
-        weekly: weekly || { msgCount: 0, successMsgCount: 0, completed: {} },
+        daily: { msgCount: 0, successMsgCount: 0, completed: {} },
+        weekly: { msgCount: 0, successMsgCount: 0, completed: {} },
       };
     } catch (error) {
       console.error('Error getting user progress:', error);

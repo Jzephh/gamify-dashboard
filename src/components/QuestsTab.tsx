@@ -484,9 +484,9 @@ export function QuestsTab({ userId }: QuestsTabProps) {
                 </Typography>
               </Box>
             </motion.div>
-            <Stack direction={{ xs: "column", md: "row" }} spacing={3} flexWrap="wrap">
+            <Stack direction={{ xs: "column", md: "row" }} spacing={2} sx={{ width: '100%' }}>
               {dailyQuests.map((quest, index) => (
-                <Box key={quest.id} sx={{ width: { xs: '100%', md: '50%' }, mb: { xs: 3, md: 0 } }}>
+                <Box key={quest.id} sx={{ flex: 1, minWidth: 0 }}>
                   <QuestCard quest={quest} index={index} />
                 </Box>
               ))}
@@ -589,9 +589,9 @@ export function QuestsTab({ userId }: QuestsTabProps) {
                 </Typography>
               </Box>
             </motion.div>
-            <Stack direction={{ xs: "column", md: "row" }} spacing={3} flexWrap="wrap">
+            <Stack direction={{ xs: "column", md: "row" }} spacing={2} sx={{ width: '100%' }}>
               {weeklyQuests.map((quest, index) => (
-                <Box key={quest.id} sx={{ width: { xs: '100%', md: '50%' }, mb: { xs: 3, md: 0 } }}>
+                <Box key={quest.id} sx={{ flex: 1, minWidth: 0 }}>
                   <QuestCard quest={quest} index={index} />
                 </Box>
               ))}

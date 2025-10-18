@@ -72,8 +72,8 @@ A Next.js web application that emulates the whop-bot functionality, providing a 
    ```
 
 3. **Run the development server:**
-   ```bash
-   npm run dev
+```bash
+npm run dev
    ```
 
 4. **Open your browser:**
