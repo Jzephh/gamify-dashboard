@@ -31,11 +31,11 @@ interface QuestProgress {
   daily: {
     msgCount: number;
     successMsgCount: number;
-    completed: {
+    completed?: {
       send10?: boolean;
       success1?: boolean;
     };
-    claimed: {
+    claimed?: {
       send10?: boolean;
       success1?: boolean;
     };
@@ -43,11 +43,11 @@ interface QuestProgress {
   weekly: {
     msgCount: number;
     successMsgCount: number;
-    completed: {
+    completed?: {
       send100?: boolean;
       success10?: boolean;
     };
-    claimed: {
+    claimed?: {
       send100?: boolean;
       success10?: boolean;
     };
@@ -147,8 +147,8 @@ export function QuestsTab({ userId }: QuestsTabProps) {
       description: 'Send 10 messages in any channel',
       progress: progress.daily.msgCount,
       target: 10,
-      completed: progress.daily.completed.send10 || false,
-      claimed: progress.daily.claimed.send10 || false,
+      completed: progress.daily.completed?.send10 || false,
+      claimed: progress.daily.claimed?.send10 || false,
       xp: 15,
       icon: Chat,
     },
@@ -158,8 +158,8 @@ export function QuestsTab({ userId }: QuestsTabProps) {
       description: 'Send 1 message in a success channel',
       progress: progress.daily.successMsgCount,
       target: 1,
-      completed: progress.daily.completed.success1 || false,
-      claimed: progress.daily.claimed.success1 || false,
+      completed: progress.daily.completed?.success1 || false,
+      claimed: progress.daily.claimed?.success1 || false,
       xp: 10,
       icon: Target,
     },
@@ -172,8 +172,8 @@ export function QuestsTab({ userId }: QuestsTabProps) {
       description: 'Send 100 messages in any channel',
       progress: progress.weekly.msgCount,
       target: 100,
-      completed: progress.weekly.completed.send100 || false,
-      claimed: progress.weekly.claimed.send100 || false,
+      completed: progress.weekly.completed?.send100 || false,
+      claimed: progress.weekly.claimed?.send100 || false,
       xp: 50,
       icon: Campaign,
     },
@@ -183,8 +183,8 @@ export function QuestsTab({ userId }: QuestsTabProps) {
       description: 'Send 10 messages in success channels',
       progress: progress.weekly.successMsgCount,
       target: 10,
-      completed: progress.weekly.completed.success10 || false,
-      claimed: progress.weekly.claimed.success10 || false,
+      completed: progress.weekly.completed?.success10 || false,
+      claimed: progress.weekly.claimed?.success10 || false,
       xp: 50,
       icon: EmojiEvents,
     },
