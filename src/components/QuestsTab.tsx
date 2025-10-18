@@ -75,6 +75,13 @@ export function QuestsTab({ userId }: QuestsTabProps) {
     fetchQuestProgress();
   }, [userId]);
 
+  // Check for quest notifications after progress is loaded
+  useEffect(() => {
+    if (progress) {
+      checkForQuestNotifications(progress);
+    }
+  }, [progress]);
+
   const fetchQuestProgress = async () => {
     try {
       setLoading(true);
@@ -82,9 +89,6 @@ export function QuestsTab({ userId }: QuestsTabProps) {
       if (response.ok) {
         const data = await response.json();
         setProgress(data);
-        
-        // Check if we need to show quest completion modal
-        checkForQuestNotifications(data);
       }
     } catch (error) {
       console.error('Error fetching quest progress:', error);
@@ -94,9 +98,17 @@ export function QuestsTab({ userId }: QuestsTabProps) {
   };
 
   const checkForQuestNotifications = (questData: QuestProgress) => {
+    console.log('Checking quest notifications:', {
+      dailyQuestSeen: questData.daily.questSeen,
+      weeklyQuestSeen: questData.weekly.questSeen,
+      dailyQuests: dailyQuests,
+      weeklyQuests: weeklyQuests
+    });
+
     // Check daily quests
-    if (!questData.daily.questSeen && questData.daily.completed) {
+    if (!questData.daily.questSeen) {
       const completedDailyQuests = dailyQuests.filter(quest => quest.completed);
+      console.log('Completed daily quests:', completedDailyQuests);
       if (completedDailyQuests.length > 0) {
         setModalType('daily');
         setCompletedQuestsForModal(completedDailyQuests.map(quest => ({
@@ -110,8 +122,9 @@ export function QuestsTab({ userId }: QuestsTabProps) {
     }
 
     // Check weekly quests
-    if (!questData.weekly.questSeen && questData.weekly.completed) {
+    if (!questData.weekly.questSeen) {
       const completedWeeklyQuests = weeklyQuests.filter(quest => quest.completed);
+      console.log('Completed weekly quests:', completedWeeklyQuests);
       if (completedWeeklyQuests.length > 0) {
         setModalType('weekly');
         setCompletedQuestsForModal(completedWeeklyQuests.map(quest => ({
