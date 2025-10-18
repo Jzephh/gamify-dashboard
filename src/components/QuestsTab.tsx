@@ -286,12 +286,13 @@ export function QuestsTab({ userId }: QuestsTabProps) {
                 sx={{
                   height: 12,
                   borderRadius: 6,
-                  background: 'rgba(255, 255, 255, 0.15)',
+                  backgroundColor: 'rgba(255, 255, 255, 0.15) !important',
                   boxShadow: 'inset 0 2px 4px rgba(0, 0, 0, 0.2)',
                   '& .MuiLinearProgress-bar': {
+                    backgroundColor: 'transparent !important',
                     background: quest.completed 
-                      ? 'linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%)'
-                      : 'linear-gradient(135deg, #8b5cf6 0%, #ec4899 50%,rgb(179, 11, 245) 100%)',
+                      ? 'linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%) !important'
+                      : 'linear-gradient(135deg, #8b5cf6 0%, #ec4899 50%, rgb(179, 11, 245) 100%) !important',
                     borderRadius: 6,
                     boxShadow: quest.completed 
                       ? '0 2px 8px rgba(255, 255, 255, 0.4)'
@@ -325,6 +326,12 @@ export function QuestsTab({ userId }: QuestsTabProps) {
                         : 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent)',
                       animation: 'progressShine 2s infinite',
                     },
+                  },
+                  '& .MuiLinearProgress-bar1Determinate': {
+                    backgroundColor: 'transparent !important',
+                    background: quest.completed 
+                      ? 'linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%) !important'
+                      : 'linear-gradient(135deg, #8b5cf6 0%, #ec4899 50%, rgb(179, 11, 245) 100%) !important',
                   },
                   '@keyframes progressShine': {
                     '0%': { transform: 'translateX(-100%)' },

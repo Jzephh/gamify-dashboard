@@ -427,10 +427,11 @@ export function ProfileTab({ userProfile }: ProfileTabProps) {
                     sx={{
                       height: 12,
                       borderRadius: 6,
-                      background: 'rgba(255, 255, 255, 0.15)',
+                      backgroundColor: 'rgba(255, 255, 255, 0.15) !important',
                       boxShadow: 'inset 0 2px 4px rgba(0, 0, 0, 0.2)',
                       '& .MuiLinearProgress-bar': {
-                        background: 'linear-gradient(135deg, #8b5cf6 0%, #ec4899 50%,rgb(226, 11, 245) 100%)',
+                        backgroundColor: 'transparent !important',
+                        background: 'linear-gradient(135deg, #8b5cf6 0%, #ec4899 50%, rgb(226, 11, 245) 100%) !important',
                         borderRadius: 6,
                         boxShadow: `
                           0 0 20px rgba(139, 92, 246, 0.6),
@@ -460,6 +461,10 @@ export function ProfileTab({ userProfile }: ProfileTabProps) {
                           background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent)',
                           animation: 'progressShine 2s infinite',
                         },
+                      },
+                      '& .MuiLinearProgress-bar1Determinate': {
+                        backgroundColor: 'transparent !important',
+                        background: 'linear-gradient(135deg, #8b5cf6 0%, #ec4899 50%, rgb(226, 11, 245) 100%) !important',
                       },
                       '@keyframes progressShine': {
                         '0%': { transform: 'translateX(-100%)' },
