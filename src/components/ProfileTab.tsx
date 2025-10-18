@@ -72,7 +72,7 @@ export function ProfileTab({ userProfile }: ProfileTabProps) {
 
 
   return (
-    <Box sx={{ 
+    <Box sx={{
       p: 3,
       position: 'relative',
       overflow: 'hidden',
@@ -101,7 +101,7 @@ export function ProfileTab({ userProfile }: ProfileTabProps) {
       <motion.div
         initial={{ opacity: 0, y: 30, scale: 0.95 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ 
+        transition={{
           duration: 0.8,
           type: "spring",
           stiffness: 100,
@@ -153,11 +153,11 @@ export function ProfileTab({ userProfile }: ProfileTabProps) {
               '100%': { transform: 'translateX(100%)' },
             },
             '@keyframes holographicPulse': {
-              '0%, 100%': { 
+              '0%, 100%': {
                 opacity: 0.3,
                 filter: 'hue-rotate(0deg)'
               },
-              '50%': { 
+              '50%': {
                 opacity: 0.6,
                 filter: 'hue-rotate(20deg)'
               },
@@ -183,7 +183,7 @@ export function ProfileTab({ userProfile }: ProfileTabProps) {
               whileHover={{ scale: 1.05, rotate: 5 }}
               whileTap={{ scale: 0.95 }}
               transition={{ type: 'spring', stiffness: 300 }}
-              animate={{ 
+              animate={{
                 rotate: [0, 2, -2, 0],
                 scale: [1, 1.02, 1]
               }}
@@ -225,14 +225,14 @@ export function ProfileTab({ userProfile }: ProfileTabProps) {
                     animation: 'holographicGlow 3s ease-in-out infinite',
                   },
                   '@keyframes holographicGlow': {
-                    '0%, 100%': { 
+                    '0%, 100%': {
                       filter: 'hue-rotate(0deg) brightness(1)',
                       boxShadow: `
                         0 0 30px rgba(139, 92, 246, 0.6),
                         0 0 60px rgba(236, 72, 153, 0.4)
                       `
                     },
-                    '50%': { 
+                    '50%': {
                       filter: 'hue-rotate(20deg) brightness(1.1)',
                       boxShadow: `
                         0 0 40px rgba(139, 92, 246, 0.8),
@@ -249,9 +249,9 @@ export function ProfileTab({ userProfile }: ProfileTabProps) {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.3, duration: 0.6 }}
               >
-                <Typography variant="h3" sx={{ 
-                  color: 'white', 
-                  fontWeight: 800, 
+                <Typography variant="h3" sx={{
+                  color: 'white',
+                  fontWeight: 800,
                   mb: 1,
                   background: 'linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%)',
                   backgroundClip: 'text',
@@ -282,17 +282,17 @@ export function ProfileTab({ userProfile }: ProfileTabProps) {
                   >
                     <Stack direction="row" alignItems="center" gap={1}>
                       <motion.div
-                        animate={{ 
+                        animate={{
                           rotate: [0, 10, -10, 0],
                           scale: [1, 1.1, 1]
                         }}
-                        transition={{ 
+                        transition={{
                           duration: 2,
                           repeat: Infinity,
                           repeatDelay: 3
                         }}
                       >
-                        <Star sx={{ 
+                        <Star sx={{
                           color: '#fbbf24',
                           filter: 'drop-shadow(0 0 8px rgba(251, 191, 36, 0.5))'
                         }} />
@@ -308,12 +308,124 @@ export function ProfileTab({ userProfile }: ProfileTabProps) {
           </Box>
         </Paper>
       </motion.div>
-
+      {/* Power Level Display */}
+      <motion.div
+        initial={{ opacity: 0, y: 30, scale: 0.95 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{
+          duration: 0.8,
+          delay: 0.5,
+          type: "spring",
+          stiffness: 100,
+          damping: 20
+        }}
+        style={{ position: 'relative', zIndex: 1 }}
+      >
+        <Card
+          elevation={0}
+          sx={{
+            background: 'linear-gradient(135deg, #1f2937 0%, #111827 100%)',
+            borderRadius: 4,
+            mb: 4,
+            border: '2px solid transparent',
+            backgroundImage: 'linear-gradient(135deg, #1f2937 0%, #111827 100%), linear-gradient(135deg, #8b5cf6 0%, #ec4899 50%, #f59e0b 100%)',
+            backgroundOrigin: 'border-box',
+            backgroundClip: 'content-box, border-box',
+            boxShadow: `
+              0 0 40px rgba(139, 92, 246, 0.6),
+              0 0 80px rgba(236, 72, 153, 0.4),
+              0 25px 50px rgba(0, 0, 0, 0.3),
+              inset 0 1px 0 rgba(255, 255, 255, 0.1)
+            `,
+            position: 'relative',
+            overflow: 'hidden',
+            filter: 'contrast(1.1) saturate(1.2)',
+            '&::before': {
+              content: '""',
+              position: 'absolute',
+              top: -50,
+              left: -50,
+              width: '100px',
+              height: '100px',
+              background: 'linear-gradient(45deg, rgba(139, 92, 246, 0.2), rgba(236, 72, 153, 0.1))',
+              borderRadius: '50%',
+              animation: 'holographicFloat 6s ease-in-out infinite',
+            },
+            '&::after': {
+              content: '""',
+              position: 'absolute',
+              bottom: -50,
+              right: -50,
+              width: '100px',
+              height: '100px',
+              background: 'linear-gradient(45deg, rgba(236, 72, 153, 0.2), rgba(245, 158, 11, 0.1))',
+              borderRadius: '50%',
+              animation: 'holographicFloat 8s ease-in-out infinite reverse',
+            },
+            '@keyframes holographicFloat': {
+              '0%, 100%': {
+                transform: 'translateY(0px) rotate(0deg)',
+                filter: 'hue-rotate(0deg) brightness(1)'
+              },
+              '50%': {
+                transform: 'translateY(-20px) rotate(180deg)',
+                filter: 'hue-rotate(20deg) brightness(1.1)'
+              },
+            },
+          }}
+        >
+          <CardContent sx={{ textAlign: 'center', p: 4, position: 'relative', zIndex: 2 }}>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.6, duration: 0.6, type: "spring", stiffness: 200 }}
+            >
+              <Typography variant="h2" sx={{
+                color: 'white',
+                fontWeight: 800,
+                mb: 1,
+                background: 'linear-gradient(135deg, #8b5cf6 0%, #ec4899 50%, #f59e0b 100%)',
+                backgroundClip: 'text',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                filter: 'drop-shadow(0 0 15px rgba(139, 92, 246, 0.8)) drop-shadow(0 0 25px rgba(236, 72, 153, 0.6))',
+                textShadow: '0 0 20px rgba(139, 92, 246, 0.5)',
+                animation: 'holographicText 3s ease-in-out infinite',
+                '@keyframes holographicText': {
+                  '0%, 100%': {
+                    filter: 'drop-shadow(0 0 15px rgba(139, 92, 246, 0.8)) drop-shadow(0 0 25px rgba(236, 72, 153, 0.6))',
+                    textShadow: '0 0 20px rgba(139, 92, 246, 0.5)'
+                  },
+                  '50%': {
+                    filter: 'drop-shadow(0 0 20px rgba(139, 92, 246, 1)) drop-shadow(0 0 35px rgba(236, 72, 153, 0.8))',
+                    textShadow: '0 0 30px rgba(139, 92, 246, 0.8)'
+                  },
+                },
+              }}>
+                POWER LEVEL: {user.level}
+              </Typography>
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.8, duration: 0.6 }}
+            >
+              <Typography variant="h6" sx={{
+                color: '#ef4444',
+                fontWeight: 600,
+                filter: 'drop-shadow(0 0 8px rgba(239, 68, 68, 0.5))',
+              }}>
+                Power Level
+              </Typography>
+            </motion.div>
+          </CardContent>
+        </Card>
+      </motion.div>
       {/* Level Progress */}
       <motion.div
         initial={{ opacity: 0, y: 30, scale: 0.95 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ 
+        transition={{
           duration: 0.8,
           delay: 0.2,
           type: "spring",
@@ -364,8 +476,8 @@ export function ProfileTab({ userProfile }: ProfileTabProps) {
               transition={{ delay: 0.3, duration: 0.6 }}
             >
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, flexWrap: 'wrap' }}>
-                <Typography variant="h4" sx={{ 
-                  fontWeight: 700, 
+                <Typography variant="h4" sx={{
+                  fontWeight: 700,
                   color: 'white',
                   background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
                   backgroundClip: 'text',
@@ -398,7 +510,7 @@ export function ProfileTab({ userProfile }: ProfileTabProps) {
                 </motion.div>
               </Box>
             </motion.div>
-            
+
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -471,11 +583,11 @@ export function ProfileTab({ userProfile }: ProfileTabProps) {
                         '100%': { transform: 'translateX(100%)' },
                       },
                       '@keyframes holographicPulse': {
-                        '0%, 100%': { 
+                        '0%, 100%': {
                           opacity: 0.3,
                           filter: 'hue-rotate(0deg) brightness(1)'
                         },
-                        '50%': { 
+                        '50%': {
                           opacity: 0.6,
                           filter: 'hue-rotate(20deg) brightness(1.1)'
                         },
@@ -501,141 +613,11 @@ export function ProfileTab({ userProfile }: ProfileTabProps) {
           </CardContent>
         </Card>
       </motion.div>
-
-      {/* Stats Section - Replaces Grid with Stack */}
-      <motion.div
+{/* Badges Section - Also with Stack */}
+<motion.div
         initial={{ opacity: 0, y: 30, scale: 0.95 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ 
-          duration: 0.8,
-          delay: 0.3,
-          type: "spring",
-          stiffness: 100,
-          damping: 20
-        }}
-        style={{ position: 'relative', zIndex: 1 }}
-      >
-        <Stack direction={{ xs: 'column', md: 'row' }} spacing={3} sx={{ mb: 4, width: '100%' }}>
-          <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.4, duration: 0.6 }}
-            style={{ flex: 1 }}
-          >
-            <Card
-              elevation={0}
-              sx={{
-                background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
-                borderRadius: 4,
-                height: '100%',
-                boxShadow: '0 25px 50px rgba(59, 130, 246, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
-                position: 'relative',
-                overflow: 'hidden',
-                '&::before': {
-                  content: '""',
-                  position: 'absolute',
-                  top: -20,
-                  left: -20,
-                  width: '40px',
-                  height: '40px',
-                  background: 'linear-gradient(45deg, rgba(255, 255, 255, 0.1), transparent)',
-                  borderRadius: '50%',
-                  animation: 'float 4s ease-in-out infinite',
-                },
-              }}
-            >
-              <CardContent sx={{ textAlign: 'center', p: 3, position: 'relative', zIndex: 2 }}>
-                <motion.div
-                  animate={{ 
-                    rotate: [0, 5, -5, 0],
-                    scale: [1, 1.05, 1]
-                  }}
-                  transition={{ 
-                    duration: 2,
-                    repeat: Infinity,
-                    repeatDelay: 3
-                  }}
-                >
-                  <Chat sx={{ 
-                    fontSize: 40, 
-                    color: 'white', 
-                    mb: 2,
-                    filter: 'drop-shadow(0 0 8px rgba(255, 255, 255, 0.3))'
-                  }} />
-                </motion.div>
-                <Typography variant="h3" sx={{ color: 'white', fontWeight: 800, mb: 1 }}>
-                  {user.stats.messages}
-                </Typography>
-                <Typography variant="body1" sx={{ color: 'rgba(255, 255, 255, 0.8)' }}>
-                  Messages
-                </Typography>
-              </CardContent>
-            </Card>
-          </motion.div>
-          <motion.div
-            initial={{ opacity: 0, x: 30 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.5, duration: 0.6 }}
-            style={{ flex: 1 }}
-          >
-            <Card
-              elevation={0}
-              sx={{
-                background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                borderRadius: 4,
-                height: '100%',
-                boxShadow: '0 25px 50px rgba(16, 185, 129, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
-                position: 'relative',
-                overflow: 'hidden',
-                '&::before': {
-                  content: '""',
-                  position: 'absolute',
-                  bottom: -20,
-                  right: -20,
-                  width: '40px',
-                  height: '40px',
-                  background: 'linear-gradient(45deg, rgba(255, 255, 255, 0.1), transparent)',
-                  borderRadius: '50%',
-                  animation: 'float 5s ease-in-out infinite reverse',
-                },
-              }}
-            >
-              <CardContent sx={{ textAlign: 'center', p: 3, position: 'relative', zIndex: 2 }}>
-                <motion.div
-                  animate={{ 
-                    rotate: [0, -5, 5, 0],
-                    scale: [1, 1.05, 1]
-                  }}
-                  transition={{ 
-                    duration: 2.5,
-                    repeat: Infinity,
-                    repeatDelay: 4
-                  }}
-                >
-                  <WorkspacePremium sx={{ 
-                    fontSize: 40, 
-                    color: 'white', 
-                    mb: 2,
-                    filter: 'drop-shadow(0 0 8px rgba(255, 255, 255, 0.3))'
-                  }} />
-                </motion.div>
-                <Typography variant="h3" sx={{ color: 'white', fontWeight: 800, mb: 1 }}>
-                  {user.stats.successMessages}
-                </Typography>
-                <Typography variant="body1" sx={{ color: 'rgba(255, 255, 255, 0.8)' }}>
-                  Success
-                </Typography>
-              </CardContent>
-            </Card>
-          </motion.div>
-        </Stack>
-      </motion.div>
-
-      {/* Badges Section - Also with Stack */}
-      <motion.div
-        initial={{ opacity: 0, y: 30, scale: 0.95 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ 
+        transition={{
           duration: 0.8,
           delay: 0.4,
           type: "spring",
@@ -685,10 +667,10 @@ export function ProfileTab({ userProfile }: ProfileTabProps) {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5, duration: 0.6 }}
             >
-              <Typography variant="h4" sx={{ 
-                color: 'white', 
-                fontWeight: 700, 
-                mb: 3, 
+              <Typography variant="h4" sx={{
+                color: 'white',
+                fontWeight: 700,
+                mb: 3,
                 textAlign: 'center',
                 background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
                 backgroundClip: 'text',
@@ -704,8 +686,8 @@ export function ProfileTab({ userProfile }: ProfileTabProps) {
                   key={badge.id}
                   initial={{ opacity: 0, scale: 0.8, y: 20 }}
                   animate={{ opacity: 1, scale: 1, y: 0 }}
-                  transition={{ 
-                    duration: 0.6, 
+                  transition={{
+                    duration: 0.6,
                     delay: 0.6 + index * 0.1,
                     type: "spring",
                     stiffness: 100
@@ -717,7 +699,7 @@ export function ProfileTab({ userProfile }: ProfileTabProps) {
                   <Card
                     elevation={0}
                     sx={{
-                      background: badge.unlocked 
+                      background: badge.unlocked
                         ? 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)'
                         : 'linear-gradient(135deg, rgba(75, 85, 99, 0.3) 0%, rgba(55, 65, 81, 0.2) 100%)',
                       borderRadius: 4,
@@ -729,7 +711,7 @@ export function ProfileTab({ userProfile }: ProfileTabProps) {
                       justifyContent: 'center',
                       opacity: badge.unlocked ? 1 : 0.6,
                       border: badge.unlocked ? '2px solid #fbbf24' : '1px solid rgba(75, 85, 99, 0.3)',
-                      boxShadow: badge.unlocked 
+                      boxShadow: badge.unlocked
                         ? '0 20px 40px rgba(251, 191, 36, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)'
                         : '0 10px 20px rgba(0, 0, 0, 0.2)',
                       position: 'relative',
@@ -754,11 +736,11 @@ export function ProfileTab({ userProfile }: ProfileTabProps) {
                   >
                     <motion.div
                       style={{ position: 'relative', zIndex: 2 }}
-                      animate={badge.unlocked ? { 
+                      animate={badge.unlocked ? {
                         rotate: [0, 5, -5, 0],
                         scale: [1, 1.05, 1]
                       } : {}}
-                      transition={{ 
+                      transition={{
                         duration: 2,
                         repeat: badge.unlocked ? Infinity : 0,
                         repeatDelay: 4
@@ -773,22 +755,22 @@ export function ProfileTab({ userProfile }: ProfileTabProps) {
                           height: 60,
                           mx: 'auto',
                           mb: 2,
-                          filter: badge.unlocked 
-                            ? 'drop-shadow(0 0 8px rgba(251, 191, 36, 0.5))' 
+                          filter: badge.unlocked
+                            ? 'drop-shadow(0 0 8px rgba(251, 191, 36, 0.5))'
                             : 'grayscale(100%)',
                         }}
                       />
                     </motion.div>
-                    <Typography variant="h6" sx={{ 
-                      color: 'white', 
-                      fontWeight: 600, 
+                    <Typography variant="h6" sx={{
+                      color: 'white',
+                      fontWeight: 600,
                       mb: 1,
                       position: 'relative',
                       zIndex: 2
                     }}>
                       {badge.name}
                     </Typography>
-                    <Typography variant="body2" sx={{ 
+                    <Typography variant="body2" sx={{
                       color: 'rgba(255, 255, 255, 0.8)',
                       position: 'relative',
                       zIndex: 2
@@ -803,119 +785,137 @@ export function ProfileTab({ userProfile }: ProfileTabProps) {
         </Card>
       </motion.div>
 
-      {/* Power Level Display */}
+      {/* Stats Section - Replaces Grid with Stack */}
       <motion.div
         initial={{ opacity: 0, y: 30, scale: 0.95 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ 
+        transition={{
           duration: 0.8,
-          delay: 0.5,
+          delay: 0.3,
           type: "spring",
           stiffness: 100,
           damping: 20
         }}
         style={{ position: 'relative', zIndex: 1 }}
       >
-        <Card
-          elevation={0}
-          sx={{
-            background: 'linear-gradient(135deg, #1f2937 0%, #111827 100%)',
-            borderRadius: 4,
-            mb: 4,
-            border: '2px solid transparent',
-            backgroundImage: 'linear-gradient(135deg, #1f2937 0%, #111827 100%), linear-gradient(135deg, #8b5cf6 0%, #ec4899 50%, #f59e0b 100%)',
-            backgroundOrigin: 'border-box',
-            backgroundClip: 'content-box, border-box',
-            boxShadow: `
-              0 0 40px rgba(139, 92, 246, 0.6),
-              0 0 80px rgba(236, 72, 153, 0.4),
-              0 25px 50px rgba(0, 0, 0, 0.3),
-              inset 0 1px 0 rgba(255, 255, 255, 0.1)
-            `,
-            position: 'relative',
-            overflow: 'hidden',
-            filter: 'contrast(1.1) saturate(1.2)',
-            '&::before': {
-              content: '""',
-              position: 'absolute',
-              top: -50,
-              left: -50,
-              width: '100px',
-              height: '100px',
-              background: 'linear-gradient(45deg, rgba(139, 92, 246, 0.2), rgba(236, 72, 153, 0.1))',
-              borderRadius: '50%',
-              animation: 'holographicFloat 6s ease-in-out infinite',
-            },
-            '&::after': {
-              content: '""',
-              position: 'absolute',
-              bottom: -50,
-              right: -50,
-              width: '100px',
-              height: '100px',
-              background: 'linear-gradient(45deg, rgba(236, 72, 153, 0.2), rgba(245, 158, 11, 0.1))',
-              borderRadius: '50%',
-              animation: 'holographicFloat 8s ease-in-out infinite reverse',
-            },
-            '@keyframes holographicFloat': {
-              '0%, 100%': { 
-                transform: 'translateY(0px) rotate(0deg)',
-                filter: 'hue-rotate(0deg) brightness(1)'
-              },
-              '50%': { 
-                transform: 'translateY(-20px) rotate(180deg)',
-                filter: 'hue-rotate(20deg) brightness(1.1)'
-              },
-            },
-          }}
-        >
-          <CardContent sx={{ textAlign: 'center', p: 4, position: 'relative', zIndex: 2 }}>
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.6, duration: 0.6, type: "spring", stiffness: 200 }}
-            >
-              <Typography variant="h2" sx={{ 
-                color: 'white', 
-                fontWeight: 800, 
-                mb: 1,
-                background: 'linear-gradient(135deg, #8b5cf6 0%, #ec4899 50%, #f59e0b 100%)',
-                backgroundClip: 'text',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                filter: 'drop-shadow(0 0 15px rgba(139, 92, 246, 0.8)) drop-shadow(0 0 25px rgba(236, 72, 153, 0.6))',
-                textShadow: '0 0 20px rgba(139, 92, 246, 0.5)',
-                animation: 'holographicText 3s ease-in-out infinite',
-                '@keyframes holographicText': {
-                  '0%, 100%': { 
-                    filter: 'drop-shadow(0 0 15px rgba(139, 92, 246, 0.8)) drop-shadow(0 0 25px rgba(236, 72, 153, 0.6))',
-                    textShadow: '0 0 20px rgba(139, 92, 246, 0.5)'
-                  },
-                  '50%': { 
-                    filter: 'drop-shadow(0 0 20px rgba(139, 92, 246, 1)) drop-shadow(0 0 35px rgba(236, 72, 153, 0.8))',
-                    textShadow: '0 0 30px rgba(139, 92, 246, 0.8)'
-                  },
+        <Stack direction={{ xs: 'column', md: 'row' }} spacing={3} sx={{ mb: 4, width: '100%' }}>
+          <motion.div
+            initial={{ opacity: 0, x: -30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.4, duration: 0.6 }}
+            style={{ flex: 1 }}
+          >
+            <Card
+              elevation={0}
+              sx={{
+                background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
+                borderRadius: 4,
+                height: '100%',
+                boxShadow: '0 25px 50px rgba(59, 130, 246, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
+                position: 'relative',
+                overflow: 'hidden',
+                '&::before': {
+                  content: '""',
+                  position: 'absolute',
+                  top: -20,
+                  left: -20,
+                  width: '40px',
+                  height: '40px',
+                  background: 'linear-gradient(45deg, rgba(255, 255, 255, 0.1), transparent)',
+                  borderRadius: '50%',
+                  animation: 'float 4s ease-in-out infinite',
                 },
-              }}>
-                POWER LEVEL: {user.level}
-              </Typography>
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.8, duration: 0.6 }}
+              }}
             >
-              <Typography variant="h6" sx={{ 
-                color: '#ef4444', 
-                fontWeight: 600,
-                filter: 'drop-shadow(0 0 8px rgba(239, 68, 68, 0.5))',
-              }}>
-                Power Level
-              </Typography>
-            </motion.div>
-          </CardContent>
-        </Card>
+              <CardContent sx={{ textAlign: 'center', p: 3, position: 'relative', zIndex: 2 }}>
+                <motion.div
+                  animate={{
+                    rotate: [0, 5, -5, 0],
+                    scale: [1, 1.05, 1]
+                  }}
+                  transition={{
+                    duration: 2,
+                    repeat: Infinity,
+                    repeatDelay: 3
+                  }}
+                >
+                  <Chat sx={{
+                    fontSize: 40,
+                    color: 'white',
+                    mb: 2,
+                    filter: 'drop-shadow(0 0 8px rgba(255, 255, 255, 0.3))'
+                  }} />
+                </motion.div>
+                <Typography variant="h3" sx={{ color: 'white', fontWeight: 800, mb: 1 }}>
+                  {user.stats.messages}
+                </Typography>
+                <Typography variant="body1" sx={{ color: 'rgba(255, 255, 255, 0.8)' }}>
+                  Messages
+                </Typography>
+              </CardContent>
+            </Card>
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, x: 30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.5, duration: 0.6 }}
+            style={{ flex: 1 }}
+          >
+            <Card
+              elevation={0}
+              sx={{
+                background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                borderRadius: 4,
+                height: '100%',
+                boxShadow: '0 25px 50px rgba(16, 185, 129, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
+                position: 'relative',
+                overflow: 'hidden',
+                '&::before': {
+                  content: '""',
+                  position: 'absolute',
+                  bottom: -20,
+                  right: -20,
+                  width: '40px',
+                  height: '40px',
+                  background: 'linear-gradient(45deg, rgba(255, 255, 255, 0.1), transparent)',
+                  borderRadius: '50%',
+                  animation: 'float 5s ease-in-out infinite reverse',
+                },
+              }}
+            >
+              <CardContent sx={{ textAlign: 'center', p: 3, position: 'relative', zIndex: 2 }}>
+                <motion.div
+                  animate={{
+                    rotate: [0, -5, 5, 0],
+                    scale: [1, 1.05, 1]
+                  }}
+                  transition={{
+                    duration: 2.5,
+                    repeat: Infinity,
+                    repeatDelay: 4
+                  }}
+                >
+                  <WorkspacePremium sx={{
+                    fontSize: 40,
+                    color: 'white',
+                    mb: 2,
+                    filter: 'drop-shadow(0 0 8px rgba(255, 255, 255, 0.3))'
+                  }} />
+                </motion.div>
+                <Typography variant="h3" sx={{ color: 'white', fontWeight: 800, mb: 1 }}>
+                  {user.stats.successMessages}
+                </Typography>
+                <Typography variant="body1" sx={{ color: 'rgba(255, 255, 255, 0.8)' }}>
+                  Success
+                </Typography>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </Stack>
       </motion.div>
+
+      
+
     </Box>
   );
 }
