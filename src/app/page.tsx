@@ -9,6 +9,7 @@ import { ProfileTab } from '@/components/ProfileTab';
 import { QuestsTab } from '@/components/QuestsTab';
 import { AdminTab } from '@/components/AdminTab';
 import { LevelUpModal } from '@/components/LevelUpModal';
+import { LevelUpTab } from '@/components/LevelUpTab';
 import { UserProfile } from '@/lib/services/UserService';
 
 // Create dark theme with custom colors
@@ -125,10 +126,24 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [showLevelUpModal, setShowLevelUpModal] = useState(false);
   const [tabValue, setTabValue] = useState(0);
+  const [hasLevelUpNotifications, setHasLevelUpNotifications] = useState(false);
 
   useEffect(() => {
     fetchUserProfile();
+    checkLevelUpNotifications();
   }, []);
+
+  const checkLevelUpNotifications = async () => {
+    try {
+      const response = await fetch('/api/user/levelup-notifications');
+      if (response.ok) {
+        const notifications = await response.json();
+        setHasLevelUpNotifications(notifications.length > 0);
+      }
+    } catch (error) {
+      console.error('Error checking level-up notifications:', error);
+    }
+  };
 
   const fetchUserProfile = async () => {
     try {
@@ -173,6 +188,16 @@ export default function Home() {
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
+  };
+
+  const handleNotificationSeen = async () => {
+    // Check if there are any remaining notifications
+    await checkLevelUpNotifications();
+    
+    // If no more notifications, switch to profile tab
+    if (!hasLevelUpNotifications) {
+      setTabValue(0);
+    }
   };
 
   if (loading) {
@@ -545,6 +570,26 @@ export default function Home() {
                   },
                 }}
             >
+              {hasLevelUpNotifications && (
+                <Tab 
+                  label="🎉 Level Up!" 
+                  sx={{ 
+                    color: '#fbbf24 !important',
+                    fontWeight: '800 !important',
+                    animation: 'levelUpGlow 2s ease-in-out infinite',
+                    '@keyframes levelUpGlow': {
+                      '0%, 100%': { 
+                        color: '#fbbf24',
+                        textShadow: '0 0 10px rgba(251, 191, 36, 0.5)'
+                      },
+                      '50%': { 
+                        color: '#f59e0b',
+                        textShadow: '0 0 20px rgba(245, 158, 11, 0.8)'
+                      },
+                    },
+                  }}
+                />
+              )}
               <Tab label="Profile" />
               <Tab label="Quests" />
               {isAdmin && <Tab label="Admin" />}
@@ -563,19 +608,28 @@ export default function Home() {
                     damping: 20
                   }}
                 >
-                <TabPanel value={tabValue} index={0}>
+                {hasLevelUpNotifications && (
+                  <TabPanel value={tabValue} index={0}>
+                    <LevelUpTab 
+                      userId={userProfile.user.userId} 
+                      onNotificationSeen={handleNotificationSeen}
+                    />
+                  </TabPanel>
+                )}
+                
+                <TabPanel value={tabValue} index={hasLevelUpNotifications ? 1 : 0}>
                   <ProfileTab userProfile={userProfile} onRefresh={fetchUserProfile} />
                 </TabPanel>
                 
-                <TabPanel value={tabValue} index={1}>
+                <TabPanel value={tabValue} index={hasLevelUpNotifications ? 2 : 1}>
                   <QuestsTab userId={userProfile.user.userId} />
                 </TabPanel>
                 
                 {isAdmin && (
-                  <TabPanel value={tabValue} index={2}>
+                  <TabPanel value={tabValue} index={hasLevelUpNotifications ? 3 : 2}>
                     <AdminTab />
                   </TabPanel>
-                  )}
+                )}
                 </motion.div>
               </AnimatePresence>
             </Paper>
