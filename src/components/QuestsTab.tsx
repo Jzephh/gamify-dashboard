@@ -220,10 +220,8 @@ export function QuestsTab({ userId, onQuestUpdate }: QuestsTabProps) {
       // Refresh quest progress to update seen status
       await fetchQuestProgress();
       
-      // Update quest notifications in parent
-      if (onQuestUpdate) {
-        onQuestUpdate();
-      }
+      // Notify parent component to update notification count
+      onQuestUpdate?.();
     } catch (error) {
       console.error('Error marking quest as seen:', error);
     }
@@ -247,10 +245,8 @@ export function QuestsTab({ userId, onQuestUpdate }: QuestsTabProps) {
         // Refresh quest progress to get updated claimed status from database
         await fetchQuestProgress();
         
-        // Update quest notifications in parent
-        if (onQuestUpdate) {
-          onQuestUpdate();
-        }
+        // Notify parent component to update notification count
+        onQuestUpdate?.();
         
         // Show completion modal for the claimed quest
         const quests = [...dailyQuests, ...weeklyQuests];

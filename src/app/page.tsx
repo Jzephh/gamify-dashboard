@@ -127,39 +127,12 @@ export default function Home() {
   const [showLevelUpModal, setShowLevelUpModal] = useState(false);
   const [tabValue, setTabValue] = useState(0);
   const [hasLevelUpNotifications, setHasLevelUpNotifications] = useState(false);
-  const [questNotifications, setQuestNotifications] = useState({ daily: 0, weekly: 0 });
+  const [questNotifications, setQuestNotifications] = useState(0);
 
   useEffect(() => {
     fetchUserProfile();
     fetchQuestNotifications();
   }, []);
-
-  const fetchQuestNotifications = async () => {
-    try {
-      const response = await fetch('/api/user/quests');
-      if (response.ok) {
-        const data = await response.json();
-        
-        // Count completed but not seen quests
-        const dailyCompleted = [
-          data.daily.completed?.send10 && !data.daily.claimed?.send10,
-          data.daily.completed?.success1 && !data.daily.claimed?.success1
-        ].filter(Boolean).length;
-        
-        const weeklyCompleted = [
-          data.weekly.completed?.send100 && !data.weekly.claimed?.send100,
-          data.weekly.completed?.success10 && !data.weekly.claimed?.success10
-        ].filter(Boolean).length;
-        
-        setQuestNotifications({
-          daily: dailyCompleted,
-          weekly: weeklyCompleted
-        });
-      }
-    } catch (error) {
-      console.error('Error fetching quest notifications:', error);
-    }
-  };
 
   const fetchUserProfile = async () => {
     try {
@@ -191,6 +164,34 @@ export default function Home() {
       setError('Failed to load user profile');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchQuestNotifications = async () => {
+    try {
+      const response = await fetch('/api/user/quests');
+      if (response.ok) {
+        const questData = await response.json();
+        
+        // Count completed but unseen quests
+        let notificationCount = 0;
+        
+        // Check daily quests
+        if (!questData.daily.questSeen) {
+          const dailyCompleted = Object.values(questData.daily.completed || {}).filter(Boolean).length;
+          notificationCount += dailyCompleted;
+        }
+        
+        // Check weekly quests
+        if (!questData.weekly.questSeen) {
+          const weeklyCompleted = Object.values(questData.weekly.completed || {}).filter(Boolean).length;
+          notificationCount += weeklyCompleted;
+        }
+        
+        setQuestNotifications(notificationCount);
+      }
+    } catch (error) {
+      console.error('Error fetching quest notifications:', error);
     }
   };
 
@@ -619,8 +620,8 @@ export default function Home() {
               <Tab 
                 label={
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    Quests
-                    {(questNotifications.daily > 0 || questNotifications.weekly > 0) && (
+                    <span>Quests</span>
+                    {questNotifications > 0 && (
                       <Box
                         sx={{
                           background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
@@ -634,24 +635,24 @@ export default function Home() {
                           fontSize: '0.75rem',
                           fontWeight: 700,
                           boxShadow: '0 0 10px rgba(245, 158, 11, 0.5)',
-                          animation: 'questNotificationPulse 2s infinite',
-                          '@keyframes questNotificationPulse': {
+                          animation: 'questBadgePulse 2s ease-in-out infinite',
+                          '@keyframes questBadgePulse': {
                             '0%, 100%': { 
                               transform: 'scale(1)',
                               boxShadow: '0 0 10px rgba(245, 158, 11, 0.5)'
                             },
                             '50%': { 
                               transform: 'scale(1.1)',
-                              boxShadow: '0 0 20px rgba(245, 158, 11, 0.8)'
+                              boxShadow: '0 0 15px rgba(245, 158, 11, 0.8)'
                             },
                           },
                         }}
                       >
-                        {questNotifications.daily + questNotifications.weekly}
+                        {questNotifications}
                       </Box>
                     )}
                   </Box>
-                } 
+                }
               />
               {isAdmin && <Tab label="Admin" />}
             </Tabs>
@@ -684,9 +685,9 @@ export default function Home() {
                 
                 <TabPanel value={tabValue} index={hasLevelUpNotifications ? 2 : 1}>
                   <QuestsTab 
-                    userId={userProfile.user.userId} 
-                    onQuestUpdate={fetchQuestNotifications}
-                  />
+                  userId={userProfile.user.userId} 
+                  onQuestUpdate={fetchQuestNotifications}
+                />
                 </TabPanel>
                 
                 {isAdmin && (
