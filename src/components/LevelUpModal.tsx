@@ -41,17 +41,24 @@ export function LevelUpModal({ level, onClose }: LevelUpModalProps) {
           background: 'transparent',
           boxShadow: 'none',
           borderRadius: 4,
+          position: 'relative',
+          overflow: 'hidden',
         },
       }}
     >
       <DialogContent sx={{ p: 0, overflow: 'hidden' }}>
         <motion.div
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+          initial={{ scale: 0.5, opacity: 0, rotate: -180 }}
+          animate={{ scale: 1, opacity: 1, rotate: 0 }}
+          transition={{ 
+            duration: 0.8, 
+            type: 'spring', 
+            stiffness: 150,
+            damping: 15
+          }}
         >
           <Paper
-            elevation={24}
+            elevation={0}
             sx={{
               background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%)',
               borderRadius: 4,
@@ -59,6 +66,23 @@ export function LevelUpModal({ level, onClose }: LevelUpModalProps) {
               textAlign: 'center',
               position: 'relative',
               overflow: 'hidden',
+              boxShadow: '0 25px 50px rgba(251, 191, 36, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
+              '&::before': {
+                content: '""',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                background: 'linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.2) 50%, transparent 70%)',
+                transform: 'translateX(-100%)',
+                animation: 'shimmer 2s infinite',
+                zIndex: 1,
+              },
+              '@keyframes shimmer': {
+                '0%': { transform: 'translateX(-100%)' },
+                '100%': { transform: 'translateX(100%)' },
+              },
             }}
           >
             {/* Animated background elements */}
@@ -93,6 +117,7 @@ export function LevelUpModal({ level, onClose }: LevelUpModalProps) {
                 initial={{ scale: 0, rotate: -180 }}
                 animate={{ scale: 1, rotate: 0 }}
                 transition={{ delay: 0.2, type: 'spring', stiffness: 300 }}
+                whileHover={{ scale: 1.1, rotate: 5 }}
               >
                 <Box
                   sx={{
@@ -108,15 +133,31 @@ export function LevelUpModal({ level, onClose }: LevelUpModalProps) {
                     border: '4px solid rgba(255, 255, 255, 0.3)',
                   }}
                 >
-                  <EmojiEvents sx={{ fontSize: 60, color: 'white' }} />
+                  <motion.div
+                    animate={{ 
+                      rotate: [0, 10, -10, 0],
+                      scale: [1, 1.1, 1]
+                    }}
+                    transition={{ 
+                      duration: 2,
+                      repeat: Infinity,
+                      repeatDelay: 1
+                    }}
+                  >
+                    <EmojiEvents sx={{ 
+                      fontSize: 60, 
+                      color: 'white',
+                      filter: 'drop-shadow(0 0 10px rgba(255, 255, 255, 0.5))'
+                    }} />
+                  </motion.div>
                 </Box>
               </motion.div>
 
               {/* Sparkles */}
               <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.5 }}
+                initial={{ opacity: 0, scale: 0 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.5, duration: 0.6 }}
               >
                 <Box
                   sx={{
@@ -126,7 +167,23 @@ export function LevelUpModal({ level, onClose }: LevelUpModalProps) {
                     animation: 'sparkle 2s ease-in-out infinite',
                   }}
                 >
-                  <AutoAwesome sx={{ fontSize: 40, color: 'rgba(255, 255, 255, 0.8)' }} />
+                  <motion.div
+                    animate={{ 
+                      rotate: [0, 360],
+                      scale: [1, 1.2, 1]
+                    }}
+                    transition={{ 
+                      duration: 3,
+                      repeat: Infinity,
+                      ease: "linear"
+                    }}
+                  >
+                    <AutoAwesome sx={{ 
+                      fontSize: 40, 
+                      color: 'rgba(255, 255, 255, 0.8)',
+                      filter: 'drop-shadow(0 0 8px rgba(255, 255, 255, 0.5))'
+                    }} />
+                  </motion.div>
                 </Box>
                 <Box
                   sx={{
@@ -136,7 +193,23 @@ export function LevelUpModal({ level, onClose }: LevelUpModalProps) {
                     animation: 'sparkle 2s ease-in-out infinite 0.5s',
                   }}
                 >
-                  <AutoAwesome sx={{ fontSize: 30, color: 'rgba(255, 255, 255, 0.6)' }} />
+                  <motion.div
+                    animate={{ 
+                      rotate: [0, -360],
+                      scale: [1, 1.3, 1]
+                    }}
+                    transition={{ 
+                      duration: 4,
+                      repeat: Infinity,
+                      ease: "linear"
+                    }}
+                  >
+                    <AutoAwesome sx={{ 
+                      fontSize: 30, 
+                      color: 'rgba(255, 255, 255, 0.6)',
+                      filter: 'drop-shadow(0 0 6px rgba(255, 255, 255, 0.4))'
+                    }} />
+                  </motion.div>
                 </Box>
               </motion.div>
 
@@ -248,6 +321,8 @@ export function LevelUpModal({ level, onClose }: LevelUpModalProps) {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.7 }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
               >
                 <Button
                   variant="contained"
@@ -262,9 +337,11 @@ export function LevelUpModal({ level, onClose }: LevelUpModalProps) {
                     borderRadius: 3,
                     fontSize: '1.1rem',
                     textTransform: 'none',
+                    boxShadow: '0 8px 20px rgba(255, 255, 255, 0.3)',
                     '&:hover': {
                       background: 'rgba(255, 255, 255, 1)',
                       transform: 'translateY(-2px)',
+                      boxShadow: '0 12px 25px rgba(255, 255, 255, 0.4)',
                     },
                     transition: 'all 0.3s ease',
                   }}

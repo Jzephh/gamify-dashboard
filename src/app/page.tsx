@@ -261,6 +261,26 @@ export default function Home() {
           background: 'linear-gradient(135deg, #0f0f23 0%, #1a1a3e 50%, #2d1b69 100%)',
           position: 'relative',
           overflow: 'hidden',
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: `
+              radial-gradient(circle at 20% 80%, rgba(99, 102, 241, 0.1) 0%, transparent 50%),
+              radial-gradient(circle at 80% 20%, rgba(139, 92, 246, 0.1) 0%, transparent 50%),
+              radial-gradient(circle at 40% 40%, rgba(236, 72, 153, 0.05) 0%, transparent 50%)
+            `,
+            zIndex: 0,
+            animation: 'backgroundFloat 20s ease-in-out infinite',
+          },
+          '@keyframes backgroundFloat': {
+            '0%, 100%': { transform: 'translateY(0px) rotate(0deg)' },
+            '33%': { transform: 'translateY(-20px) rotate(1deg)' },
+            '66%': { transform: 'translateY(10px) rotate(-1deg)' },
+          },
         }}
       >
         {/* Animated background elements */}
@@ -281,50 +301,115 @@ export default function Home() {
         
         <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1, py: 4 }}>
           <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
+            initial={{ opacity: 0, y: -30, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ 
+              duration: 0.8,
+              type: "spring",
+              stiffness: 100,
+              damping: 20
+            }}
           >
-            <Typography variant="h1" sx={{ textAlign: 'center', mb: 4 }}>
+            <Typography variant="h1" sx={{ 
+              textAlign: 'center', 
+              mb: 4,
+              background: 'linear-gradient(135deg, #6366f1 0%, #ec4899 50%, #f59e0b 100%)',
+              backgroundClip: 'text',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              filter: 'drop-shadow(0 0 20px rgba(99, 102, 241, 0.5))',
+            }}>
               PowerLevel Dashboard
             </Typography>
           </motion.div>
           
-          <Paper
-            elevation={24}
-            sx={{
-              borderRadius: 4,
-              overflow: 'hidden',
-              background: 'rgba(15, 15, 35, 0.9)',
-              backdropFilter: 'blur(20px)',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
+          <motion.div
+            initial={{ opacity: 0, y: 30, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ 
+              duration: 0.8,
+              delay: 0.2,
+              type: "spring",
+              stiffness: 100,
+              damping: 20
             }}
           >
-            <Tabs
-              value={tabValue}
-              onChange={handleTabChange}
-              variant="fullWidth"
+            <Paper
+              elevation={0}
               sx={{
-                background: 'rgba(15, 15, 35, 0.6)',
-                '& .MuiTabs-indicator': {
-                  background: 'linear-gradient(135deg, #6366f1 0%, #ec4899 100%)',
-                  height: 3,
+                borderRadius: 4,
+                overflow: 'hidden',
+                background: 'linear-gradient(135deg, rgba(15, 15, 35, 0.95) 0%, rgba(30, 30, 60, 0.9) 100%)',
+                backdropFilter: 'blur(20px)',
+                border: '1px solid rgba(99, 102, 241, 0.3)',
+                boxShadow: '0 25px 50px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+                position: 'relative',
+                '&::before': {
+                  content: '""',
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  background: 'linear-gradient(45deg, transparent 30%, rgba(99, 102, 241, 0.05) 50%, transparent 70%)',
+                  transform: 'translateX(-100%)',
+                  animation: 'shimmer 4s infinite',
+                  zIndex: 1,
+                },
+                '@keyframes shimmer': {
+                  '0%': { transform: 'translateX(-100%)' },
+                  '100%': { transform: 'translateX(100%)' },
                 },
               }}
+            >
+              <Tabs
+                value={tabValue}
+                onChange={handleTabChange}
+                variant="fullWidth"
+                sx={{
+                  background: 'linear-gradient(135deg, rgba(15, 15, 35, 0.8) 0%, rgba(30, 30, 60, 0.6) 100%)',
+                  position: 'relative',
+                  zIndex: 2,
+                  '& .MuiTabs-indicator': {
+                    background: 'linear-gradient(135deg, #6366f1 0%, #ec4899 100%)',
+                    height: 4,
+                    borderRadius: 2,
+                    boxShadow: '0 0 10px rgba(99, 102, 241, 0.5)',
+                  },
+                  '& .MuiTab-root': {
+                    color: 'rgba(255, 255, 255, 0.7)',
+                    fontWeight: 600,
+                    fontSize: '1rem',
+                    transition: 'all 0.3s ease',
+                    '&.Mui-selected': {
+                      color: '#ffffff',
+                      background: 'rgba(99, 102, 241, 0.1)',
+                    },
+                    '&:hover': {
+                      background: 'rgba(99, 102, 241, 0.05)',
+                      color: 'rgba(255, 255, 255, 0.9)',
+                    },
+                  },
+                }}
             >
               <Tab label="Profile" />
               <Tab label="Quests" />
               {isAdmin && <Tab label="Admin" />}
             </Tabs>
             
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={tabValue}
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                transition={{ duration: 0.3 }}
-              >
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={tabValue}
+                  initial={{ opacity: 0, x: 30, scale: 0.95 }}
+                  animate={{ opacity: 1, x: 0, scale: 1 }}
+                  exit={{ opacity: 0, x: -30, scale: 0.95 }}
+                  transition={{ 
+                    duration: 0.4,
+                    type: "spring",
+                    stiffness: 100,
+                    damping: 20
+                  }}
+                >
                 <TabPanel value={tabValue} index={0}>
                   <ProfileTab userProfile={userProfile} onRefresh={fetchUserProfile} />
                 </TabPanel>
@@ -337,10 +422,11 @@ export default function Home() {
                   <TabPanel value={tabValue} index={2}>
                     <AdminTab />
                   </TabPanel>
-                )}
-              </motion.div>
-            </AnimatePresence>
-          </Paper>
+                  )}
+                </motion.div>
+              </AnimatePresence>
+            </Paper>
+          </motion.div>
         </Container>
 
         {showLevelUpModal && (

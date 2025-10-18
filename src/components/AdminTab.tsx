@@ -163,7 +163,31 @@ export function AdminTab() {
   }
 
   return (
-    <Box sx={{ p: 3 }}>
+    <Box sx={{ 
+      p: 3,
+      position: 'relative',
+      overflow: 'hidden',
+      '&::before': {
+        content: '""',
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        background: `
+          radial-gradient(circle at 20% 80%, rgba(220, 38, 38, 0.1) 0%, transparent 50%),
+          radial-gradient(circle at 80% 20%, rgba(185, 28, 28, 0.1) 0%, transparent 50%),
+          radial-gradient(circle at 40% 40%, rgba(139, 92, 246, 0.05) 0%, transparent 50%)
+        `,
+        zIndex: 0,
+        animation: 'backgroundFloat 20s ease-in-out infinite',
+      },
+      '@keyframes backgroundFloat': {
+        '0%, 100%': { transform: 'translateY(0px) rotate(0deg)' },
+        '33%': { transform: 'translateY(-20px) rotate(1deg)' },
+        '66%': { transform: 'translateY(10px) rotate(-1deg)' },
+      },
+    }}>
       {alert && (
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -182,23 +206,72 @@ export function AdminTab() {
 
       {/* Admin Header */}
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
+        initial={{ opacity: 0, y: 30, scale: 0.95 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ 
+          duration: 0.8,
+          type: "spring",
+          stiffness: 100,
+          damping: 20
+        }}
+        style={{ position: 'relative', zIndex: 1 }}
       >
         <Card
-          elevation={8}
+          elevation={0}
           sx={{
             background: 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)',
-            borderRadius: 3,
+            borderRadius: 4,
             mb: 4,
+            boxShadow: '0 25px 50px rgba(220, 38, 38, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
+            position: 'relative',
+            overflow: 'hidden',
+            '&::before': {
+              content: '""',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: 'linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.1) 50%, transparent 70%)',
+              transform: 'translateX(-100%)',
+              animation: 'shimmer 3s infinite',
+              zIndex: 1,
+            },
+            '@keyframes shimmer': {
+              '0%': { transform: 'translateX(-100%)' },
+              '100%': { transform: 'translateX(100%)' },
+            },
           }}
         >
-          <CardContent sx={{ p: 4 }}>
+          <CardContent sx={{ p: 4, position: 'relative', zIndex: 2 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-              <Security sx={{ fontSize: 48, color: 'white' }} />
+              <motion.div
+                animate={{ 
+                  rotate: [0, 5, -5, 0],
+                  scale: [1, 1.05, 1]
+                }}
+                transition={{ 
+                  duration: 2,
+                  repeat: Infinity,
+                  repeatDelay: 3
+                }}
+              >
+                <Security sx={{ 
+                  fontSize: 48, 
+                  color: 'white',
+                  filter: 'drop-shadow(0 0 8px rgba(255, 255, 255, 0.5))'
+                }} />
+              </motion.div>
               <Box>
-                <Typography variant="h4" sx={{ color: 'white', fontWeight: 800, mb: 1 }}>
+                <Typography variant="h4" sx={{ 
+                  color: 'white', 
+                  fontWeight: 800, 
+                  mb: 1,
+                  background: 'linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%)',
+                  backgroundClip: 'text',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                }}>
                   Admin Panel
                 </Typography>
                 <Typography variant="body1" sx={{ color: 'rgba(255, 255, 255, 0.8)' }}>
@@ -212,48 +285,106 @@ export function AdminTab() {
 
       {/* Users List */}
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.1 }}
+        initial={{ opacity: 0, y: 30, scale: 0.95 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ 
+          duration: 0.8,
+          delay: 0.2,
+          type: "spring",
+          stiffness: 100,
+          damping: 20
+        }}
+        style={{ position: 'relative', zIndex: 1 }}
       >
         <Card
-          elevation={8}
+          elevation={0}
           sx={{
-            background: 'rgba(15, 15, 35, 0.8)',
+            background: 'linear-gradient(135deg, rgba(15, 15, 35, 0.95) 0%, rgba(30, 30, 60, 0.9) 100%)',
             backdropFilter: 'blur(20px)',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-            borderRadius: 3,
+            border: '1px solid rgba(99, 102, 241, 0.3)',
+            borderRadius: 4,
             mb: 4,
+            boxShadow: '0 25px 50px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+            position: 'relative',
+            overflow: 'hidden',
+            '&::before': {
+              content: '""',
+              position: 'absolute',
+              top: -30,
+              left: -30,
+              width: '60px',
+              height: '60px',
+              background: 'linear-gradient(45deg, rgba(99, 102, 241, 0.1), transparent)',
+              borderRadius: '50%',
+              animation: 'float 5s ease-in-out infinite',
+            },
+            '&::after': {
+              content: '""',
+              position: 'absolute',
+              bottom: -20,
+              right: -20,
+              width: '40px',
+              height: '40px',
+              background: 'linear-gradient(45deg, rgba(139, 92, 246, 0.1), transparent)',
+              borderRadius: '50%',
+              animation: 'float 7s ease-in-out infinite reverse',
+            },
           }}
         >
-          <CardContent sx={{ p: 4 }}>
-            <Typography variant="h5" sx={{ color: 'white', fontWeight: 700, mb: 3 }}>
-              Users ({users.length})
-            </Typography>
+          <CardContent sx={{ p: 4, position: 'relative', zIndex: 2 }}>
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.3, duration: 0.6 }}
+            >
+              <Typography variant="h5" sx={{ 
+                color: 'white', 
+                fontWeight: 700, 
+                mb: 3,
+                background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                backgroundClip: 'text',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+              }}>
+                Users ({users.length})
+              </Typography>
+            </motion.div>
             
             <List sx={{ maxHeight: 400, overflow: 'auto' }}>
               {users.map((user, index) => (
                 <motion.div
                   key={user._id}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.4, delay: index * 0.05 }}
+                  initial={{ opacity: 0, x: -30, scale: 0.95 }}
+                  animate={{ opacity: 1, x: 0, scale: 1 }}
+                  transition={{ 
+                    duration: 0.6, 
+                    delay: 0.4 + index * 0.05,
+                    type: "spring",
+                    stiffness: 100
+                  }}
+                  whileHover={{ scale: 1.02, x: 5 }}
                 >
                   <ListItem
                     component="div"
                     onClick={() => setSelectedUser(user)}
                     sx={{
                       cursor: 'pointer',
-                      borderRadius: 2,
+                      borderRadius: 3,
                       mb: 1,
                       background: selectedUser?._id === user._id 
-                        ? 'rgba(99, 102, 241, 0.2)' 
-                        : 'rgba(255, 255, 255, 0.05)',
+                        ? 'linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(139, 92, 246, 0.1) 100%)' 
+                        : 'linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%)',
                       border: selectedUser?._id === user._id 
                         ? '2px solid #6366f1' 
                         : '1px solid rgba(255, 255, 255, 0.1)',
+                      boxShadow: selectedUser?._id === user._id 
+                        ? '0 8px 20px rgba(99, 102, 241, 0.3)'
+                        : '0 4px 10px rgba(0, 0, 0, 0.1)',
+                      transition: 'all 0.3s ease',
                       '&:hover': {
-                        background: 'rgba(99, 102, 241, 0.1)',
+                        background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(139, 92, 246, 0.08) 100%)',
+                        transform: 'translateY(-2px)',
+                        boxShadow: '0 8px 25px rgba(99, 102, 241, 0.2)',
                       },
                     }}
                   >
@@ -330,41 +461,117 @@ export function AdminTab() {
       {/* User Actions */}
       {selectedUser && (
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
+          initial={{ opacity: 0, y: 30, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ 
+            duration: 0.8,
+            delay: 0.3,
+            type: "spring",
+            stiffness: 100,
+            damping: 20
+          }}
+          style={{ position: 'relative', zIndex: 1 }}
         >
           <Card
-            elevation={8}
+            elevation={0}
             sx={{
-              background: 'rgba(15, 15, 35, 0.8)',
+              background: 'linear-gradient(135deg, rgba(15, 15, 35, 0.95) 0%, rgba(30, 30, 60, 0.9) 100%)',
               backdropFilter: 'blur(20px)',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
-              borderRadius: 3,
+              border: '1px solid rgba(139, 92, 246, 0.3)',
+              borderRadius: 4,
+              boxShadow: '0 25px 50px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+              position: 'relative',
+              overflow: 'hidden',
+              '&::before': {
+                content: '""',
+                position: 'absolute',
+                top: -40,
+                right: -40,
+                width: '80px',
+                height: '80px',
+                background: 'linear-gradient(45deg, rgba(139, 92, 246, 0.1), transparent)',
+                borderRadius: '50%',
+                animation: 'float 6s ease-in-out infinite',
+              },
+              '&::after': {
+                content: '""',
+                position: 'absolute',
+                bottom: -30,
+                left: -30,
+                width: '60px',
+                height: '60px',
+                background: 'linear-gradient(45deg, rgba(236, 72, 153, 0.1), transparent)',
+                borderRadius: '50%',
+                animation: 'float 8s ease-in-out infinite reverse',
+              },
             }}
           >
-            <CardContent sx={{ p: 4 }}>
-              <Typography variant="h5" sx={{ color: 'white', fontWeight: 700, mb: 3 }}>
-                Manage: {selectedUser.name}
-              </Typography>
+            <CardContent sx={{ p: 4, position: 'relative', zIndex: 2 }}>
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.4, duration: 0.6 }}
+              >
+                <Typography variant="h5" sx={{ 
+                  color: 'white', 
+                  fontWeight: 700, 
+                  mb: 3,
+                  background: 'linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%)',
+                  backgroundClip: 'text',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                }}>
+                  Manage: {selectedUser.name}
+                </Typography>
+              </motion.div>
 
               <Stack direction={{ xs: 'column', md: 'row' }} spacing={4}>
                 {/* XP Management */}
-                <Paper
-                  elevation={4}
-                  sx={{
-                    background: 'linear-gradient(135deg, #1f2937 0%, #111827 100%)',
-                    p: 3,
-                    borderRadius: 2,
-                    flex: 1,
-                  }}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5, duration: 0.6 }}
+                  style={{ flex: 1 }}
                 >
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
-                    <FlashOn sx={{ color: '#fbbf24', fontSize: 28 }} />
-                    <Typography variant="h6" sx={{ color: 'white', fontWeight: 600 }}>
-                      XP Management
-                    </Typography>
-                  </Box>
+                  <Paper
+                    elevation={0}
+                    sx={{
+                      background: 'linear-gradient(135deg, #1f2937 0%, #111827 100%)',
+                      p: 3,
+                      borderRadius: 3,
+                      border: '1px solid rgba(251, 191, 36, 0.3)',
+                      boxShadow: '0 10px 20px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+                    }}
+                  >
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
+                      <motion.div
+                        animate={{ 
+                          rotate: [0, 5, -5, 0],
+                          scale: [1, 1.05, 1]
+                        }}
+                        transition={{ 
+                          duration: 2,
+                          repeat: Infinity,
+                          repeatDelay: 3
+                        }}
+                      >
+                        <FlashOn sx={{ 
+                          color: '#fbbf24', 
+                          fontSize: 28,
+                          filter: 'drop-shadow(0 0 8px rgba(251, 191, 36, 0.5))'
+                        }} />
+                      </motion.div>
+                      <Typography variant="h6" sx={{ 
+                        color: 'white', 
+                        fontWeight: 600,
+                        background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
+                        backgroundClip: 'text',
+                        WebkitBackgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent',
+                      }}>
+                        XP Management
+                      </Typography>
+                    </Box>
                   <TextField
                     label="XP Amount"
                     type="number"
@@ -374,83 +581,135 @@ export function AdminTab() {
                     sx={{ mb: 3 }}
                     inputProps={{ min: 1, max: 1000 }}
                   />
-                  <Button
-                    variant="contained"
-                    onClick={() => awardXP(selectedUser.userId, xpAmount)}
-                    disabled={actionLoading || xpAmount <= 0}
-                    fullWidth
-                    startIcon={<Add />}
-                    sx={{
-                      background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
-                      '&:hover': {
-                        background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
-                      },
-                    }}
-                  >
-                    Award {xpAmount} XP
-                  </Button>
-                </Paper>
+                    <motion.div
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <Button
+                        variant="contained"
+                        onClick={() => awardXP(selectedUser.userId, xpAmount)}
+                        disabled={actionLoading || xpAmount <= 0}
+                        fullWidth
+                        startIcon={<Add />}
+                        sx={{
+                          background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
+                          boxShadow: '0 8px 20px rgba(251, 191, 36, 0.3)',
+                          '&:hover': {
+                            background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                            boxShadow: '0 12px 25px rgba(251, 191, 36, 0.4)',
+                          },
+                        }}
+                      >
+                        Award {xpAmount} XP
+                      </Button>
+                    </motion.div>
+                  </Paper>
+                </motion.div>
 
                 {/* Badge Management */}
-                <Paper
-                  elevation={4}
-                  sx={{
-                    background: 'linear-gradient(135deg, #1f2937 0%, #111827 100%)',
-                    p: 3,
-                    borderRadius: 2,
-                    flex: 1,
-                  }}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.6, duration: 0.6 }}
+                  style={{ flex: 1 }}
                 >
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
-                    <WorkspacePremium sx={{ color: '#8b5cf6', fontSize: 28 }} />
-                    <Typography variant="h6" sx={{ color: 'white', fontWeight: 600 }}>
-                      Badge Management
-                    </Typography>
-                  </Box>
+                  <Paper
+                    elevation={0}
+                    sx={{
+                      background: 'linear-gradient(135deg, #1f2937 0%, #111827 100%)',
+                      p: 3,
+                      borderRadius: 3,
+                      border: '1px solid rgba(139, 92, 246, 0.3)',
+                      boxShadow: '0 10px 20px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+                    }}
+                  >
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
+                      <motion.div
+                        animate={{ 
+                          rotate: [0, -5, 5, 0],
+                          scale: [1, 1.05, 1]
+                        }}
+                        transition={{ 
+                          duration: 2.5,
+                          repeat: Infinity,
+                          repeatDelay: 4
+                        }}
+                      >
+                        <WorkspacePremium sx={{ 
+                          color: '#8b5cf6', 
+                          fontSize: 28,
+                          filter: 'drop-shadow(0 0 8px rgba(139, 92, 246, 0.5))'
+                        }} />
+                      </motion.div>
+                      <Typography variant="h6" sx={{ 
+                        color: 'white', 
+                        fontWeight: 600,
+                        background: 'linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%)',
+                        backgroundClip: 'text',
+                        WebkitBackgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent',
+                      }}>
+                        Badge Management
+                      </Typography>
+                    </Box>
 
                   <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 3 }}>
                     {badgeTypes.map((badge) => {
                       const hasBadge = selectedUser.badges[badge.key as keyof typeof selectedUser.badges];
                       return (
-                        <Chip
+                        <motion.div
                           key={badge.key}
-                          label={`${badge.emoji} ${badge.name}`}
-                          variant={hasBadge ? 'filled' : 'outlined'}
-                          color={hasBadge ? 'success' : 'default'}
-                          onClick={() => {
-                            setSelectedBadge(badge.key);
-                            setSelectedAction(hasBadge ? 'lock' : 'unlock');
-                            setOpenDialog(true);
-                          }}
-                          sx={{
-                            mb: 1,
-                            cursor: 'pointer',
-                            '&:hover': {
-                              transform: 'scale(1.05)',
-                            },
-                          }}
-                        />
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                        >
+                          <Chip
+                            label={`${badge.emoji} ${badge.name}`}
+                            variant={hasBadge ? 'filled' : 'outlined'}
+                            color={hasBadge ? 'success' : 'default'}
+                            onClick={() => {
+                              setSelectedBadge(badge.key);
+                              setSelectedAction(hasBadge ? 'lock' : 'unlock');
+                              setOpenDialog(true);
+                            }}
+                            sx={{
+                              mb: 1,
+                              cursor: 'pointer',
+                              boxShadow: hasBadge ? '0 4px 12px rgba(16, 185, 129, 0.3)' : '0 2px 8px rgba(0, 0, 0, 0.1)',
+                              '&:hover': {
+                                boxShadow: hasBadge ? '0 6px 16px rgba(16, 185, 129, 0.4)' : '0 4px 12px rgba(0, 0, 0, 0.2)',
+                              },
+                            }}
+                          />
+                        </motion.div>
                       );
                     })}
                   </Box>
 
-                  <Button
-                    variant="outlined"
-                    onClick={() => setOpenDialog(true)}
-                    fullWidth
-                    startIcon={<AdminPanelSettings />}
-                    sx={{
-                      borderColor: '#8b5cf6',
-                      color: '#8b5cf6',
-                      '&:hover': {
-                        borderColor: '#7c3aed',
-                        background: 'rgba(139, 92, 246, 0.1)',
-                      },
-                    }}
-                  >
-                    Manage Badges
-                  </Button>
-                </Paper>
+                    <motion.div
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <Button
+                        variant="outlined"
+                        onClick={() => setOpenDialog(true)}
+                        fullWidth
+                        startIcon={<AdminPanelSettings />}
+                        sx={{
+                          borderColor: '#8b5cf6',
+                          color: '#8b5cf6',
+                          boxShadow: '0 4px 12px rgba(139, 92, 246, 0.2)',
+                          '&:hover': {
+                            borderColor: '#7c3aed',
+                            background: 'rgba(139, 92, 246, 0.1)',
+                            boxShadow: '0 6px 16px rgba(139, 92, 246, 0.3)',
+                          },
+                        }}
+                      >
+                        Manage Badges
+                      </Button>
+                    </motion.div>
+                  </Paper>
+                </motion.div>
               </Stack>
             </CardContent>
           </Card>
