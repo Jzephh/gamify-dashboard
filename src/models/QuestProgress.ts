@@ -1,5 +1,12 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
+export interface IObjectiveProgress {
+  objectiveId: string;
+  completed: boolean;
+  claimed: boolean;
+  completedAt?: Date;
+}
+
 export interface IQuestProgress extends Document {
   companyId: string;
   userId: string;
@@ -15,14 +22,8 @@ export interface IQuestProgress extends Document {
   };
   dailyCompleted: boolean;
   weeklyCompleted: boolean;
-  dailyClaimed: {
-    send10: boolean;
-    success1: boolean;
-  };
-  weeklyClaimed: {
-    send100: boolean;
-    success10: boolean;
-  };
+  dailyObjectives: IObjectiveProgress[];
+  weeklyObjectives: IObjectiveProgress[];
   dailyQuestSeen: boolean;
   weeklyQuestSeen: boolean;
   dailyNotificationCount: number;
@@ -30,6 +31,13 @@ export interface IQuestProgress extends Document {
   createdAt: Date;
   updatedAt: Date;
 }
+
+const ObjectiveProgressSchema = new Schema<IObjectiveProgress>({
+  objectiveId: { type: String, required: true },
+  completed: { type: Boolean, default: false },
+  claimed: { type: Boolean, default: false },
+  completedAt: { type: Date },
+});
 
 const QuestProgressSchema = new Schema<IQuestProgress>({
   companyId: { type: String, required: true, index: true },
@@ -46,14 +54,8 @@ const QuestProgressSchema = new Schema<IQuestProgress>({
   },
   dailyCompleted: { type: Boolean, default: false },
   weeklyCompleted: { type: Boolean, default: false },
-  dailyClaimed: {
-    send10: { type: Boolean, default: false },
-    success1: { type: Boolean, default: false },
-  },
-  weeklyClaimed: {
-    send100: { type: Boolean, default: false },
-    success10: { type: Boolean, default: false },
-  },
+  dailyObjectives: [ObjectiveProgressSchema],
+  weeklyObjectives: [ObjectiveProgressSchema],
   dailyQuestSeen: { type: Boolean, default: true },
   weeklyQuestSeen: { type: Boolean, default: true },
   dailyNotificationCount: { type: Number, default: 0 },

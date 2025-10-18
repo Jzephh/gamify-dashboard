@@ -22,23 +22,23 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Company ID not configured' }, { status: 500 });
     }
 
-    const { questId } = await request.json();
+    const { objectiveId } = await request.json();
     
-    if (!questId) {
-      return NextResponse.json({ error: 'Quest ID is required' }, { status: 400 });
+    if (!objectiveId) {
+      return NextResponse.json({ error: 'Objective ID is required' }, { status: 400 });
     }
 
     const questService = new QuestService(companyId);
     const xpEngine = new XPEngine(companyId);
 
-    // Claim the quest
-    const claimResult = await questService.claimQuest(userId, questId);
+    // Claim the objective
+    const claimResult = await questService.claimObjective(userId, objectiveId);
     
     if (!claimResult.success) {
       return NextResponse.json({ error: claimResult.error }, { status: 400 });
     }
 
-    // Award XP for the quest
+    // Award XP for the objective
     if (claimResult.xp > 0) {
       await xpEngine.awardXP(userId, claimResult.xp, false);
     }
@@ -46,7 +46,7 @@ export async function POST(request: Request) {
     return NextResponse.json({
       success: true,
       xpAwarded: claimResult.xp,
-      questId: questId
+      objectiveId: objectiveId
     });
   } catch (error) {
     console.error('Error claiming quest:', error);

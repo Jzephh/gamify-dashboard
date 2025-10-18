@@ -34,6 +34,8 @@ import {
   FlashOn,
   Add,
   AdminPanelSettings,
+  Search,
+  Clear,
 } from '@mui/icons-material';
 
 interface AdminUser {
@@ -59,20 +61,65 @@ interface AdminUser {
   createdAt: string;
 }
 
+interface QuestConfig {
+  _id: string;
+  questId: string;
+  questType: 'daily' | 'weekly';
+  title: string;
+  description: string;
+  messageCount: number;
+  successMessageCount: number;
+  xpReward: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export function AdminTab() {
   const [users, setUsers] = useState<AdminUser[]>([]);
+  const [filteredUsers, setFilteredUsers] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
   const [xpAmount, setXpAmount] = useState(10);
+  
+  // Quest management state
+  const [quests, setQuests] = useState<QuestConfig[]>([]);
+  const [selectedQuest, setSelectedQuest] = useState<QuestConfig | null>(null);
+  const [questDialogOpen, setQuestDialogOpen] = useState(false);
+  const [questForm, setQuestForm] = useState({
+    title: '',
+    description: '',
+    messageCount: 0,
+    successMessageCount: 0,
+    xpReward: 0,
+    isActive: true,
+  });
   const [actionLoading, setActionLoading] = useState(false);
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedBadge, setSelectedBadge] = useState('');
   const [selectedAction, setSelectedAction] = useState('');
   const [alert, setAlert] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     fetchUsers();
+    fetchQuests();
   }, []);
+
+  // Filter users based on search criteria
+  useEffect(() => {
+    let filtered = users;
+
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(user => 
+        user.username.toLowerCase().includes(query) ||
+        user.name.toLowerCase().includes(query)
+      );
+    }
+
+    setFilteredUsers(filtered);
+  }, [users, searchQuery]);
 
   const fetchUsers = async () => {
     try {
@@ -81,6 +128,7 @@ export function AdminTab() {
       if (response.ok) {
         const data = await response.json();
         setUsers(data);
+        setFilteredUsers(data);
       }
     } catch (error) {
       console.error('Error fetching users:', error);
@@ -88,6 +136,80 @@ export function AdminTab() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const clearSearch = () => {
+    setSearchQuery('');
+  };
+
+  // Quest management functions
+  const fetchQuests = async () => {
+    try {
+      const response = await fetch('/api/admin/quests');
+      if (response.ok) {
+        const data = await response.json();
+        setQuests(data);
+      }
+    } catch (error) {
+      console.error('Error fetching quests:', error);
+      setAlert({ type: 'error', message: 'Failed to fetch quests' });
+    }
+  };
+
+  const handleEditQuest = (quest: QuestConfig) => {
+    setSelectedQuest(quest);
+    setQuestForm({
+      title: quest.title,
+      description: quest.description,
+      messageCount: quest.messageCount,
+      successMessageCount: quest.successMessageCount,
+      xpReward: quest.xpReward,
+      isActive: quest.isActive,
+    });
+    setQuestDialogOpen(true);
+  };
+
+  const handleSaveQuest = async () => {
+    if (!selectedQuest) return;
+
+    try {
+      setActionLoading(true);
+      const response = await fetch('/api/admin/quests', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          questId: selectedQuest.questId,
+          updates: questForm,
+        }),
+      });
+
+      if (response.ok) {
+        setAlert({ type: 'success', message: 'Quest updated successfully' });
+        fetchQuests();
+        setQuestDialogOpen(false);
+        setSelectedQuest(null);
+      } else {
+        setAlert({ type: 'error', message: 'Failed to update quest' });
+      }
+    } catch (error) {
+      console.error('Error updating quest:', error);
+      setAlert({ type: 'error', message: 'Failed to update quest' });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleCloseQuestDialog = () => {
+    setQuestDialogOpen(false);
+    setSelectedQuest(null);
+    setQuestForm({
+      title: '',
+      description: '',
+      messageCount: 0,
+      successMessageCount: 0,
+      xpReward: 0,
+      isActive: true,
+    });
   };
 
   const awardXP = async (userId: string, amount: number) => {
@@ -283,6 +405,183 @@ export function AdminTab() {
         </Card>
       </motion.div>
 
+      {/* Search Section */}
+      <motion.div
+        initial={{ opacity: 0, y: 30, scale: 0.95 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ 
+          duration: 0.8,
+          delay: 0.1,
+          type: "spring",
+          stiffness: 100,
+          damping: 20
+        }}
+        style={{ position: 'relative', zIndex: 1 }}
+      >
+        <Card
+          elevation={0}
+          sx={{
+            background: 'linear-gradient(135deg, rgba(15, 15, 35, 0.95) 0%, rgba(30, 30, 60, 0.9) 100%)',
+            backdropFilter: 'blur(20px)',
+            border: '1px solid rgba(99, 102, 241, 0.3)',
+            borderRadius: 4,
+            mb: 4,
+            boxShadow: '0 25px 50px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+            position: 'relative',
+            overflow: 'hidden',
+            '&::before': {
+              content: '""',
+              position: 'absolute',
+              top: -20,
+              left: -20,
+              width: '40px',
+              height: '40px',
+              background: 'linear-gradient(45deg, rgba(99, 102, 241, 0.1), transparent)',
+              borderRadius: '50%',
+              animation: 'float 4s ease-in-out infinite',
+            },
+            '&::after': {
+              content: '""',
+              position: 'absolute',
+              bottom: -15,
+              right: -15,
+              width: '30px',
+              height: '30px',
+              background: 'linear-gradient(45deg, rgba(139, 92, 246, 0.1), transparent)',
+              borderRadius: '50%',
+              animation: 'float 6s ease-in-out infinite reverse',
+            },
+          }}
+        >
+          <CardContent sx={{ p: 4, position: 'relative', zIndex: 2 }}>
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.2, duration: 0.6 }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
+                <motion.div
+                  animate={{ 
+                    rotate: [0, 5, -5, 0],
+                    scale: [1, 1.05, 1]
+                  }}
+                  transition={{ 
+                    duration: 2,
+                    repeat: Infinity,
+                    repeatDelay: 3
+                  }}
+                >
+                  <Search sx={{ 
+                    color: '#6366f1', 
+                    fontSize: 28,
+                    filter: 'drop-shadow(0 0 8px rgba(99, 102, 241, 0.5))'
+                  }} />
+                </motion.div>
+                <Typography variant="h5" sx={{ 
+                  color: 'white', 
+                  fontWeight: 700,
+                  background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                  backgroundClip: 'text',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                }}>
+                  Search Users
+                </Typography>
+              </Box>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3, duration: 0.6 }}
+            >
+              <TextField
+                fullWidth
+                label="Search Users"
+                placeholder="Search by username or display name..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                InputProps={{
+                  startAdornment: (
+                    <Search sx={{ 
+                      color: '#6366f1', 
+                      mr: 1,
+                      fontSize: 20
+                    }} />
+                  ),
+                  endAdornment: searchQuery && (
+                    <motion.div
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                    >
+                      <Clear 
+                        sx={{ 
+                          color: '#a1a1aa', 
+                          cursor: 'pointer',
+                          fontSize: 20,
+                          '&:hover': { color: '#ef4444' }
+                        }}
+                        onClick={clearSearch}
+                      />
+                    </motion.div>
+                  )
+                }}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    background: 'rgba(15, 15, 35, 0.8)',
+                    border: '1px solid rgba(99, 102, 241, 0.3)',
+                    borderRadius: 3,
+                    '&:hover': {
+                      border: '1px solid rgba(99, 102, 241, 0.5)',
+                      boxShadow: '0 0 20px rgba(99, 102, 241, 0.2)',
+                    },
+                    '&.Mui-focused': {
+                      border: '2px solid #6366f1',
+                      boxShadow: '0 0 25px rgba(99, 102, 241, 0.3)',
+                    },
+                  },
+                  '& .MuiInputLabel-root': {
+                    color: '#a1a1aa',
+                    '&.Mui-focused': {
+                      color: '#6366f1',
+                    },
+                  },
+                  '& .MuiOutlinedInput-input': {
+                    color: 'white',
+                    '&::placeholder': {
+                      color: '#6b7280',
+                      opacity: 1,
+                    },
+                  },
+                }}
+              />
+            </motion.div>
+
+            {/* Search Results Info */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6, duration: 0.6 }}
+            >
+              <Box sx={{ mt: 3, textAlign: 'center' }}>
+                <Typography variant="body2" sx={{ 
+                  color: '#a1a1aa',
+                  background: 'rgba(99, 102, 241, 0.1)',
+                  px: 2,
+                  py: 1,
+                  borderRadius: 2,
+                  display: 'inline-block',
+                  border: '1px solid rgba(99, 102, 241, 0.2)',
+                }}>
+                  Showing {filteredUsers.length} of {users.length} users
+                  {searchQuery && ' (filtered)'}
+                </Typography>
+              </Box>
+            </motion.div>
+          </CardContent>
+        </Card>
+      </motion.div>
+
       {/* Users List */}
       <motion.div
         initial={{ opacity: 0, y: 30, scale: 0.95 }}
@@ -346,12 +645,41 @@ export function AdminTab() {
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
               }}>
-                Users ({users.length})
+                Users ({filteredUsers.length})
               </Typography>
             </motion.div>
             
             <List sx={{ maxHeight: 400, overflow: 'auto' }}>
-              {users.map((user, index) => (
+              {filteredUsers.length === 0 ? (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6 }}
+                >
+                  <Box sx={{ 
+                    textAlign: 'center', 
+                    py: 6,
+                    background: 'rgba(239, 68, 68, 0.1)',
+                    borderRadius: 3,
+                    border: '1px solid rgba(239, 68, 68, 0.2)',
+                  }}>
+                    <Typography variant="h6" sx={{ 
+                      color: '#ef4444', 
+                      fontWeight: 600,
+                      mb: 1
+                    }}>
+                      No users found
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: '#a1a1aa' }}>
+                      {searchQuery 
+                        ? 'Try adjusting your search criteria' 
+                        : 'No users available'
+                      }
+                    </Typography>
+                  </Box>
+                </motion.div>
+              ) : (
+                filteredUsers.map((user, index) => (
                 <motion.div
                   key={user._id}
                   initial={{ opacity: 0, x: -30, scale: 0.95 }}
@@ -452,7 +780,8 @@ export function AdminTab() {
                     </ListItemSecondaryAction>
                   </ListItem>
                 </motion.div>
-              ))}
+                ))
+              )}
             </List>
           </CardContent>
         </Card>
@@ -764,6 +1093,282 @@ export function AdminTab() {
             }}
           >
             {actionLoading ? 'Processing...' : 'Apply'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Quest Management Section */}
+      <motion.div
+        initial={{ opacity: 0, y: 30, scale: 0.95 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ 
+          duration: 0.8,
+          delay: 0.2,
+          type: "spring",
+          stiffness: 100,
+          damping: 20
+        }}
+        style={{ position: 'relative', zIndex: 1 }}
+      >
+        <Card
+          elevation={0}
+          sx={{
+            background: 'linear-gradient(135deg, rgba(15, 15, 35, 0.95) 0%, rgba(30, 30, 60, 0.9) 100%)',
+            backdropFilter: 'blur(20px)',
+            border: '1px solid rgba(16, 185, 129, 0.3)',
+            borderRadius: 4,
+            mb: 4,
+            boxShadow: '0 25px 50px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+            position: 'relative',
+            overflow: 'hidden',
+          }}
+        >
+          <CardContent sx={{ p: 4, position: 'relative', zIndex: 2 }}>
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.3, duration: 0.6 }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
+                <motion.div
+                  animate={{ 
+                    rotate: [0, 5, -5, 0],
+                    scale: [1, 1.05, 1]
+                  }}
+                  transition={{ 
+                    duration: 2,
+                    repeat: Infinity,
+                    repeatDelay: 3
+                  }}
+                >
+                  <WorkspacePremium sx={{ 
+                    color: '#10b981', 
+                    fontSize: 28,
+                    filter: 'drop-shadow(0 0 8px rgba(16, 185, 129, 0.5))'
+                  }} />
+                </motion.div>
+                <Typography variant="h5" sx={{ 
+                  color: 'white', 
+                  fontWeight: 700,
+                  background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                  backgroundClip: 'text',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                }}>
+                  Quest Management
+                </Typography>
+              </Box>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4, duration: 0.6 }}
+            >
+              <Typography variant="body1" sx={{ 
+                color: 'rgba(255, 255, 255, 0.8)', 
+                mb: 3,
+                lineHeight: 1.6
+              }}>
+                Configure quest settings, XP rewards, and message requirements. Changes will affect all users.
+              </Typography>
+            </motion.div>
+
+            {/* Quest List */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5, duration: 0.6 }}
+            >
+              <Stack spacing={2}>
+                {quests.map((quest, index) => (
+                  <motion.div
+                    key={quest._id}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.6 + index * 0.1, duration: 0.6 }}
+                  >
+                    <Paper
+                      elevation={0}
+                      sx={{
+                        background: 'linear-gradient(135deg, #1f2937 0%, #111827 100%)',
+                        p: 3,
+                        borderRadius: 3,
+                        border: '1px solid rgba(16, 185, 129, 0.3)',
+                        boxShadow: '0 10px 20px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+                        cursor: 'pointer',
+                        '&:hover': {
+                          boxShadow: '0 15px 30px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+                          transform: 'translateY(-2px)',
+                        },
+                        transition: 'all 0.3s ease',
+                      }}
+                      onClick={() => handleEditQuest(quest)}
+                    >
+                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <Box sx={{ flex: 1 }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 1 }}>
+                            <Chip
+                              label={quest.questType.toUpperCase()}
+                              size="small"
+                              sx={{
+                                background: quest.questType === 'daily' 
+                                  ? 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)'
+                                  : 'linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%)',
+                                color: 'white',
+                                fontWeight: 600,
+                                fontSize: '0.7rem',
+                              }}
+                            />
+                            <Chip
+                              label={quest.isActive ? 'ACTIVE' : 'INACTIVE'}
+                              size="small"
+                              sx={{
+                                background: quest.isActive 
+                                  ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)'
+                                  : 'linear-gradient(135deg, #6b7280 0%, #4b5563 100%)',
+                                color: 'white',
+                                fontWeight: 600,
+                                fontSize: '0.7rem',
+                              }}
+                            />
+                          </Box>
+                          <Typography variant="h6" sx={{ color: 'white', fontWeight: 600, mb: 1 }}>
+                            {quest.title}
+                          </Typography>
+                          <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)', mb: 2 }}>
+                            {quest.description}
+                          </Typography>
+                          <Box sx={{ display: 'flex', gap: 3 }}>
+                            <Box>
+                              <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '0.8rem' }}>
+                                Messages Required
+                              </Typography>
+                              <Typography variant="body1" sx={{ color: 'white', fontWeight: 600 }}>
+                                {quest.messageCount}
+                              </Typography>
+                            </Box>
+                            <Box>
+                              <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '0.8rem' }}>
+                                Success Messages Required
+                              </Typography>
+                              <Typography variant="body1" sx={{ color: 'white', fontWeight: 600 }}>
+                                {quest.successMessageCount}
+                              </Typography>
+                            </Box>
+                            <Box>
+                              <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '0.8rem' }}>
+                                XP Reward
+                              </Typography>
+                              <Typography variant="body1" sx={{ color: '#fbbf24', fontWeight: 600 }}>
+                                +{quest.xpReward} XP
+                              </Typography>
+                            </Box>
+                          </Box>
+                        </Box>
+                        <motion.div
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
+                        >
+                          <Button
+                            variant="outlined"
+                            size="small"
+                            sx={{
+                              borderColor: '#10b981',
+                              color: '#10b981',
+                              '&:hover': {
+                                borderColor: '#059669',
+                                background: 'rgba(16, 185, 129, 0.1)',
+                              },
+                            }}
+                          >
+                            Edit
+                          </Button>
+                        </motion.div>
+                      </Box>
+                    </Paper>
+                  </motion.div>
+                ))}
+              </Stack>
+            </motion.div>
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      {/* Quest Edit Dialog */}
+      <Dialog open={questDialogOpen} onClose={handleCloseQuestDialog} maxWidth="md" fullWidth>
+        <DialogTitle sx={{ color: 'white', background: 'rgba(15, 15, 35, 0.9)' }}>
+          Edit Quest: {selectedQuest?.title}
+        </DialogTitle>
+        <DialogContent sx={{ background: 'rgba(15, 15, 35, 0.9)' }}>
+          <Box sx={{ pt: 2 }}>
+            <TextField
+              fullWidth
+              label="Title"
+              value={questForm.title}
+              onChange={(e) => setQuestForm({ ...questForm, title: e.target.value })}
+              sx={{ mb: 3 }}
+            />
+            <TextField
+              fullWidth
+              label="Description"
+              value={questForm.description}
+              onChange={(e) => setQuestForm({ ...questForm, description: e.target.value })}
+              multiline
+              rows={3}
+              sx={{ mb: 3 }}
+            />
+            <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
+              <TextField
+                label="Message Count"
+                type="number"
+                value={questForm.messageCount}
+                onChange={(e) => setQuestForm({ ...questForm, messageCount: parseInt(e.target.value) || 0 })}
+                sx={{ flex: 1 }}
+              />
+              <TextField
+                label="Success Message Count"
+                type="number"
+                value={questForm.successMessageCount}
+                onChange={(e) => setQuestForm({ ...questForm, successMessageCount: parseInt(e.target.value) || 0 })}
+                sx={{ flex: 1 }}
+              />
+            </Box>
+            <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
+              <TextField
+                label="XP Reward"
+                type="number"
+                value={questForm.xpReward}
+                onChange={(e) => setQuestForm({ ...questForm, xpReward: parseInt(e.target.value) || 0 })}
+                sx={{ flex: 1 }}
+              />
+              <FormControl sx={{ flex: 1 }}>
+                <InputLabel>Status</InputLabel>
+                <Select
+                  value={questForm.isActive ? 'active' : 'inactive'}
+                  onChange={(e) => setQuestForm({ ...questForm, isActive: e.target.value === 'active' })}
+                  label="Status"
+                >
+                  <MenuItem value="active">Active</MenuItem>
+                  <MenuItem value="inactive">Inactive</MenuItem>
+                </Select>
+              </FormControl>
+            </Box>
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ background: 'rgba(15, 15, 35, 0.9)' }}>
+          <Button onClick={handleCloseQuestDialog} sx={{ color: '#a1a1aa' }}>
+            Cancel
+          </Button>
+          <Button
+            onClick={handleSaveQuest}
+            disabled={actionLoading}
+            variant="contained"
+            sx={{
+              background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+            }}
+          >
+            {actionLoading ? 'Saving...' : 'Save Changes'}
           </Button>
         </DialogActions>
       </Dialog>

@@ -6,7 +6,7 @@ import { CssBaseline, Box, Container, Typography, Tabs, Tab, Paper } from '@mui/
 import { Warning } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ProfileTab } from '@/components/ProfileTab';
-import { QuestsTab } from '@/components/QuestsTab';
+import QuestsTab from '@/components/QuestsTab';
 import { AdminTab } from '@/components/AdminTab';
 import { LevelUpModal } from '@/components/LevelUpModal';
 import { LevelUpTab } from '@/components/LevelUpTab';
