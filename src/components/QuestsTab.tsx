@@ -305,7 +305,7 @@ export function QuestsTab({ userId }: QuestsTabProps) {
                 sx={{
                   height: 12,
                   borderRadius: 6,
-                  backgroundColor: 'rgba(226, 2, 255, 0.97) !important',
+                  backgroundColor: 'rgba(0, 0, 0, 0.6) !important',
                   boxShadow: 'inset 0 2px 4px rgba(0, 0, 0, 0.4)',
                   '& .MuiLinearProgress-bar': {
                     backgroundColor: 'transparent !important',
@@ -314,16 +314,15 @@ export function QuestsTab({ userId }: QuestsTabProps) {
                       : 'linear-gradient(135deg, #8b5cf6 0%, #ec4899 50%, #f59e0b 100%) !important',
                     borderRadius: 6,
                     boxShadow: quest.completed 
-                      ? '0 0 15px rgba(16, 185, 129, 1.0)'
+                      ? '0 0 25px rgba(16, 185, 129, 1.0), 0 0 50px rgba(16, 185, 129, 0.6)'
                       : `
-                          0 0 20px rgba(139, 92, 246, 1.0),
-                          0 0 40px rgba(236, 72, 153, 1.0),
-                          0 0 60px rgba(245, 158, 11, 1.0),
-                          0 0 40px rgba(236, 72, 153, 0.6),
-                          0 0 60px rgba(245, 158, 11, 0.4)
+                          0 0 30px rgba(139, 92, 246, 1.0),
+                          0 0 60px rgba(236, 72, 153, 1.0),
+                          0 0 90px rgba(245, 158, 11, 0.8),
+                          0 0 120px rgba(245, 158, 11, 0.4)
                         `,
                     position: 'relative',
-                    filter: quest.completed ? 'none' : 'contrast(1.2) saturate(1.3)',
+                    filter: quest.completed ? 'none' : 'contrast(1.5) saturate(1.8) brightness(1.2)',
                     '&::before': quest.completed ? {} : {
                       content: '""',
                       position: 'absolute',
@@ -331,9 +330,9 @@ export function QuestsTab({ userId }: QuestsTabProps) {
                       left: 0,
                       right: 0,
                       bottom: 0,
-                      background: 'linear-gradient(135deg, rgba(139, 92, 246, 1.0) 0%, rgba(236, 72, 153, 1.0) 50%, rgba(245, 158, 11, 1.0) 100%)',
+                      background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.8) 0%, rgba(236, 72, 153, 0.8) 50%, rgba(245, 158, 11, 0.8) 100%)',
                       borderRadius: 6,
-                      animation: 'holographicPulse 2s ease-in-out infinite',
+                      animation: 'holographicPulse 1.5s ease-in-out infinite',
                     },
                     '&::after': {
                       content: '""',
@@ -360,12 +359,12 @@ export function QuestsTab({ userId }: QuestsTabProps) {
                   },
                   '@keyframes holographicPulse': {
                     '0%, 100%': { 
-                      opacity: 0.4,
-                      filter: 'hue-rotate(0deg) brightness(1)'
+                      opacity: 0.6,
+                      filter: 'hue-rotate(0deg) brightness(1.2)'
                     },
                     '50%': { 
-                      opacity: 0.8,
-                      filter: 'hue-rotate(30deg) brightness(1.2)'
+                      opacity: 1.0,
+                      filter: 'hue-rotate(60deg) brightness(1.5)'
                     },
                   },
                 }}
@@ -455,134 +454,47 @@ export function QuestsTab({ userId }: QuestsTabProps) {
         '66%': { transform: 'translateY(10px) rotate(-1deg)' },
       },
     }}>
-      {/* Quests in 2x2 Grid Layout */}
+      {/* 2x2 Grid Layout */}
       <Box sx={{ position: 'relative', zIndex: 1 }}>
-        <Stack direction={{ xs: "column", lg: "row" }} spacing={4}>
-          {/* Daily Quests - Left Side */}
+        <Box sx={{ 
+          display: 'grid', 
+          gridTemplateColumns: { xs: '1fr', lg: '1fr 1fr' },
+          gap: 4,
+          mb: 4
+        }}>
+          {/* Daily Quest 1 - Top Left */}
           <motion.div
-            initial={{ opacity: 0, x: -30, scale: 0.95 }}
-            animate={{ opacity: 1, x: 0, scale: 1 }}
+            initial={{ opacity: 0, x: -30, y: -30, scale: 0.95 }}
+            animate={{ opacity: 1, x: 0, y: 0, scale: 1 }}
             transition={{ 
               duration: 0.8,
               type: "spring",
               stiffness: 100,
               damping: 20
             }}
-            style={{ flex: 1 }}
           >
-        <Card
-          elevation={0}
-          sx={{
-            background: 'linear-gradient(135deg, rgba(15, 15, 35, 0.95) 0%, rgba(30, 30, 60, 0.9) 100%)',
-            backdropFilter: 'blur(20px)',
-            border: '1px solid rgba(99, 102, 241, 0.3)',
-            borderRadius: 4,
-            mb: 4,
-            boxShadow: '0 25px 50px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
-            position: 'relative',
-            overflow: 'hidden',
-            '&::before': {
-              content: '""',
-              position: 'absolute',
-              top: -50,
-              left: -50,
-              width: '100px',
-              height: '100px',
-              background: 'linear-gradient(45deg, rgba(99, 102, 241, 0.1), transparent)',
-              borderRadius: '50%',
-              animation: 'float 6s ease-in-out infinite',
-            },
-            '&::after': {
-              content: '""',
-              position: 'absolute',
-              bottom: -30,
-              right: -30,
-              width: '60px',
-              height: '60px',
-              background: 'linear-gradient(45deg, rgba(139, 92, 246, 0.1), transparent)',
-              borderRadius: '50%',
-              animation: 'float 8s ease-in-out infinite reverse',
-            },
-            '@keyframes float': {
-              '0%, 100%': { transform: 'translateY(0px) rotate(0deg)' },
-              '50%': { transform: 'translateY(-20px) rotate(180deg)' },
-            },
-          }}
-        >
-          <CardContent sx={{ p: 4, position: 'relative', zIndex: 2 }}>
-            <motion.div
-              initial={{ opacity: 0, x: -30 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.2, duration: 0.6 }}
-            >
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 4 }}>
-                <motion.div
-                  animate={{ 
-                    rotate: [0, 5, -5, 0],
-                    scale: [1, 1.05, 1]
-                  }}
-                  transition={{ 
-                    duration: 2,
-                    repeat: Infinity,
-                    repeatDelay: 3
-                  }}
-                >
-                  <CalendarToday sx={{ 
-                    color: '#3b82f6', 
-                    fontSize: 32,
-                    filter: 'drop-shadow(0 0 8px rgba(59, 130, 246, 0.5))'
-                  }} />
-                </motion.div>
-                <motion.div
-                  onClick={() => handleQuestSectionClick('daily')}
-                  style={{ cursor: dailyQuests.every(quest => quest.completed) ? 'pointer' : 'default' }}
-                  whileHover={dailyQuests.every(quest => quest.completed) ? { scale: 1.05 } : {}}
-                  whileTap={dailyQuests.every(quest => quest.completed) ? { scale: 0.95 } : {}}
-                >
-                  <Typography variant="h4" sx={{ 
-                    color: 'white', 
-                    fontWeight: 700,
-                    background: dailyQuests.every(quest => quest.completed) 
-                      ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)'
-                      : 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
-                    backgroundClip: 'text',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    textShadow: dailyQuests.every(quest => quest.completed) 
-                      ? '0 0 10px rgba(16, 185, 129, 0.5)' 
-                      : 'none',
-                    transition: 'all 0.3s ease',
-                  }}>
-                    Daily Quests
-                  </Typography>
-                </motion.div>
-              </Box>
-            </motion.div>
-            <Stack direction={{ xs: "column", md: "row" }} spacing={2} sx={{ width: '100%' }}>
-              {dailyQuests.map((quest, index) => (
-                <Box key={quest.id} sx={{ flex: 1, minWidth: 0 }}>
-                  <QuestCard quest={quest} index={index} />
-                </Box>
-              ))}
-            </Stack>
-            <Box sx={{ mt: 3, textAlign: 'center' }}>
-              <Chip
-                label="Daily quests reset every day at midnight"
-                sx={{
-                  background: 'rgba(59, 130, 246, 0.2)',
-                  color: '#93c5fd',
-                  border: '1px solid rgba(59, 130, 246, 0.3)',
-                }}
-              />
-            </Box>
-          </CardContent>
-        </Card>
-        </motion.div>
+            <QuestCard quest={dailyQuests[0]} index={0} />
+          </motion.div>
 
-          {/* Weekly Quests - Right Side */}
+          {/* Daily Quest 2 - Bottom Left */}
           <motion.div
-            initial={{ opacity: 0, x: 30, scale: 0.95 }}
-            animate={{ opacity: 1, x: 0, scale: 1 }}
+            initial={{ opacity: 0, x: -30, y: 30, scale: 0.95 }}
+            animate={{ opacity: 1, x: 0, y: 0, scale: 1 }}
+            transition={{ 
+              duration: 0.8,
+              delay: 0.1,
+              type: "spring",
+              stiffness: 100,
+              damping: 20
+            }}
+          >
+            <QuestCard quest={dailyQuests[1]} index={1} />
+          </motion.div>
+
+          {/* Weekly Quest 1 - Top Right */}
+          <motion.div
+            initial={{ opacity: 0, x: 30, y: -30, scale: 0.95 }}
+            animate={{ opacity: 1, x: 0, y: 0, scale: 1 }}
             transition={{ 
               duration: 0.8,
               delay: 0.2,
@@ -590,113 +502,25 @@ export function QuestsTab({ userId }: QuestsTabProps) {
               stiffness: 100,
               damping: 20
             }}
-            style={{ flex: 1 }}
           >
-        <Card
-          elevation={0}
-          sx={{
-            background: 'linear-gradient(135deg, rgba(15, 15, 35, 0.95) 0%, rgba(30, 30, 60, 0.9) 100%)',
-            backdropFilter: 'blur(20px)',
-            border: '1px solid rgba(139, 92, 246, 0.3)',
-            borderRadius: 4,
-            mb: 4,
-            boxShadow: '0 25px 50px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
-            position: 'relative',
-            overflow: 'hidden',
-            '&::before': {
-              content: '""',
-              position: 'absolute',
-              top: -40,
-              right: -40,
-              width: '80px',
-              height: '80px',
-              background: 'linear-gradient(45deg, rgba(139, 92, 246, 0.1), transparent)',
-              borderRadius: '50%',
-              animation: 'float 7s ease-in-out infinite',
-            },
-            '&::after': {
-              content: '""',
-              position: 'absolute',
-              bottom: -40,
-              left: -40,
-              width: '70px',
-              height: '70px',
-              background: 'linear-gradient(45deg, rgba(236, 72, 153, 0.1), transparent)',
-              borderRadius: '50%',
-              animation: 'float 9s ease-in-out infinite reverse',
-            },
-          }}
-        >
-          <CardContent sx={{ p: 4, position: 'relative', zIndex: 2 }}>
-            <motion.div
-              initial={{ opacity: 0, x: -30 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.4, duration: 0.6 }}
-            >
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 4 }}>
-                <motion.div
-                  animate={{ 
-                    rotate: [0, -5, 5, 0],
-                    scale: [1, 1.05, 1]
-                  }}
-                  transition={{ 
-                    duration: 2.5,
-                    repeat: Infinity,
-                    repeatDelay: 4
-                  }}
-                >
-                  <Schedule sx={{ 
-                    color: '#8b5cf6', 
-                    fontSize: 32,
-                    filter: 'drop-shadow(0 0 8px rgba(139, 92, 246, 0.5))'
-                  }} />
-                </motion.div>
-                <motion.div
-                  onClick={() => handleQuestSectionClick('weekly')}
-                  style={{ cursor: weeklyQuests.every(quest => quest.completed) ? 'pointer' : 'default' }}
-                  whileHover={weeklyQuests.every(quest => quest.completed) ? { scale: 1.05 } : {}}
-                  whileTap={weeklyQuests.every(quest => quest.completed) ? { scale: 0.95 } : {}}
-                >
-                  <Typography variant="h4" sx={{ 
-                    color: 'white', 
-                    fontWeight: 700,
-                    background: weeklyQuests.every(quest => quest.completed) 
-                      ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)'
-                      : 'linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%)',
-                    backgroundClip: 'text',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    textShadow: weeklyQuests.every(quest => quest.completed) 
-                      ? '0 0 10px rgba(16, 185, 129, 0.5)' 
-                      : 'none',
-                    transition: 'all 0.3s ease',
-                  }}>
-                    Weekly Quests
-                  </Typography>
-                </motion.div>
-              </Box>
-            </motion.div>
-            <Stack direction={{ xs: "column", md: "row" }} spacing={2} sx={{ width: '100%' }}>
-              {weeklyQuests.map((quest, index) => (
-                <Box key={quest.id} sx={{ flex: 1, minWidth: 0 }}>
-                  <QuestCard quest={quest} index={index} />
-                </Box>
-              ))}
-            </Stack>
-            <Box sx={{ mt: 3, textAlign: 'center' }}>
-              <Chip
-                label="Weekly quests reset every Monday at midnight"
-                sx={{
-                  background: 'rgba(139, 92, 246, 0.2)',
-                  color: '#c4b5fd',
-                  border: '1px solid rgba(139, 92, 246, 0.3)',
-                }}
-              />
-            </Box>
-          </CardContent>
-          </Card>
+            <QuestCard quest={weeklyQuests[0]} index={2} />
           </motion.div>
-        </Stack>
+
+          {/* Weekly Quest 2 - Bottom Right */}
+          <motion.div
+            initial={{ opacity: 0, x: 30, y: 30, scale: 0.95 }}
+            animate={{ opacity: 1, x: 0, y: 0, scale: 1 }}
+            transition={{ 
+              duration: 0.8,
+              delay: 0.3,
+              type: "spring",
+              stiffness: 100,
+              damping: 20
+            }}
+          >
+            <QuestCard quest={weeklyQuests[1]} index={3} />
+          </motion.div>
+        </Box>
       </Box>
 
       {/* Quest Tips */}
