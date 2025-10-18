@@ -212,15 +212,18 @@ export class QuestService {
     }
   }
 
-  // Get date key (YYYY-MM-DD)
+  // Get date key (YYYY-MM-DD) in New York timezone
   private getDateKey(date: Date): string {
-    return date.toISOString().split('T')[0];
+    // Convert to New York timezone
+    const nyDate = new Date(date.toLocaleString("en-US", {timeZone: "America/New_York"}));
+    return nyDate.toISOString().split('T')[0];
   }
 
-  // Get week key (YYYY-WW)
+  // Get week key (YYYY-WW) in New York timezone
   private getWeekKey(date: Date): string {
-    const year = date.getFullYear();
-    const week = this.getWeekNumber(date);
+    const nyDate = new Date(date.toLocaleString("en-US", {timeZone: "America/New_York"}));
+    const year = nyDate.getFullYear();
+    const week = this.getWeekNumber(nyDate);
     return `${year}-W${week.toString().padStart(2, '0')}`;
   }
 
