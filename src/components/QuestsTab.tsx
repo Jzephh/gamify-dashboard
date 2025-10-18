@@ -358,7 +358,7 @@ export function QuestsTab({ userId }: QuestsTabProps) {
                   top: 0,
                   left: 0,
                   height: '100%',
-                  background: 'linear-gradient(135deg, #8b5cf6 0%, #ec4899 50%, rgb(226, 11, 245) 100%) !important',
+                  background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent)',
                   borderRadius: 6,
                 }}
               />
