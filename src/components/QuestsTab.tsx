@@ -60,9 +60,10 @@ interface QuestProgress {
 
 interface QuestsTabProps {
   userId: string;
+  onQuestUpdate?: () => void;
 }
 
-export function QuestsTab({ userId }: QuestsTabProps) {
+export function QuestsTab({ userId, onQuestUpdate }: QuestsTabProps) {
   const [progress, setProgress] = useState<QuestProgress | null>(null);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
@@ -220,6 +221,9 @@ export function QuestsTab({ userId }: QuestsTabProps) {
       
       // Refresh quest progress to update seen status
       await fetchQuestProgress();
+      
+      // Update parent notification count
+      onQuestUpdate?.();
     } catch (error) {
       console.error('Error marking quest as seen:', error);
     }
@@ -242,6 +246,9 @@ export function QuestsTab({ userId }: QuestsTabProps) {
         
         // Refresh quest progress to get updated claimed status from database
         await fetchQuestProgress();
+        
+        // Update parent notification count
+        onQuestUpdate?.();
         
         // Show completion modal for the claimed quest
         const quests = [...dailyQuests, ...weeklyQuests];

@@ -127,10 +127,25 @@ export default function Home() {
   const [showLevelUpModal, setShowLevelUpModal] = useState(false);
   const [tabValue, setTabValue] = useState(0);
   const [hasLevelUpNotifications, setHasLevelUpNotifications] = useState(false);
+  const [questNotificationCount, setQuestNotificationCount] = useState(0);
 
   useEffect(() => {
     fetchUserProfile();
+    fetchQuestNotifications();
   }, []);
+
+  const fetchQuestNotifications = async () => {
+    try {
+      const response = await fetch('/api/user/quests');
+      if (response.ok) {
+        const questData = await response.json();
+        const totalNotifications = (questData.daily?.notificationCount || 0) + (questData.weekly?.notificationCount || 0);
+        setQuestNotificationCount(totalNotifications);
+      }
+    } catch (error) {
+      console.error('Error fetching quest notifications:', error);
+    }
+  };
 
   const fetchUserProfile = async () => {
     try {
@@ -587,7 +602,43 @@ export default function Home() {
                 />
               )}
               <Tab label="Profile" />
-              <Tab label="Quests" />
+              <Tab 
+                label={
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    Quests
+                    {questNotificationCount > 0 && (
+                      <Box
+                        sx={{
+                          background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+                          color: 'white',
+                          borderRadius: '50%',
+                          minWidth: '20px',
+                          height: '20px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontSize: '0.75rem',
+                          fontWeight: 700,
+                          boxShadow: '0 2px 8px rgba(239, 68, 68, 0.4)',
+                          animation: 'notificationPulse 2s infinite',
+                          '@keyframes notificationPulse': {
+                            '0%, 100%': { 
+                              boxShadow: '0 2px 8px rgba(239, 68, 68, 0.4)',
+                              transform: 'scale(1)'
+                            },
+                            '50%': { 
+                              boxShadow: '0 4px 12px rgba(239, 68, 68, 0.6)',
+                              transform: 'scale(1.1)'
+                            },
+                          },
+                        }}
+                      >
+                        {questNotificationCount}
+                      </Box>
+                    )}
+                  </Box>
+                }
+              />
               {isAdmin && <Tab label="Admin" />}
             </Tabs>
             
@@ -618,7 +669,7 @@ export default function Home() {
                 </TabPanel>
                 
                 <TabPanel value={tabValue} index={hasLevelUpNotifications ? 2 : 1}>
-                  <QuestsTab userId={userProfile.user.userId} />
+                  <QuestsTab userId={userProfile.user.userId} onQuestUpdate={fetchQuestNotifications} />
                 </TabPanel>
                 
                 {isAdmin && (
