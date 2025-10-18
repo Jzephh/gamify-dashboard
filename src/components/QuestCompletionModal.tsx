@@ -3,7 +3,6 @@
 import {
   Dialog,
   DialogContent,
-  DialogTitle,
   Box,
   Typography,
   Button,
@@ -13,8 +12,6 @@ import {
 import { motion } from 'framer-motion';
 import {
   EmojiEvents,
-  Star,
-  Close,
   CheckCircle,
 } from '@mui/icons-material';
 

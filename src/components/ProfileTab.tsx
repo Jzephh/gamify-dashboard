@@ -434,9 +434,9 @@ export function ProfileTab({ userProfile }: ProfileTabProps) {
                         background: 'linear-gradient(135deg, #8b5cf6 0%, #ec4899 50%, rgb(226, 11, 245) 100%) !important',
                         borderRadius: 6,
                         boxShadow: `
-                          0 0 20px rgba(139, 92, 246, 0.6),
-                          0 0 40px rgba(236, 72, 153, 0.4),
-                          0 2px 8px rgba(245, 158, 11, 0.3)
+                          0 0 20px rgba(139, 92, 246, 1.0),
+                          0 0 40px rgba(236, 72, 153, 1.0),
+                          0 2px 8px rgba(179, 11, 245, 1.0),
                         `,
                         position: 'relative',
                         filter: 'contrast(1.1) saturate(1.2)',
@@ -447,7 +447,7 @@ export function ProfileTab({ userProfile }: ProfileTabProps) {
                           left: 0,
                           right: 0,
                           bottom: 0,
-                          background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.3) 0%, rgba(236, 72, 153, 0.3) 50%, rgba(245, 158, 11, 0.3) 100%)',
+                          background: 'linear-gradient(135deg, rgba(139, 92, 246, 1.0) 0%, rgba(236, 72, 153, 1.0) 50%, rgba(245, 158, 11, 1.0) 100%)',
                           borderRadius: 6,
                           animation: 'holographicPulse 3s ease-in-out infinite',
                         },
@@ -458,7 +458,7 @@ export function ProfileTab({ userProfile }: ProfileTabProps) {
                           left: 0,
                           right: 0,
                           bottom: 0,
-                          background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent)',
+                          background: 'linear-gradient(90deg, transparent, rgba(194, 0, 194, 0.76), transparent)',
                           animation: 'progressShine 2s infinite',
                         },
                       },
@@ -491,7 +491,7 @@ export function ProfileTab({ userProfile }: ProfileTabProps) {
                       top: 0,
                       left: 0,
                       height: '100%',
-                      background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent)',
+                      background: 'linear-gradient(90deg, transparent, rgba(194, 0, 194, 0.76), transparent)',
                       borderRadius: 6,
                     }}
                   />

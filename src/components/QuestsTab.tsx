@@ -305,23 +305,25 @@ export function QuestsTab({ userId }: QuestsTabProps) {
                 sx={{
                   height: 12,
                   borderRadius: 6,
-                  backgroundColor: 'rgba(255, 255, 255, 0.15) !important',
-                  boxShadow: 'inset 0 2px 4px rgba(0, 0, 0, 0.2)',
+                  backgroundColor: 'rgba(0, 0, 0, 0.3) !important',
+                  boxShadow: 'inset 0 2px 4px rgba(0, 0, 0, 0.4)',
                   '& .MuiLinearProgress-bar': {
                     backgroundColor: 'transparent !important',
                     background: quest.completed 
-                      ? 'linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%) !important'
-                      : 'linear-gradient(135deg, #8b5cf6 0%, #ec4899 50%, rgb(179, 11, 245) 100%) !important',
+                      ? 'linear-gradient(135deg, #10b981 0%, #059669 100%) !important'
+                      : 'linear-gradient(135deg, #8b5cf6 0%, #ec4899 50%, #f59e0b 100%) !important',
                     borderRadius: 6,
                     boxShadow: quest.completed 
-                      ? '0 2px 8px rgba(255, 255, 255, 0.4)'
+                      ? '0 0 15px rgba(16, 185, 129, 1.0)'
                       : `
-                          0 0 20px rgba(139, 92, 246, 0.6),
-                          0 0 40px rgba(236, 72, 153, 0.4),
-                          0 2px 8px rgba(245, 158, 11, 0.3)
+                          0 0 20px rgba(139, 92, 246, 1.0),
+                          0 0 40px rgba(236, 72, 153, 1.0),
+                          0 0 60px rgba(245, 158, 11, 1.0),
+                          0 0 40px rgba(236, 72, 153, 0.6),
+                          0 0 60px rgba(245, 158, 11, 0.4)
                         `,
                     position: 'relative',
-                    filter: quest.completed ? 'none' : 'contrast(1.1) saturate(1.2)',
+                    filter: quest.completed ? 'none' : 'contrast(1.2) saturate(1.3)',
                     '&::before': quest.completed ? {} : {
                       content: '""',
                       position: 'absolute',
@@ -329,9 +331,9 @@ export function QuestsTab({ userId }: QuestsTabProps) {
                       left: 0,
                       right: 0,
                       bottom: 0,
-                      background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.3) 0%, rgba(236, 72, 153, 0.3) 50%, rgba(245, 158, 11, 0.3) 100%)',
+                      background: 'linear-gradient(135deg, rgba(139, 92, 246, 1.0) 0%, rgba(236, 72, 153, 1.0) 50%, rgba(245, 158, 11, 1.0) 100%)',
                       borderRadius: 6,
-                      animation: 'holographicPulse 3s ease-in-out infinite',
+                      animation: 'holographicPulse 2s ease-in-out infinite',
                     },
                     '&::after': {
                       content: '""',
@@ -341,16 +343,16 @@ export function QuestsTab({ userId }: QuestsTabProps) {
                       right: 0,
                       bottom: 0,
                       background: quest.completed 
-                        ? 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent)'
-                        : 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent)',
-                      animation: 'progressShine 2s infinite',
+                        ? 'linear-gradient(90deg, transparent, rgba(194, 0, 194, 0.76), transparent)'
+                        : 'linear-gradient(90deg, transparent, rgba(194, 0, 194, 0.76), transparent)',
+                      animation: 'progressShine 1.5s infinite',
                     },
                   },
                   '& .MuiLinearProgress-bar1Determinate': {
                     backgroundColor: 'transparent !important',
                     background: quest.completed 
-                      ? 'linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%) !important'
-                      : 'linear-gradient(135deg, #8b5cf6 0%, #ec4899 50%, rgb(179, 11, 245) 100%) !important',
+                      ? 'linear-gradient(135deg, #10b981 0%, #059669 100%) !important'
+                      : 'linear-gradient(135deg, #8b5cf6 0%, #ec4899 50%, #f59e0b 100%) !important',
                   },
                   '@keyframes progressShine': {
                     '0%': { transform: 'translateX(-100%)' },
@@ -358,12 +360,12 @@ export function QuestsTab({ userId }: QuestsTabProps) {
                   },
                   '@keyframes holographicPulse': {
                     '0%, 100%': { 
-                      opacity: 0.3,
+                      opacity: 0.4,
                       filter: 'hue-rotate(0deg) brightness(1)'
                     },
                     '50%': { 
-                      opacity: 0.6,
-                      filter: 'hue-rotate(20deg) brightness(1.1)'
+                      opacity: 0.8,
+                      filter: 'hue-rotate(30deg) brightness(1.2)'
                     },
                   },
                 }}
@@ -377,7 +379,7 @@ export function QuestsTab({ userId }: QuestsTabProps) {
                   top: 0,
                   left: 0,
                   height: '100%',
-                  background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent)',
+                  background: 'linear-gradient(90deg, transparent, rgba(194, 0, 194, 0.76), transparent)',
                   borderRadius: 6,
                 }}
               />
@@ -453,18 +455,20 @@ export function QuestsTab({ userId }: QuestsTabProps) {
         '66%': { transform: 'translateY(10px) rotate(-1deg)' },
       },
     }}>
-      {/* Daily Quests */}
-      <motion.div
-        initial={{ opacity: 0, y: 30, scale: 0.95 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ 
-          duration: 0.8,
-          type: "spring",
-          stiffness: 100,
-          damping: 20
-        }}
-        style={{ position: 'relative', zIndex: 1 }}
-      >
+      {/* Quests Side by Side */}
+      <Stack direction={{ xs: "column", lg: "row" }} spacing={4} sx={{ position: 'relative', zIndex: 1 }}>
+        {/* Daily Quests - Left Side */}
+        <motion.div
+          initial={{ opacity: 0, y: 30, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ 
+            duration: 0.8,
+            type: "spring",
+            stiffness: 100,
+            damping: 20
+          }}
+          style={{ flex: 1 }}
+        >
         <Card
           elevation={0}
           sx={{
@@ -572,21 +576,21 @@ export function QuestsTab({ userId }: QuestsTabProps) {
             </Box>
           </CardContent>
         </Card>
-      </motion.div>
+        </motion.div>
 
-      {/* Weekly Quests */}
-      <motion.div
-        initial={{ opacity: 0, y: 30, scale: 0.95 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ 
-          duration: 0.8,
-          delay: 0.2,
-          type: "spring",
-          stiffness: 100,
-          damping: 20
-        }}
-        style={{ position: 'relative', zIndex: 1 }}
-      >
+        {/* Weekly Quests - Right Side */}
+        <motion.div
+          initial={{ opacity: 0, y: 30, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ 
+            duration: 0.8,
+            delay: 0.2,
+            type: "spring",
+            stiffness: 100,
+            damping: 20
+          }}
+          style={{ flex: 1 }}
+        >
         <Card
           elevation={0}
           sx={{
@@ -690,7 +694,8 @@ export function QuestsTab({ userId }: QuestsTabProps) {
             </Box>
           </CardContent>
         </Card>
-      </motion.div>
+        </motion.div>
+      </Stack>
 
       {/* Quest Tips */}
       <motion.div
