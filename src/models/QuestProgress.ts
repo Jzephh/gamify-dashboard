@@ -52,8 +52,8 @@ const QuestProgressSchema = new Schema<IQuestProgress>({
     send100: { type: Boolean, default: false },
     success10: { type: Boolean, default: false },
   },
-  dailyQuestSeen: { type: Boolean, default: false },
-  weeklyQuestSeen: { type: Boolean, default: false },
+  dailyQuestSeen: { type: Boolean, default: true },
+  weeklyQuestSeen: { type: Boolean, default: true },
 }, {
   timestamps: true,
 });

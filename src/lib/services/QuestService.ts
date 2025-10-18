@@ -90,21 +90,28 @@ export class QuestService {
     if (!progress) return [];
 
     const completed: string[] = [];
+    let questCompleted = false;
 
     // Check send 10 messages quest
     if ((progress.dailyQuests?.messages || 0) >= 10 && !progress.dailyCompleted) {
       progress.dailyCompleted = true;
-      await progress.save();
+      questCompleted = true;
       completed.push('daily_send10');
     }
 
     // Check 1 success message quest
     if ((progress.dailyQuests?.successMessages || 0) >= 1 && !progress.dailyCompleted) {
       progress.dailyCompleted = true;
-      await progress.save();
+      questCompleted = true;
       completed.push('daily_success1');
     }
 
+    // Mark daily quests as unseen if any quest was completed
+    if (questCompleted) {
+      progress.dailyQuestSeen = false;
+    }
+
+    await progress.save();
     return completed;
   }
 
@@ -119,21 +126,28 @@ export class QuestService {
     if (!progress) return [];
 
     const completed: string[] = [];
+    let questCompleted = false;
 
     // Check send 100 messages quest
     if ((progress.weeklyQuests?.messages || 0) >= 100 && !progress.weeklyCompleted) {
       progress.weeklyCompleted = true;
-      await progress.save();
+      questCompleted = true;
       completed.push('weekly_send100');
     }
 
     // Check 10 success messages quest
     if ((progress.weeklyQuests?.successMessages || 0) >= 10 && !progress.weeklyCompleted) {
       progress.weeklyCompleted = true;
-      await progress.save();
+      questCompleted = true;
       completed.push('weekly_success10');
     }
 
+    // Mark weekly quests as unseen if any quest was completed
+    if (questCompleted) {
+      progress.weeklyQuestSeen = false;
+    }
+
+    await progress.save();
     return completed;
   }
 
@@ -221,8 +235,8 @@ export class QuestService {
 
   // Get user's quest progress
   async getUserProgress(userId: string): Promise<{
-    daily: { msgCount: number; successMsgCount: number; completed: Record<string, boolean>; claimed: Record<string, boolean> };
-    weekly: { msgCount: number; successMsgCount: number; completed: Record<string, boolean>; claimed: Record<string, boolean> };
+    daily: { msgCount: number; successMsgCount: number; completed: Record<string, boolean>; claimed: Record<string, boolean>; questSeen: boolean };
+    weekly: { msgCount: number; successMsgCount: number; completed: Record<string, boolean>; claimed: Record<string, boolean>; questSeen: boolean };
   }> {
     try {
       await connectDB();
@@ -248,7 +262,8 @@ export class QuestService {
             claimed: {
               send10: questDoc.dailyClaimed?.send10 || false,
               success1: questDoc.dailyClaimed?.success1 || false,
-            }
+            },
+            questSeen: questDoc.dailyQuestSeen || true
           },
           weekly: {
             msgCount: questDoc.weeklyQuests?.messages || 0,
@@ -260,21 +275,53 @@ export class QuestService {
             claimed: {
               send100: questDoc.weeklyClaimed?.send100 || false,
               success10: questDoc.weeklyClaimed?.success10 || false,
-            }
+            },
+            questSeen: questDoc.weeklyQuestSeen || true
           }
         };
       }
 
       return {
-        daily: { msgCount: 0, successMsgCount: 0, completed: {}, claimed: {} },
-        weekly: { msgCount: 0, successMsgCount: 0, completed: {}, claimed: {} },
+        daily: { msgCount: 0, successMsgCount: 0, completed: {}, claimed: {}, questSeen: true },
+        weekly: { msgCount: 0, successMsgCount: 0, completed: {}, claimed: {}, questSeen: true },
       };
     } catch (error) {
       console.error('Error getting user progress:', error);
       return {
-        daily: { msgCount: 0, successMsgCount: 0, completed: {}, claimed: {} },
-        weekly: { msgCount: 0, successMsgCount: 0, completed: {}, claimed: {} },
+        daily: { msgCount: 0, successMsgCount: 0, completed: {}, claimed: {}, questSeen: true },
+        weekly: { msgCount: 0, successMsgCount: 0, completed: {}, claimed: {}, questSeen: true },
       };
+    }
+  }
+
+  // Mark quests as seen
+  async markQuestSeen(userId: string, questType: 'daily' | 'weekly'): Promise<boolean> {
+    try {
+      await connectDB();
+      const now = new Date();
+      const dateKey = this.getDateKey(now);
+      const weekKey = this.getWeekKey(now);
+      const key = questType === 'daily' ? dateKey : weekKey;
+
+      const questDoc = await QuestProgress.findOne({
+        companyId: this.companyId,
+        userId,
+        dateKey: key
+      });
+
+      if (!questDoc) return false;
+
+      if (questType === 'daily') {
+        questDoc.dailyQuestSeen = true;
+      } else {
+        questDoc.weeklyQuestSeen = true;
+      }
+
+      await questDoc.save();
+      return true;
+    } catch (error) {
+      console.error('Error marking quest as seen:', error);
+      return false;
     }
   }
 

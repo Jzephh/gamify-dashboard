@@ -39,6 +39,7 @@ interface QuestProgress {
       send10?: boolean;
       success1?: boolean;
     };
+    questSeen?: boolean;
   };
   weekly: {
     msgCount: number;
@@ -51,6 +52,7 @@ interface QuestProgress {
       send100?: boolean;
       success10?: boolean;
     };
+    questSeen?: boolean;
   };
 }
 
@@ -80,11 +82,46 @@ export function QuestsTab({ userId }: QuestsTabProps) {
       if (response.ok) {
         const data = await response.json();
         setProgress(data);
+        
+        // Check if we need to show quest completion modal
+        checkForQuestNotifications(data);
       }
     } catch (error) {
       console.error('Error fetching quest progress:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const checkForQuestNotifications = (questData: QuestProgress) => {
+    // Check daily quests
+    if (!questData.daily.questSeen && questData.daily.completed) {
+      const completedDailyQuests = dailyQuests.filter(quest => quest.completed);
+      if (completedDailyQuests.length > 0) {
+        setModalType('daily');
+        setCompletedQuestsForModal(completedDailyQuests.map(quest => ({
+          id: quest.id,
+          title: quest.title,
+          xp: quest.xp,
+        })));
+        setModalOpen(true);
+        return;
+      }
+    }
+
+    // Check weekly quests
+    if (!questData.weekly.questSeen && questData.weekly.completed) {
+      const completedWeeklyQuests = weeklyQuests.filter(quest => quest.completed);
+      if (completedWeeklyQuests.length > 0) {
+        setModalType('weekly');
+        setCompletedQuestsForModal(completedWeeklyQuests.map(quest => ({
+          id: quest.id,
+          title: quest.title,
+          xp: quest.xp,
+        })));
+        setModalOpen(true);
+        return;
+      }
     }
   };
 
@@ -100,8 +137,25 @@ export function QuestsTab({ userId }: QuestsTabProps) {
     }
   };
 
-  const handleModalClose = () => {
+  const handleModalClose = async () => {
     setModalOpen(false);
+    
+    // Mark quests as seen
+    try {
+      await fetch('/api/user/quest-seen', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ questType: modalType }),
+      });
+      
+      // Refresh quest progress to update seen status
+      await fetchQuestProgress();
+    } catch (error) {
+      console.error('Error marking quest as seen:', error);
+    }
+    
     setCompletedQuestsForModal([]);
   };
 
