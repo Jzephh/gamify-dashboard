@@ -130,20 +130,7 @@ export default function Home() {
 
   useEffect(() => {
     fetchUserProfile();
-    checkLevelUpNotifications();
   }, []);
-
-  const checkLevelUpNotifications = async () => {
-    try {
-      const response = await fetch('/api/user/levelup-notifications');
-      if (response.ok) {
-        const notifications = await response.json();
-        setHasLevelUpNotifications(notifications.length > 0);
-      }
-    } catch (error) {
-      console.error('Error checking level-up notifications:', error);
-    }
-  };
 
   const fetchUserProfile = async () => {
     try {
@@ -163,7 +150,10 @@ export default function Home() {
       setUserProfile(profile);
       setIsAdmin(profile.user.roles.length > 0);
       
-      // Show level up modal if user hasn't seen it
+      // Check if user has level-up notifications to show
+      setHasLevelUpNotifications(!profile.user.levelUpSeen);
+      
+      // Show level up modal if user hasn't seen it (legacy)
       if (!profile.user.levelUpSeen) {
         setShowLevelUpModal(true);
       }
@@ -191,12 +181,18 @@ export default function Home() {
   };
 
   const handleNotificationSeen = async () => {
-    // Check if there are any remaining notifications
-    await checkLevelUpNotifications();
-    
-    // If no more notifications, switch to profile tab
-    if (!hasLevelUpNotifications) {
+    try {
+      // Mark level up as seen
+      await fetch('/api/user/levelup-seen', { method: 'POST' });
+      
+      // Update local state
+      setHasLevelUpNotifications(false);
       setTabValue(0);
+      
+      // Refresh profile to update levelUpSeen status
+      await fetchUserProfile();
+    } catch (error) {
+      console.error('Error marking level up as seen:', error);
     }
   };
 
@@ -611,7 +607,7 @@ export default function Home() {
                 {hasLevelUpNotifications && (
                   <TabPanel value={tabValue} index={0}>
                     <LevelUpTab 
-                      userId={userProfile.user.userId} 
+                      userProfile={userProfile} 
                       onNotificationSeen={handleNotificationSeen}
                     />
                   </TabPanel>

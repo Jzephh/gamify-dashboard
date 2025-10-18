@@ -1,15 +1,12 @@
 import { User } from '@/models/User';
 import { Settings } from '@/models/Settings';
-import { LevelUpService } from './LevelUpService';
 import connectDB from '@/lib/mongodb';
 
 export class XPEngine {
   private companyId: string;
-  private levelUpService: LevelUpService;
 
   constructor(companyId: string) {
     this.companyId = companyId;
-    this.levelUpService = new LevelUpService(companyId);
   }
 
   // Calculate total XP needed to reach a level (cumulative: 100, 300, 600, 1000, 1500, 2100...)
@@ -124,13 +121,9 @@ export class XPEngine {
         user.stats.successMessages += 1;
       }
 
-      // Create level-up notification if user leveled up
+      // Mark level up as unseen if user leveled up
       if (user.level > oldLevel) {
         user.levelUpSeen = false;
-        // Create notification for each level gained
-        for (let level = oldLevel + 1; level <= user.level; level++) {
-          await this.levelUpService.createLevelUpNotification(userId, level, user.xp);
-        }
       }
 
       // Save user

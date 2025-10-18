@@ -1,6 +1,5 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import {
   Box,
   Typography,
@@ -12,89 +11,20 @@ import {
   Star,
 } from '@mui/icons-material';
 
-interface LevelUpNotification {
-  id: string;
-  level: number;
-  xp: number;
-  seen: boolean;
-  createdAt: string;
-}
-
 interface LevelUpTabProps {
-  userId: string;
-  onNotificationSeen: (notificationId: string) => void;
+  userProfile: {
+    user: {
+      level: number;
+      xp: number;
+    };
+  };
+  onNotificationSeen: () => void;
 }
 
-export function LevelUpTab({ userId, onNotificationSeen }: LevelUpTabProps) {
-  const [notifications, setNotifications] = useState<LevelUpNotification[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [currentIndex, setCurrentIndex] = useState(0);
-
-  useEffect(() => {
-    fetchNotifications();
-  }, [userId]);
-
-  const fetchNotifications = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch('/api/user/levelup-notifications');
-      if (response.ok) {
-        const data = await response.json();
-        setNotifications(data);
-      }
-    } catch (error) {
-      console.error('Error fetching level-up notifications:', error);
-    } finally {
-      setLoading(false);
-    }
+export function LevelUpTab({ userProfile, onNotificationSeen }: LevelUpTabProps) {
+  const handleMarkAsSeen = () => {
+    onNotificationSeen();
   };
-
-  const handleMarkAsSeen = async (notificationId: string) => {
-    try {
-      const response = await fetch(`/api/user/levelup-notifications/${notificationId}/seen`, {
-        method: 'POST',
-      });
-      
-      if (response.ok) {
-        onNotificationSeen(notificationId);
-        setCurrentIndex(prev => prev + 1);
-      }
-    } catch (error) {
-      console.error('Error marking notification as seen:', error);
-    }
-  };
-
-  if (loading) {
-    return (
-      <Box sx={{ p: 3, textAlign: 'center' }}>
-        <Typography variant="h4" sx={{ color: 'white' }}>
-          Loading level-up notifications...
-        </Typography>
-      </Box>
-    );
-  }
-
-  if (notifications.length === 0) {
-    return (
-      <Box sx={{ p: 3, textAlign: 'center' }}>
-        <Typography variant="h4" sx={{ color: 'white' }}>
-          No level-up notifications
-        </Typography>
-      </Box>
-    );
-  }
-
-  const currentNotification = notifications[currentIndex];
-
-  if (!currentNotification) {
-    return (
-      <Box sx={{ p: 3, textAlign: 'center' }}>
-        <Typography variant="h4" sx={{ color: 'white' }}>
-          All notifications viewed!
-        </Typography>
-      </Box>
-    );
-  }
 
   return (
     <Box sx={{ p: 3 }}>
@@ -209,7 +139,7 @@ export function LevelUpTab({ userId, onNotificationSeen }: LevelUpTabProps) {
                   textShadow: '0 0 15px rgba(0, 0, 0, 0.8), 0 1px 3px rgba(0, 0, 0, 0.5)',
                 }}
               >
-                Level {currentNotification.level}
+                Level {userProfile.user.level}
               </Typography>
             </motion.div>
 
@@ -227,7 +157,7 @@ export function LevelUpTab({ userId, onNotificationSeen }: LevelUpTabProps) {
                   textShadow: '0 0 10px rgba(0, 0, 0, 0.8), 0 1px 2px rgba(0, 0, 0, 0.5)',
                 }}
               >
-                {currentNotification.xp} Total XP
+                {userProfile.user.xp} Total XP
               </Typography>
             </motion.div>
 
@@ -239,7 +169,7 @@ export function LevelUpTab({ userId, onNotificationSeen }: LevelUpTabProps) {
               <Button
                 variant="contained"
                 size="large"
-                onClick={() => handleMarkAsSeen(currentNotification.id)}
+                onClick={handleMarkAsSeen}
                 sx={{
                   background: 'linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%)',
                   color: '#000000',
@@ -261,14 +191,6 @@ export function LevelUpTab({ userId, onNotificationSeen }: LevelUpTabProps) {
             </motion.div>
           </Box>
         </Paper>
-
-        {notifications.length > 1 && (
-          <Box sx={{ textAlign: 'center' }}>
-            <Typography variant="body1" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
-              {currentIndex + 1} of {notifications.length} notifications
-            </Typography>
-          </Box>
-        )}
       </motion.div>
     </Box>
   );
