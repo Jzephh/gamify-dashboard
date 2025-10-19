@@ -1516,63 +1516,6 @@ export function AdminTab() {
                 </Box>
               ))}
 
-              {/* Add New Objective */}
-              <Box sx={{ 
-                p: 2, 
-                background: 'rgba(255, 255, 255, 0.05)', 
-                borderRadius: 2,
-                border: '1px dashed rgba(255, 255, 255, 0.3)'
-              }}>
-                <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)', mb: 2 }}>
-                  Add New Objective
-                </Typography>
-                <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
-                  <TextField
-                    label="Message Count"
-                    type="number"
-                    size="small"
-                    value={newObjective.messageCount}
-                    onChange={(e) => setNewObjective({
-                      ...newObjective,
-                      messageCount: parseInt(e.target.value) || 0
-                    })}
-                    sx={{ flex: 1 }}
-                  />
-                  <TextField
-                    label="Success Message Count"
-                    type="number"
-                    size="small"
-                    value={newObjective.successMessageCount}
-                    onChange={(e) => setNewObjective({
-                      ...newObjective,
-                      successMessageCount: parseInt(e.target.value) || 0
-                    })}
-                    sx={{ flex: 1 }}
-                  />
-                  <TextField
-                    label="XP Reward"
-                    type="number"
-                    size="small"
-                    value={newObjective.xpReward}
-                    onChange={(e) => setNewObjective({
-                      ...newObjective,
-                      xpReward: parseInt(e.target.value) || 0
-                    })}
-                    sx={{ flex: 1 }}
-                  />
-                </Box>
-                <Button
-                  variant="contained"
-                  size="small"
-                  onClick={addObjective}
-                  sx={{ 
-                    background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
-                    textTransform: 'none'
-                  }}
-                >
-                  Add Objective
-                </Button>
-              </Box>
             </Box>
           </Box>
         </DialogContent>
