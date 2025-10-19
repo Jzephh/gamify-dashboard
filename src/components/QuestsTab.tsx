@@ -241,8 +241,9 @@ export default function QuestsTab({ userId, onQuestUpdate }: QuestsTabProps) {
     questType: 'daily' | 'weekly';
   }) => {
     const progressPercentage = Math.min(100, (objective.progress / objective.target) * 100);
-    const isLocked = index > 0 && !dailyObjectives[index - 1]?.completed && questType === 'daily' || 
-                     index > 0 && !weeklyObjectives[index - 1]?.completed && questType === 'weekly';
+    const isLocked = questType === 'daily' 
+      ? index > 0 && !dailyObjectives[index - 1]?.completed
+      : index > 0 && !weeklyObjectives[index - 1]?.completed;
     
     return (
       <motion.div
@@ -640,8 +641,8 @@ export default function QuestsTab({ userId, onQuestUpdate }: QuestsTabProps) {
       <Box sx={{ position: 'relative', zIndex: 1 }}>
         <Box sx={{ 
           display: 'grid', 
-          gridTemplateColumns: { xs: '1fr', lg: '1fr 1fr' },
-          gap: 4,
+          gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
+          gap: { xs: 3, md: 4 },
           mb: 4
         }}>
           {/* Daily Objectives - Left Column */}
@@ -656,14 +657,28 @@ export default function QuestsTab({ userId, onQuestUpdate }: QuestsTabProps) {
             }}
           >
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              {dailyObjectives.map((objective, index) => (
-                <ObjectiveCard 
-                  key={objective.id} 
-                  objective={objective} 
-                  index={index}
-                  questType="daily"
-                />
-              ))}
+              {dailyObjectives.length > 0 ? (
+                dailyObjectives.map((objective, index) => (
+                  <ObjectiveCard 
+                    key={objective.id} 
+                    objective={objective} 
+                    index={index}
+                    questType="daily"
+                  />
+                ))
+              ) : (
+                <Card sx={{ 
+                  background: 'linear-gradient(135deg, #374151 0%, #1f2937 100%)',
+                  border: '1px solid #6b7280',
+                  borderRadius: 3,
+                  p: 3,
+                  textAlign: 'center'
+                }}>
+                  <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.6)' }}>
+                    No daily objectives available
+                  </Typography>
+                </Card>
+              )}
             </Box>
           </motion.div>
 
@@ -680,14 +695,28 @@ export default function QuestsTab({ userId, onQuestUpdate }: QuestsTabProps) {
             }}
           >
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              {weeklyObjectives.map((objective, index) => (
-                <ObjectiveCard 
-                  key={objective.id} 
-                  objective={objective} 
-                  index={index + dailyObjectives.length}
-                  questType="weekly"
-                />
-              ))}
+              {weeklyObjectives.length > 0 ? (
+                weeklyObjectives.map((objective, index) => (
+                  <ObjectiveCard 
+                    key={objective.id} 
+                    objective={objective} 
+                    index={index}
+                    questType="weekly"
+                  />
+                ))
+              ) : (
+                <Card sx={{ 
+                  background: 'linear-gradient(135deg, #374151 0%, #1f2937 100%)',
+                  border: '1px solid #6b7280',
+                  borderRadius: 3,
+                  p: 3,
+                  textAlign: 'center'
+                }}>
+                  <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.6)' }}>
+                    No weekly objectives available
+                  </Typography>
+                </Card>
+              )}
             </Box>
           </motion.div>
         </Box>
