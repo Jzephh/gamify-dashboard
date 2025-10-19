@@ -348,6 +348,10 @@ export class QuestService {
       const weeklyQuest = weeklyQuests[0] || null;
 
       if (questDoc && dailyQuest && weeklyQuest) {
+        // Update sequential completion status
+        await this.checkSequentialCompletion(userId, 'daily', questDoc);
+        await this.checkSequentialCompletion(userId, 'weekly', questDoc);
+        
         // Build daily objectives
         const dailyObjectives = dailyQuest.objectives
           .sort((a: IQuestObjective, b: IQuestObjective) => a.order - b.order)
