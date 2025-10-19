@@ -185,23 +185,27 @@ export default function QuestsTab({ userId, onQuestUpdate }: QuestsTabProps) {
         // Update parent notification count
         onQuestUpdate?.();
         
-        // Show completion modal for the claimed objective
-        const allObjectives = [...(progress?.daily.objectives || []), ...(progress?.weekly.objectives || [])];
-        const claimedObjective = allObjectives.find(obj => obj.id === objectiveId);
-        
-        if (claimedObjective) {
-          // Determine quest type for modal
-          const questType = progress?.daily.objectives.some(obj => obj.id === objectiveId) ? 'daily' : 'weekly';
-          setModalType(questType);
+        // Get fresh quest data to find the claimed objective
+        const freshResponse = await fetch('/api/user/quests');
+        if (freshResponse.ok) {
+          const freshData = await freshResponse.json();
+          const allObjectives = [...(freshData?.daily.objectives || []), ...(freshData?.weekly.objectives || [])];
+          const claimedObjective = allObjectives.find(obj => obj.id === objectiveId);
           
-          // Set completed objectives for modal (just the claimed one)
-          setCompletedQuestsForModal([{
-            id: claimedObjective.id,
-            title: claimedObjective.title,
-            xp: result.xpAwarded || claimedObjective.xp,
-          }]);
-          
-          setModalOpen(true);
+          if (claimedObjective) {
+            // Determine quest type for modal
+            const questType = freshData?.daily.objectives.some((obj: QuestObjective) => obj.id === objectiveId) ? 'daily' : 'weekly';
+            setModalType(questType);
+            
+            // Set completed objectives for modal (just the claimed one)
+            setCompletedQuestsForModal([{
+              id: claimedObjective.id,
+              title: claimedObjective.title,
+              xp: result.xpAwarded || claimedObjective.xp,
+            }]);
+            
+            setModalOpen(true);
+          }
         }
       } else {
         console.error('Failed to claim objective');
