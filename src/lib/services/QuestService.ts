@@ -385,6 +385,9 @@ export class QuestService {
           if (obj.currentSuccessMessages === undefined) obj.currentSuccessMessages = 0;
         }
 
+        // Run migration to sync with latest quest configurations
+        await this.migrateQuestProgress();
+
         // Check for completed objectives before building the response
         await this.checkObjectiveCompletion(questDoc, 'daily');
         await this.checkObjectiveCompletion(questDoc, 'weekly');
@@ -564,5 +567,176 @@ export class QuestService {
     d.setUTCDate(d.getUTCDate() + 4 - dayNum);
     const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
     return Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+  }
+
+  // Migrate quest progress when new objectives are added
+  async migrateQuestProgress(): Promise<void> {
+    try {
+      await connectDB();
+      
+      // Get current quest configurations
+      const questConfigService = new QuestConfigService(this.companyId);
+      const dailyQuests = await questConfigService.getQuestsByType('daily');
+      const weeklyQuests = await questConfigService.getQuestsByType('weekly');
+      
+      const dailyQuest = dailyQuests[0];
+      const weeklyQuest = weeklyQuests[0];
+      
+      if (!dailyQuest && !weeklyQuest) {
+        console.log('No quest configurations found for migration');
+        return;
+      }
+
+      // Find all quest progress documents for this company
+      const allProgress = await QuestProgress.find({
+        companyId: this.companyId
+      });
+
+      console.log(`Found ${allProgress.length} quest progress documents to migrate`);
+
+      for (const progress of allProgress) {
+        let needsUpdate = false;
+
+        // Check daily objectives
+        if (dailyQuest) {
+          const currentDailyIds = progress.dailyObjectives.map((obj: IObjectiveProgress) => obj.objectiveId);
+          
+          // Add missing daily objectives
+          for (const configObj of dailyQuest.objectives) {
+            if (!currentDailyIds.includes(configObj.id)) {
+              progress.dailyObjectives.push({
+                objectiveId: configObj.id,
+                messageCount: configObj.messageCount,
+                successMessageCount: configObj.successMessageCount,
+                xpReward: configObj.xpReward,
+                order: configObj.order,
+                currentMessages: 0,
+                currentSuccessMessages: 0,
+                completed: false,
+                claimed: false,
+              });
+              needsUpdate = true;
+              console.log(`Added missing daily objective: ${configObj.id}`);
+            }
+          }
+
+          // Update existing daily objectives with new values if needed
+          for (const progressObj of progress.dailyObjectives) {
+            const configObj = dailyQuest.objectives.find(obj => obj.id === progressObj.objectiveId);
+            if (configObj) {
+              // Update configuration values but preserve progress
+              const oldMessageCount = progressObj.messageCount;
+              const oldSuccessMessageCount = progressObj.successMessageCount;
+              
+              if (progressObj.messageCount !== configObj.messageCount || 
+                  progressObj.successMessageCount !== configObj.successMessageCount ||
+                  progressObj.xpReward !== configObj.xpReward ||
+                  progressObj.order !== configObj.order) {
+                
+                progressObj.messageCount = configObj.messageCount;
+                progressObj.successMessageCount = configObj.successMessageCount;
+                progressObj.xpReward = configObj.xpReward;
+                progressObj.order = configObj.order;
+                
+                // Adjust current progress if target changed
+                if (configObj.messageCount > 0 && oldMessageCount > 0) {
+                  const ratio = configObj.messageCount / oldMessageCount;
+                  progressObj.currentMessages = Math.min(
+                    Math.floor(progressObj.currentMessages * ratio), 
+                    configObj.messageCount
+                  );
+                }
+                
+                if (configObj.successMessageCount > 0 && oldSuccessMessageCount > 0) {
+                  const ratio = configObj.successMessageCount / oldSuccessMessageCount;
+                  progressObj.currentSuccessMessages = Math.min(
+                    Math.floor(progressObj.currentSuccessMessages * ratio), 
+                    configObj.successMessageCount
+                  );
+                }
+                
+                needsUpdate = true;
+                console.log(`Updated daily objective: ${progressObj.objectiveId}`);
+              }
+            }
+          }
+        }
+
+        // Check weekly objectives
+        if (weeklyQuest) {
+          const currentWeeklyIds = progress.weeklyObjectives.map((obj: IObjectiveProgress) => obj.objectiveId);
+          
+          // Add missing weekly objectives
+          for (const configObj of weeklyQuest.objectives) {
+            if (!currentWeeklyIds.includes(configObj.id)) {
+              progress.weeklyObjectives.push({
+                objectiveId: configObj.id,
+                messageCount: configObj.messageCount,
+                successMessageCount: configObj.successMessageCount,
+                xpReward: configObj.xpReward,
+                order: configObj.order,
+                currentMessages: 0,
+                currentSuccessMessages: 0,
+                completed: false,
+                claimed: false,
+              });
+              needsUpdate = true;
+              console.log(`Added missing weekly objective: ${configObj.id}`);
+            }
+          }
+
+          // Update existing weekly objectives with new values if needed
+          for (const progressObj of progress.weeklyObjectives) {
+            const configObj = weeklyQuest.objectives.find(obj => obj.id === progressObj.objectiveId);
+            if (configObj) {
+              // Update configuration values but preserve progress
+              const oldMessageCount = progressObj.messageCount;
+              const oldSuccessMessageCount = progressObj.successMessageCount;
+              
+              if (progressObj.messageCount !== configObj.messageCount || 
+                  progressObj.successMessageCount !== configObj.successMessageCount ||
+                  progressObj.xpReward !== configObj.xpReward ||
+                  progressObj.order !== configObj.order) {
+                
+                progressObj.messageCount = configObj.messageCount;
+                progressObj.successMessageCount = configObj.successMessageCount;
+                progressObj.xpReward = configObj.xpReward;
+                progressObj.order = configObj.order;
+                
+                // Adjust current progress if target changed
+                if (configObj.messageCount > 0 && oldMessageCount > 0) {
+                  const ratio = configObj.messageCount / oldMessageCount;
+                  progressObj.currentMessages = Math.min(
+                    Math.floor(progressObj.currentMessages * ratio), 
+                    configObj.messageCount
+                  );
+                }
+                
+                if (configObj.successMessageCount > 0 && oldSuccessMessageCount > 0) {
+                  const ratio = configObj.successMessageCount / oldSuccessMessageCount;
+                  progressObj.currentSuccessMessages = Math.min(
+                    Math.floor(progressObj.currentSuccessMessages * ratio), 
+                    configObj.successMessageCount
+                  );
+                }
+                
+                needsUpdate = true;
+                console.log(`Updated weekly objective: ${progressObj.objectiveId}`);
+              }
+            }
+          }
+        }
+
+        // Save if any changes were made
+        if (needsUpdate) {
+          await progress.save();
+          console.log(`Migrated quest progress for user: ${progress.userId}`);
+        }
+      }
+
+      console.log('Quest progress migration completed');
+    } catch (error) {
+      console.error('Error migrating quest progress:', error);
+    }
   }
 }

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getWhopSdk } from '@/lib/whop';
 import { QuestConfigService } from '@/lib/services/QuestConfigService';
+import { QuestService } from '@/lib/services/QuestService';
 import { UserService } from '@/lib/services/UserService';
 
 import { headers } from 'next/headers';
@@ -78,6 +79,10 @@ export async function PUT(request: Request) {
     if (!success) {
       return NextResponse.json({ error: 'Failed to update quest' }, { status: 500 });
     }
+
+    // Trigger migration to sync quest progress with updated configurations
+    const questService = new QuestService(companyId);
+    await questService.migrateQuestProgress();
 
     return NextResponse.json({ success: true });
   } catch (error) {
