@@ -365,6 +365,11 @@ export class QuestService {
       }
 
       if (dailyQuest && weeklyQuest) {
+        // Check for completed objectives before building the response
+        await this.checkObjectiveCompletion(questDoc, 'daily');
+        await this.checkObjectiveCompletion(questDoc, 'weekly');
+        await questDoc.save();
+
         // Build daily objectives
         const dailyObjectives = dailyQuest.objectives
           .sort((a: IQuestObjective, b: IQuestObjective) => a.order - b.order)

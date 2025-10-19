@@ -1486,7 +1486,7 @@ export function AdminTab() {
                   
                   {editingObjective?.id === objective.id ? (
                     <Box sx={{ display: 'flex', gap: 2, flex: 1 }}>
-                      {objective.id.includes("success") ? (<TextField
+                      {objective.successMessageCount > 0 ? (<TextField
                         label="Success Message Count"
                         type="number"
                         size="small"
@@ -1496,7 +1496,7 @@ export function AdminTab() {
                           successMessageCount: parseInt(e.target.value) || 0
                         })}
                         sx={{ flex: 1 }}
-                      />) : <TextField
+                      />) : objective.messageCount > 0 ? (<TextField
                         label="Message Count"
                         type="number"
                         size="small"
@@ -1506,7 +1506,7 @@ export function AdminTab() {
                           messageCount: parseInt(e.target.value) || 0
                         })}
                         sx={{ flex: 1 }}
-                      />}
+                      />) : null}
                       <TextField
                         label="XP Reward"
                         type="number"
