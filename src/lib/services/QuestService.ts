@@ -238,9 +238,6 @@ export class QuestService {
       const objectiveArray = questType === 'daily' ? progress.dailyObjectives : progress.weeklyObjectives;
       const objectiveProgress = objectiveArray.find((obj: { objectiveId: string; completed: boolean; claimed: boolean }) => obj.objectiveId === objectiveId);
 
-      if (!objectiveProgress || !objectiveProgress.completed) {
-        return { success: false, error: 'Objective not completed yet', xp: 0 };
-      }
 
       if (objectiveProgress.claimed) {
         return { success: false, error: 'Objective already claimed', xp: 0 };
