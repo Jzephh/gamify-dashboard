@@ -2,6 +2,12 @@ import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IObjectiveProgress {
   objectiveId: string;
+  messageCount: number;
+  successMessageCount: number;
+  xpReward: number;
+  order: number;
+  currentMessages: number;
+  currentSuccessMessages: number;
   completed: boolean;
   claimed: boolean;
   completedAt?: Date;
@@ -12,14 +18,6 @@ export interface IQuestProgress extends Document {
   userId: string;
   dateKey: string; // YYYY-MM-DD
   weekKey: string; // YYYY-WW
-  dailyQuests: {
-    messages: number;
-    successMessages: number;
-  };
-  weeklyQuests: {
-    messages: number;
-    successMessages: number;
-  };
   dailyCompleted: boolean;
   weeklyCompleted: boolean;
   dailyObjectives: IObjectiveProgress[];
@@ -34,6 +32,12 @@ export interface IQuestProgress extends Document {
 
 const ObjectiveProgressSchema = new Schema<IObjectiveProgress>({
   objectiveId: { type: String, required: true },
+  messageCount: { type: Number, required: true },
+  successMessageCount: { type: Number, required: true },
+  xpReward: { type: Number, required: true },
+  order: { type: Number, required: true },
+  currentMessages: { type: Number, default: 0 },
+  currentSuccessMessages: { type: Number, default: 0 },
   completed: { type: Boolean, default: false },
   claimed: { type: Boolean, default: false },
   completedAt: { type: Date },
@@ -44,14 +48,6 @@ const QuestProgressSchema = new Schema<IQuestProgress>({
   userId: { type: String, required: true, index: true },
   dateKey: { type: String, required: true },
   weekKey: { type: String, required: true },
-  dailyQuests: {
-    messages: { type: Number, default: 0 },
-    successMessages: { type: Number, default: 0 },
-  },
-  weeklyQuests: {
-    messages: { type: Number, default: 0 },
-    successMessages: { type: Number, default: 0 },
-  },
   dailyCompleted: { type: Boolean, default: false },
   weeklyCompleted: { type: Boolean, default: false },
   dailyObjectives: [ObjectiveProgressSchema],

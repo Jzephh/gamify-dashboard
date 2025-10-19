@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
@@ -66,7 +66,6 @@ export default function QuestsTab({ userId, onQuestUpdate }: QuestsTabProps) {
   const [modalType, setModalType] = useState<'daily' | 'weekly'>('daily');
   const [completedQuestsForModal, setCompletedQuestsForModal] = useState<Array<{ id: string; title: string; xp: number }>>([]);
   const [hasCheckedNotifications, setHasCheckedNotifications] = useState(false);
-  const [claimedObjectives, setClaimedObjectives] = useState<Set<string>>(new Set());
 
   const fetchQuestProgress = async () => {
     try {
@@ -85,7 +84,7 @@ export default function QuestsTab({ userId, onQuestUpdate }: QuestsTabProps) {
   };
 
 
-  const checkForQuestNotifications = useCallback((questData: QuestProgress) => {
+  const checkForQuestNotifications = (questData: QuestProgress) => {
     console.log('Checking quest notifications:', {
       dailyQuestSeen: questData.daily.questSeen,
       weeklyQuestSeen: questData.weekly.questSeen
@@ -93,7 +92,7 @@ export default function QuestsTab({ userId, onQuestUpdate }: QuestsTabProps) {
 
     // Check daily objectives
     if (!questData.daily.questSeen) {
-      const completedDailyObjectives = questData.daily.objectives.filter(obj => obj.completed && !claimedObjectives.has(obj.id));
+      const completedDailyObjectives = questData.daily.objectives.filter(obj => obj.completed && !obj.claimed);
       console.log('Completed daily objectives:', completedDailyObjectives);
       if (completedDailyObjectives.length > 0) {
         console.log('Opening daily quest modal with:', completedDailyObjectives);
@@ -110,7 +109,7 @@ export default function QuestsTab({ userId, onQuestUpdate }: QuestsTabProps) {
 
     // Check weekly objectives
     if (!questData.weekly.questSeen) {
-      const completedWeeklyObjectives = questData.weekly.objectives.filter(obj => obj.completed && !claimedObjectives.has(obj.id));
+      const completedWeeklyObjectives = questData.weekly.objectives.filter(obj => obj.completed && !obj.claimed);
       console.log('Completed weekly objectives:', completedWeeklyObjectives);
       if (completedWeeklyObjectives.length > 0) {
         setModalType('weekly');
@@ -123,13 +122,13 @@ export default function QuestsTab({ userId, onQuestUpdate }: QuestsTabProps) {
         return;
       }
     }
-  }, [claimedObjectives]);
+  };
 
   const handleQuestSectionClick = (questType: 'daily' | 'weekly') => {
     if (!progress) return;
     
     const objectives = questType === 'daily' ? dailyObjectives : weeklyObjectives;
-    const completedObjectives = objectives.filter(obj => obj.completed && !claimedObjectives.has(obj.id));
+    const completedObjectives = objectives.filter(obj => obj.completed && !obj.claimed);
     
     if (completedObjectives.length > 0) {
       setModalType(questType);
@@ -180,8 +179,8 @@ export default function QuestsTab({ userId, onQuestUpdate }: QuestsTabProps) {
       if (response.ok) {
         const result = await response.json();
         
-        // Add to local claimed objectives set
-        setClaimedObjectives(prev => new Set([...prev, objectiveId]));
+        // Refresh quest progress to get updated claimed status from database
+        await fetchQuestProgress();
         
         // Update parent notification count
         onQuestUpdate?.();
@@ -223,7 +222,7 @@ export default function QuestsTab({ userId, onQuestUpdate }: QuestsTabProps) {
       checkForQuestNotifications(progress);
       setHasCheckedNotifications(true);
     }
-  }, [progress, hasCheckedNotifications, checkForQuestNotifications]);
+  }, [progress, hasCheckedNotifications]);
 
   useEffect(() => {
     if (userId) {
@@ -242,7 +241,6 @@ export default function QuestsTab({ userId, onQuestUpdate }: QuestsTabProps) {
   }) => {
     const progressPercentage = Math.min(100, (objective.progress / objective.target) * 100);
     const isLocked = false; // All objectives are independent - no sequential locking
-    const isClaimed = claimedObjectives.has(objective.id); // Use local claimed status
     
     return (
       <motion.div
@@ -398,7 +396,7 @@ export default function QuestsTab({ userId, onQuestUpdate }: QuestsTabProps) {
                   fontSize: '0.8rem',
                 }}
               />
-            ) : progressPercentage === 100 && !isClaimed ? (
+            ) : progressPercentage === 100 && !objective.claimed ? (
               <motion.div
                 initial={{ opacity: 0, scale: 0 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -430,7 +428,7 @@ export default function QuestsTab({ userId, onQuestUpdate }: QuestsTabProps) {
                   Claim
                 </Button>
               </motion.div>
-            ) : isClaimed ? (
+            ) : objective.claimed ? (
               <Chip
                 icon={<CheckCircle />}
                 label="Claimed"
@@ -539,20 +537,20 @@ export default function QuestsTab({ userId, onQuestUpdate }: QuestsTabProps) {
                 </motion.div>
                 <motion.div
                   onClick={() => handleQuestSectionClick('daily')}
-                  style={{ cursor: dailyObjectives.some(obj => obj.completed && !claimedObjectives.has(obj.id)) ? 'pointer' : 'default' }}
-                  whileHover={dailyObjectives.some(obj => obj.completed && !claimedObjectives.has(obj.id)) ? { scale: 1.05 } : {}}
-                  whileTap={dailyObjectives.some(obj => obj.completed && !claimedObjectives.has(obj.id)) ? { scale: 0.95 } : {}}
+                  style={{ cursor: dailyObjectives.some(obj => obj.completed && !obj.claimed) ? 'pointer' : 'default' }}
+                  whileHover={dailyObjectives.some(obj => obj.completed && !obj.claimed) ? { scale: 1.05 } : {}}
+                  whileTap={dailyObjectives.some(obj => obj.completed && !obj.claimed) ? { scale: 0.95 } : {}}
                 >
                   <Typography variant="h4" sx={{ 
                     color: 'white', 
                     fontWeight: 700,
-                    background: dailyObjectives.some(obj => obj.completed && !claimedObjectives.has(obj.id))
+                    background: dailyObjectives.some(obj => obj.completed && !obj.claimed)
                       ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)'
                       : 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
                     backgroundClip: 'text',
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
-                    textShadow: dailyObjectives.some(obj => obj.completed && !claimedObjectives.has(obj.id))
+                    textShadow: dailyObjectives.some(obj => obj.completed && !obj.claimed)
                       ? '0 0 10px rgba(16, 185, 129, 0.5)' 
                       : 'none',
                     transition: 'all 0.3s ease',
@@ -609,20 +607,20 @@ export default function QuestsTab({ userId, onQuestUpdate }: QuestsTabProps) {
                 </motion.div>
                 <motion.div
                   onClick={() => handleQuestSectionClick('weekly')}
-                  style={{ cursor: weeklyObjectives.some(obj => obj.completed && !claimedObjectives.has(obj.id)) ? 'pointer' : 'default' }}
-                  whileHover={weeklyObjectives.some(obj => obj.completed && !claimedObjectives.has(obj.id)) ? { scale: 1.05 } : {}}
-                  whileTap={weeklyObjectives.some(obj => obj.completed && !claimedObjectives.has(obj.id)) ? { scale: 0.95 } : {}}
+                  style={{ cursor: weeklyObjectives.some(obj => obj.completed && !obj.claimed) ? 'pointer' : 'default' }}
+                  whileHover={weeklyObjectives.some(obj => obj.completed && !obj.claimed) ? { scale: 1.05 } : {}}
+                  whileTap={weeklyObjectives.some(obj => obj.completed && !obj.claimed) ? { scale: 0.95 } : {}}
                 >
                   <Typography variant="h4" sx={{ 
                     color: 'white', 
                     fontWeight: 700,
-                    background: weeklyObjectives.some(obj => obj.completed && !claimedObjectives.has(obj.id))
+                    background: weeklyObjectives.some(obj => obj.completed && !obj.claimed)
                       ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)'
                       : 'linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%)',
                     backgroundClip: 'text',
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
-                    textShadow: weeklyObjectives.some(obj => obj.completed && !claimedObjectives.has(obj.id))
+                    textShadow: weeklyObjectives.some(obj => obj.completed && !obj.claimed)
                       ? '0 0 10px rgba(16, 185, 129, 0.5)' 
                       : 'none',
                     transition: 'all 0.3s ease',

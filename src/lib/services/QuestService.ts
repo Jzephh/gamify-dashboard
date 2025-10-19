@@ -1,7 +1,17 @@
-import { QuestProgress, IQuestProgress } from '@/models/QuestProgress';
+import { QuestProgress, IQuestProgress, IObjectiveProgress } from '@/models/QuestProgress';
 import { QuestConfigService } from './QuestConfigService';
 import { IQuestObjective } from '@/models/Quest';
 import connectDB from '@/lib/mongodb';
+
+interface QuestObjective {
+  id: string;
+  progress: number;
+  target: number;
+  completed: boolean;
+  claimed: boolean;
+  xp: number;
+  order: number;
+}
 
 export class QuestService {
   private companyId: string;
@@ -50,16 +60,31 @@ export class QuestService {
     });
 
     if (!progress) {
+      // Initialize with quest configurations
+      const questConfigService = new QuestConfigService(this.companyId);
+      const dailyQuests = await questConfigService.getQuestsByType('daily');
+      const dailyQuest = dailyQuests[0];
+      
+      const dailyObjectives = dailyQuest ? dailyQuest.objectives.map(obj => ({
+        objectiveId: obj.id,
+        messageCount: obj.messageCount,
+        successMessageCount: obj.successMessageCount,
+        xpReward: obj.xpReward,
+        order: obj.order,
+        currentMessages: 0,
+        currentSuccessMessages: 0,
+        completed: false,
+        claimed: false,
+      })) : [];
+
       const newProgress = new QuestProgress({
         companyId: this.companyId,
         userId,
         dateKey,
         weekKey: this.getWeekKey(new Date()),
-        dailyQuests: { messages: 0, successMessages: 0 },
-        weeklyQuests: { messages: 0, successMessages: 0 },
         dailyCompleted: false,
         weeklyCompleted: false,
-        dailyObjectives: [],
+        dailyObjectives,
         weeklyObjectives: [],
         dailyQuestSeen: true,
         weeklyQuestSeen: true,
@@ -70,11 +95,14 @@ export class QuestService {
       return newProgress;
     }
 
-    // Update message counts
-    progress.dailyQuests.messages += 1;
-    if (isSuccessMessage) {
-      progress.dailyQuests.successMessages += 1;
+    // Increment objective counters
+    for (const obj of progress.dailyObjectives) {
+      if (obj.messageCount > 0) obj.currentMessages += 1;
+      if (isSuccessMessage && obj.successMessageCount > 0) obj.currentSuccessMessages += 1;
     }
+
+    // Check for completed objectives
+    await this.checkObjectiveCompletion(progress, 'daily');
 
     await progress.save();
     return progress;
@@ -89,17 +117,32 @@ export class QuestService {
     });
 
     if (!progress) {
+      // Initialize with quest configurations
+      const questConfigService = new QuestConfigService(this.companyId);
+      const weeklyQuests = await questConfigService.getQuestsByType('weekly');
+      const weeklyQuest = weeklyQuests[0];
+      
+      const weeklyObjectives = weeklyQuest ? weeklyQuest.objectives.map(obj => ({
+        objectiveId: obj.id,
+        messageCount: obj.messageCount,
+        successMessageCount: obj.successMessageCount,
+        xpReward: obj.xpReward,
+        order: obj.order,
+        currentMessages: 0,
+        currentSuccessMessages: 0,
+        completed: false,
+        claimed: false,
+      })) : [];
+
       const newProgress = new QuestProgress({
         companyId: this.companyId,
         userId,
         dateKey: weekKey,
         weekKey,
-        dailyQuests: { messages: 0, successMessages: 0 },
-        weeklyQuests: { messages: 0, successMessages: 0 },
         dailyCompleted: false,
         weeklyCompleted: false,
         dailyObjectives: [],
-        weeklyObjectives: [],
+        weeklyObjectives,
         dailyQuestSeen: true,
         weeklyQuestSeen: true,
         dailyNotificationCount: 0,
@@ -109,61 +152,37 @@ export class QuestService {
       return newProgress;
     }
 
-    // Update message counts
-    progress.weeklyQuests.messages += 1;
-    if (isSuccessMessage) {
-      progress.weeklyQuests.successMessages += 1;
+    // Increment objective counters
+    for (const obj of progress.weeklyObjectives) {
+      if (obj.messageCount > 0) obj.currentMessages += 1;
+      if (isSuccessMessage && obj.successMessageCount > 0) obj.currentSuccessMessages += 1;
     }
+
+    // Check for completed objectives
+    await this.checkObjectiveCompletion(progress, 'weekly');
 
     await progress.save();
     return progress;
   }
 
-  // Check sequential objective completion
-  private async checkSequentialCompletion(userId: string, questType: 'daily' | 'weekly', progress: IQuestProgress): Promise<string[]> {
-    const questConfigService = new QuestConfigService(this.companyId);
-    const quests = await questConfigService.getQuestsByType(questType);
-    
-    if (quests.length === 0) return [];
+  // Check objective completion
+  private async checkObjectiveCompletion(progress: IQuestProgress, questType: 'daily' | 'weekly'): Promise<void> {
+    const objectives = questType === 'daily' ? progress.dailyObjectives : progress.weeklyObjectives;
 
-    const quest = quests[0]; // There should only be one quest per type
-    const objectives = quest.objectives.sort((a, b) => a.order - b.order);
-    const completedObjectives: string[] = [];
     let questCompleted = false;
 
-    // Initialize objectives if not present
-    const objectiveArray = questType === 'daily' ? progress.dailyObjectives : progress.weeklyObjectives;
-    if (objectiveArray.length === 0) {
-      objectives.forEach(obj => {
-        objectiveArray.push({
-          objectiveId: obj.id,
-          completed: false,
-          claimed: false,
-        });
-      });
-    }
+    for (const objective of objectives) {
+      if (objective.completed) continue;
 
-    // Check each objective in order
-    for (let i = 0; i < objectives.length; i++) {
-      const objective = objectives[i];
-      const objectiveProgress = objectiveArray.find(obj => obj.objectiveId === objective.id);
-      
-      if (!objectiveProgress || objectiveProgress.completed) continue;
-
-      // All objectives are independent - no sequential requirements
-
-      // Check if current objective is completed
       let isCompleted = false;
       if (objective.messageCount > 0) {
-        isCompleted = (questType === 'daily' ? progress.dailyQuests.messages : progress.weeklyQuests.messages) >= objective.messageCount;
+        isCompleted = (objective.currentMessages || 0) >= objective.messageCount;
       } else if (objective.successMessageCount > 0) {
-        isCompleted = (questType === 'daily' ? progress.dailyQuests.successMessages : progress.weeklyQuests.successMessages) >= objective.successMessageCount;
+        isCompleted = (objective.currentSuccessMessages || 0) >= objective.successMessageCount;
       }
 
       if (isCompleted) {
-        objectiveProgress.completed = true;
-        objectiveProgress.completedAt = new Date();
-        completedObjectives.push(objective.id);
+        objective.completed = true;
         questCompleted = true;
       }
     }
@@ -176,12 +195,9 @@ export class QuestService {
         progress.weeklyQuestSeen = false;
       }
     }
-
-    await progress.save();
-    return completedObjectives;
   }
 
-  // Claim an objective without QuestProgress collection dependency
+  // Claim a sequential objective
   async claimObjective(userId: string, objectiveId: string): Promise<{
     success: boolean;
     error?: string;
@@ -189,6 +205,9 @@ export class QuestService {
   }> {
     try {
       await connectDB();
+      const now = new Date();
+      const dateKey = this.getDateKey(now);
+      const weekKey = this.getWeekKey(now);
 
       // Get quest configuration
       const questConfigService = new QuestConfigService(this.companyId);
@@ -210,12 +229,20 @@ export class QuestService {
         return { success: false, error: 'Objective not found', xp: 0 };
       }
 
-      // Get user's current progress to check if objective is completed
-      const userProgress = await this.getUserProgress(userId);
-      
-      // Find the objective in the user's progress
-      const questData = questType === 'daily' ? userProgress.daily : userProgress.weekly;
-      const objectiveProgress = questData.objectives.find(obj => obj.id === objectiveId);
+      const key = questType === 'daily' ? dateKey : weekKey;
+      const progress = await QuestProgress.findOne({
+        companyId: this.companyId,
+        userId,
+        dateKey: key
+      });
+
+      if (!progress) {
+        return { success: false, error: 'Quest progress not found', xp: 0 };
+      }
+
+      // Check if objective is completed
+      const objectiveArray = questType === 'daily' ? progress.dailyObjectives : progress.weeklyObjectives;
+      const objectiveProgress = objectiveArray.find((obj: IObjectiveProgress) => obj.objectiveId === objectiveId);
 
       if (!objectiveProgress) {
         return { success: false, error: 'Objective progress not found', xp: 0 };
@@ -229,8 +256,10 @@ export class QuestService {
         return { success: false, error: 'Objective already claimed', xp: 0 };
       }
 
-      // Since we're not using QuestProgress collection, we'll just return success
-      // The claimed status will be managed in the frontend state
+      // Mark as claimed
+      objectiveProgress.claimed = true;
+
+      await progress.save();
       return { success: true, xp: objective.xpReward };
     } catch (error) {
       console.error('Error claiming objective:', error);
@@ -238,7 +267,7 @@ export class QuestService {
     }
   }
 
-  // Get user's quest progress without QuestProgress collection dependency for claimed status
+  // Get user's quest progress
   async getUserProgress(userId: string): Promise<{
     daily: {
       msgCount: number;
@@ -280,7 +309,7 @@ export class QuestService {
       const now = new Date();
       const dateKey = this.getDateKey(now);
 
-      const questDoc = await QuestProgress.findOne({
+      let questDoc = await QuestProgress.findOne({
         companyId: this.companyId,
         userId,
         dateKey
@@ -294,14 +323,55 @@ export class QuestService {
       const dailyQuest = dailyQuests[0] || null;
       const weeklyQuest = weeklyQuests[0] || null;
 
-      if (questDoc && dailyQuest && weeklyQuest) {
+
+      // Initialize progress if it doesn't exist
+      if (!questDoc) {
+        // Create a new progress document with initialized objectives
+        const dailyObjectives = dailyQuest ? dailyQuest.objectives.map(obj => ({
+          objectiveId: obj.id,
+          messageCount: obj.messageCount,
+          successMessageCount: obj.successMessageCount,
+          xpReward: obj.xpReward,
+          order: obj.order,
+          completed: false,
+          claimed: false,
+        })) : [];
+
+        const weeklyObjectives = weeklyQuest ? weeklyQuest.objectives.map(obj => ({
+          objectiveId: obj.id,
+          messageCount: obj.messageCount,
+          successMessageCount: obj.successMessageCount,
+          xpReward: obj.xpReward,
+          order: obj.order,
+          completed: false,
+          claimed: false,
+        })) : [];
+
+        questDoc = new QuestProgress({
+          companyId: this.companyId,
+          userId,
+          dateKey,
+          weekKey: this.getWeekKey(now),
+          dailyCompleted: false,
+          weeklyCompleted: false,
+          dailyObjectives,
+          weeklyObjectives,
+          dailyQuestSeen: true,
+          weeklyQuestSeen: true,
+          dailyNotificationCount: 0,
+          weeklyNotificationCount: 0,
+        });
+        await questDoc.save();
+      }
+
+      if (dailyQuest && weeklyQuest) {
         // Build daily objectives
         const dailyObjectives = dailyQuest.objectives
           .sort((a: IQuestObjective, b: IQuestObjective) => a.order - b.order)
           .map((objective: IQuestObjective) => {
-            const progress = objective.messageCount > 0 ? questDoc.dailyQuests.messages : questDoc.dailyQuests.successMessages;
+            const objectiveProgress = questDoc.dailyObjectives.find((obj: IObjectiveProgress) => obj.objectiveId === objective.id);
+            const progress = objective.messageCount > 0 ? (objectiveProgress?.currentMessages || 0) : (objectiveProgress?.currentSuccessMessages || 0);
             const target = objective.messageCount > 0 ? objective.messageCount : objective.successMessageCount;
-            const completed = progress >= target;
 
             // Generate title and description based on objective type
             const isSuccessObjective = objective.successMessageCount > 0;
@@ -318,8 +388,8 @@ export class QuestService {
               description,
               progress: Math.min(progress, target),
               target,
-              completed,
-              claimed: false, // Always false since we're not storing claimed status in DB
+              completed: objectiveProgress?.completed || false,
+              claimed: objectiveProgress?.claimed || false,
               xp: objective.xpReward,
               order: objective.order,
             };
@@ -329,9 +399,9 @@ export class QuestService {
         const weeklyObjectives = weeklyQuest.objectives
           .sort((a: IQuestObjective, b: IQuestObjective) => a.order - b.order)
           .map((objective: IQuestObjective) => {
-            const progress = objective.messageCount > 0 ? questDoc.weeklyQuests.messages : questDoc.weeklyQuests.successMessages;
+            const objectiveProgress = questDoc.weeklyObjectives.find((obj: IObjectiveProgress) => obj.objectiveId === objective.id);
+            const progress = objective.messageCount > 0 ? (objectiveProgress?.currentMessages || 0) : (objectiveProgress?.currentSuccessMessages || 0);
             const target = objective.messageCount > 0 ? objective.messageCount : objective.successMessageCount;
-            const completed = progress >= target;
 
             // Generate title and description based on objective type
             const isSuccessObjective = objective.successMessageCount > 0;
@@ -348,28 +418,28 @@ export class QuestService {
               description,
               progress: Math.min(progress, target),
               target,
-              completed,
-              claimed: false, // Always false since we're not storing claimed status in DB
+              completed: objectiveProgress?.completed || false,
+              claimed: objectiveProgress?.claimed || false,
               xp: objective.xpReward,
               order: objective.order,
             };
           });
 
-        // Calculate notification counts (only completed objectives since claimed is always false)
-        const dailyNotificationCount = dailyObjectives.filter((obj) => obj.completed).length;
-        const weeklyNotificationCount = weeklyObjectives.filter((obj) => obj.completed).length;
+        // Calculate notification counts
+        const dailyNotificationCount = dailyObjectives.filter((obj: QuestObjective) => obj.completed && !obj.claimed).length;
+        const weeklyNotificationCount = weeklyObjectives.filter((obj: QuestObjective) => obj.completed && !obj.claimed).length;
 
         return {
           daily: {
-            msgCount: questDoc.dailyQuests.messages,
-            successMsgCount: questDoc.dailyQuests.successMessages,
+            msgCount: dailyObjectives.reduce((sum, o) => sum + o.progress, 0),
+            successMsgCount: dailyObjectives.reduce((sum, o) => sum + o.progress, 0),
             objectives: dailyObjectives,
             questSeen: questDoc.dailyQuestSeen ?? false,
             notificationCount: dailyNotificationCount
           },
           weekly: {
-            msgCount: questDoc.weeklyQuests.messages,
-            successMsgCount: questDoc.weeklyQuests.successMessages,
+            msgCount: weeklyObjectives.reduce((sum, o) => sum + o.progress, 0),
+            successMsgCount: weeklyObjectives.reduce((sum, o) => sum + o.progress, 0),
             objectives: weeklyObjectives,
             questSeen: questDoc.weeklyQuestSeen ?? false,
             notificationCount: weeklyNotificationCount
@@ -377,7 +447,7 @@ export class QuestService {
         };
       }
 
-      // Return empty progress if no data
+      // Return empty progress if no quest configurations
       return {
         daily: {
           msgCount: 0,
