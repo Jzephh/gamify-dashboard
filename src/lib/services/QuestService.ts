@@ -604,19 +604,35 @@ export class QuestService {
           // Add missing daily objectives
           for (const configObj of dailyQuest.objectives) {
             if (!currentDailyIds.includes(configObj.id)) {
+              // Find if there's a similar objective to inherit progress from
+              let inheritedMessages = 0;
+              let inheritedSuccessMessages = 0;
+              
+              // Look for objectives with same messageCount or successMessageCount
+              for (const existingObj of progress.dailyObjectives) {
+                if (configObj.messageCount > 0 && existingObj.messageCount > 0) {
+                  // Inherit from message-based objectives
+                  inheritedMessages = Math.min(existingObj.currentMessages, configObj.messageCount);
+                }
+                if (configObj.successMessageCount > 0 && existingObj.successMessageCount > 0) {
+                  // Inherit from success message-based objectives
+                  inheritedSuccessMessages = Math.min(existingObj.currentSuccessMessages, configObj.successMessageCount);
+                }
+              }
+              
               progress.dailyObjectives.push({
                 objectiveId: configObj.id,
                 messageCount: configObj.messageCount,
                 successMessageCount: configObj.successMessageCount,
                 xpReward: configObj.xpReward,
                 order: configObj.order,
-                currentMessages: 0,
-                currentSuccessMessages: 0,
+                currentMessages: inheritedMessages,
+                currentSuccessMessages: inheritedSuccessMessages,
                 completed: false,
                 claimed: false,
               });
               needsUpdate = true;
-              console.log(`Added missing daily objective: ${configObj.id}`);
+              console.log(`Added missing daily objective: ${configObj.id} with inherited progress: ${inheritedMessages}/${configObj.messageCount || configObj.successMessageCount}`);
             }
           }
 
@@ -669,19 +685,35 @@ export class QuestService {
           // Add missing weekly objectives
           for (const configObj of weeklyQuest.objectives) {
             if (!currentWeeklyIds.includes(configObj.id)) {
+              // Find if there's a similar objective to inherit progress from
+              let inheritedMessages = 0;
+              let inheritedSuccessMessages = 0;
+              
+              // Look for objectives with same messageCount or successMessageCount
+              for (const existingObj of progress.weeklyObjectives) {
+                if (configObj.messageCount > 0 && existingObj.messageCount > 0) {
+                  // Inherit from message-based objectives
+                  inheritedMessages = Math.min(existingObj.currentMessages, configObj.messageCount);
+                }
+                if (configObj.successMessageCount > 0 && existingObj.successMessageCount > 0) {
+                  // Inherit from success message-based objectives
+                  inheritedSuccessMessages = Math.min(existingObj.currentSuccessMessages, configObj.successMessageCount);
+                }
+              }
+              
               progress.weeklyObjectives.push({
                 objectiveId: configObj.id,
                 messageCount: configObj.messageCount,
                 successMessageCount: configObj.successMessageCount,
                 xpReward: configObj.xpReward,
                 order: configObj.order,
-                currentMessages: 0,
-                currentSuccessMessages: 0,
+                currentMessages: inheritedMessages,
+                currentSuccessMessages: inheritedSuccessMessages,
                 completed: false,
                 claimed: false,
               });
               needsUpdate = true;
-              console.log(`Added missing weekly objective: ${configObj.id}`);
+              console.log(`Added missing weekly objective: ${configObj.id} with inherited progress: ${inheritedMessages}/${configObj.messageCount || configObj.successMessageCount}`);
             }
           }
 
