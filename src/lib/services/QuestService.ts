@@ -168,11 +168,11 @@ export class QuestService {
       
       if (!objectiveProgress || objectiveProgress.completed) continue;
 
-      // Check if previous objectives are completed
+      // Check if previous objectives are completed AND claimed
       const previousObjectives = objectives.slice(0, i);
       const allPreviousCompleted = previousObjectives.every(prevObj => {
         const prevProgress = objectiveArray.find(obj => obj.objectiveId === prevObj.id);
-        return prevProgress?.completed || false;
+        return prevProgress?.completed && prevProgress?.claimed;
       });
 
       if (!allPreviousCompleted) break; // Can't complete this objective yet
@@ -259,6 +259,25 @@ export class QuestService {
 
       if (objectiveProgress.claimed) {
         return { success: false, error: 'Objective already claimed', xp: 0 };
+      }
+
+      // Check sequential order: ensure previous objectives are completed and claimed
+      const questConfigServiceForValidation = new QuestConfigService(this.companyId);
+      const allQuestsForValidation = await questConfigServiceForValidation.getAllQuests();
+      const targetQuest = allQuestsForValidation.find(q => q.objectives.some(obj => obj.id === objectiveId));
+      
+      if (targetQuest) {
+        const sortedObjectives = targetQuest.objectives.sort((a, b) => a.order - b.order);
+        const currentObjectiveIndex = sortedObjectives.findIndex(obj => obj.id === objectiveId);
+        
+        if (currentObjectiveIndex > 0) {
+          const previousObjective = sortedObjectives[currentObjectiveIndex - 1];
+          const previousObjectiveProgress = objectiveArray.find((obj: { objectiveId: string; completed: boolean; claimed: boolean }) => obj.objectiveId === previousObjective.id);
+          
+          if (!previousObjectiveProgress || !previousObjectiveProgress.completed || !previousObjectiveProgress.claimed) {
+            return { success: false, error: 'Previous objective must be completed and claimed first', xp: 0 };
+          }
+        }
       }
 
       // Mark as claimed

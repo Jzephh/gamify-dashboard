@@ -242,8 +242,8 @@ export default function QuestsTab({ userId, onQuestUpdate }: QuestsTabProps) {
   }) => {
     const progressPercentage = Math.min(100, (objective.progress / objective.target) * 100);
     const isLocked = questType === 'daily' 
-      ? index > 0 && !dailyObjectives[index - 1]?.completed
-      : index > 0 && !weeklyObjectives[index - 1]?.completed;
+      ? index > 0 && (!dailyObjectives[index - 1]?.completed || !dailyObjectives[index - 1]?.claimed)
+      : index > 0 && (!weeklyObjectives[index - 1]?.completed || !weeklyObjectives[index - 1]?.claimed);
     
     return (
       <motion.div
