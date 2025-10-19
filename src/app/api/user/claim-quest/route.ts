@@ -34,7 +34,10 @@ export async function POST(request: Request) {
     // Claim the objective
     const claimResult = await questService.claimObjective(userId, objectiveId);
     
+    console.log('Claim result:', claimResult);
+    
     if (!claimResult.success) {
+      console.log('Claim failed:', claimResult.error);
       return NextResponse.json({ error: claimResult.error }, { status: 400 });
     }
 
