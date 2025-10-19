@@ -25,18 +25,18 @@ export class XPEngine {
 
   // Calculate level from XP (cumulative system)
   private calculateLevelFromXP(xp: number): number {
-    if (xp < 100) return 0;
-    if (xp < 300) return 1;
-    if (xp < 600) return 2;
-    if (xp < 1000) return 3;
-    if (xp < 1500) return 4;
-    if (xp < 2100) return 5;
-    // For higher levels: solve quadratic equation to find level
-    // 1500 + 600*(level-5) + 100*(level-5)*(level-6)/2 >= xp
-    // This simplifies to: level^2 + 5*level - 2*(xp-1500)/100 - 30 >= 0
-    const discriminant = 25 + 8 * (xp - 1500) / 100 + 120;
-    const level = Math.floor((-5 + Math.sqrt(discriminant)) / 2);
-    return level;
+    // if (xp < 100) return 0;
+    // if (xp < 300) return 1;
+    // if (xp < 600) return 2;
+    // if (xp < 1000) return 3;
+    // if (xp < 1500) return 4;
+    // if (xp < 2100) return 5;
+    // // For higher levels: solve quadratic equation to find level
+    // // 1500 + 600*(level-5) + 100*(level-5)*(level-6)/2 >= xp
+    // // This simplifies to: level^2 + 5*level - 2*(xp-1500)/100 - 30 >= 0
+    // const discriminant = 25 + 8 * (xp - 1500) / 100 + 120;
+    // const level = Math.floor((-5 + Math.sqrt(discriminant)) / 2);
+    return  Math.floor((-1 + Math.sqrt(1 + (4 * xp / 50))) / 2)
   }
 
   // Award XP to user (simulated message)
