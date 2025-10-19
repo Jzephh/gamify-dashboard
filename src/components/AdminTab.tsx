@@ -87,7 +87,7 @@ export function AdminTab() {
   const [loading, setLoading] = useState(true);
   const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
   const [xpAmount, setXpAmount] = useState(10);
-
+  
   // Quest management state
   const [quests, setQuests] = useState<QuestConfig[]>([]);
   const [selectedQuest, setSelectedQuest] = useState<QuestConfig | null>(null);
@@ -122,7 +122,7 @@ export function AdminTab() {
 
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(user =>
+      filtered = filtered.filter(user => 
         user.username.toLowerCase().includes(query) ||
         user.name.toLowerCase().includes(query)
       );
@@ -225,12 +225,21 @@ export function AdminTab() {
   };
 
   const addObjective = () => {
-    if (newObjective.messageCount === 0 && newObjective.successMessageCount === 0) {
-      setAlert({ type: 'error', message: 'Please specify either message count or success message count' });
+    // Validate that at least one field has a value
+    if (newObjective.messageCount === 0 && newObjective.successMessageCount === 0 && newObjective.xpReward === 0) {
+      setAlert({ type: 'error', message: 'Please fill in at least one field' });
       return;
     }
+
+    // Validate that only one message type is specified
     if (newObjective.messageCount > 0 && newObjective.successMessageCount > 0) {
       setAlert({ type: 'error', message: 'Please specify only one type of message count' });
+      return;
+    }
+
+    // Validate XP reward
+    if (newObjective.xpReward <= 0) {
+      setAlert({ type: 'error', message: 'XP reward must be greater than 0' });
       return;
     }
 
@@ -252,6 +261,8 @@ export function AdminTab() {
       successMessageCount: 0,
       xpReward: 0,
     });
+
+    setAlert({ type: 'success', message: 'Objective added successfully' });
   };
 
   const editObjective = (objective: QuestObjective) => {
@@ -272,7 +283,7 @@ export function AdminTab() {
 
     setQuestForm({
       ...questForm,
-      objectives: questForm.objectives.map(obj =>
+      objectives: questForm.objectives.map(obj => 
         obj.id === editingObjective.id ? editingObjective : obj
       ),
     });
@@ -299,7 +310,7 @@ export function AdminTab() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ targetUserId: userId, xpAmount: amount }),
       });
-
+      
       if (response.ok) {
         fetchUsers();
         setAlert({ type: 'success', message: `Awarded ${amount} XP successfully!` });
@@ -323,7 +334,7 @@ export function AdminTab() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ targetUserId: userId, badgeType, action }),
       });
-
+      
       if (response.ok) {
         fetchUsers();
         setAlert({ type: 'success', message: `Badge ${action}ed successfully!` });
@@ -364,7 +375,7 @@ export function AdminTab() {
   }
 
   return (
-    <Box sx={{
+    <Box sx={{ 
       p: 3,
       position: 'relative',
       overflow: 'hidden',
@@ -409,7 +420,7 @@ export function AdminTab() {
       <motion.div
         initial={{ opacity: 0, y: 30, scale: 0.95 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{
+        transition={{ 
           duration: 0.8,
           type: "spring",
           stiffness: 100,
@@ -447,26 +458,26 @@ export function AdminTab() {
           <CardContent sx={{ p: 4, position: 'relative', zIndex: 2 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
               <motion.div
-                animate={{
+                animate={{ 
                   rotate: [0, 5, -5, 0],
                   scale: [1, 1.05, 1]
                 }}
-                transition={{
+                transition={{ 
                   duration: 2,
                   repeat: Infinity,
                   repeatDelay: 3
                 }}
               >
-                <Security sx={{
-                  fontSize: 48,
+                <Security sx={{ 
+                  fontSize: 48, 
                   color: 'white',
                   filter: 'drop-shadow(0 0 8px rgba(255, 255, 255, 0.5))'
                 }} />
               </motion.div>
               <Box>
-                <Typography variant="h4" sx={{
-                  color: 'white',
-                  fontWeight: 800,
+                <Typography variant="h4" sx={{ 
+                  color: 'white', 
+                  fontWeight: 800, 
                   mb: 1,
                   background: 'linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%)',
                   backgroundClip: 'text',
@@ -488,7 +499,7 @@ export function AdminTab() {
       <motion.div
         initial={{ opacity: 0, y: 30, scale: 0.95 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{
+        transition={{ 
           duration: 0.8,
           delay: 0.1,
           type: "spring",
@@ -540,24 +551,24 @@ export function AdminTab() {
             >
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
                 <motion.div
-                  animate={{
+                  animate={{ 
                     rotate: [0, 5, -5, 0],
                     scale: [1, 1.05, 1]
                   }}
-                  transition={{
+                  transition={{ 
                     duration: 2,
                     repeat: Infinity,
                     repeatDelay: 3
                   }}
                 >
-                  <Search sx={{
-                    color: '#6366f1',
+                  <Search sx={{ 
+                    color: '#6366f1', 
                     fontSize: 28,
                     filter: 'drop-shadow(0 0 8px rgba(99, 102, 241, 0.5))'
                   }} />
                 </motion.div>
-                <Typography variant="h5" sx={{
-                  color: 'white',
+                <Typography variant="h5" sx={{ 
+                  color: 'white', 
                   fontWeight: 700,
                   background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
                   backgroundClip: 'text',
@@ -582,8 +593,8 @@ export function AdminTab() {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 InputProps={{
                   startAdornment: (
-                    <Search sx={{
-                      color: '#6366f1',
+                    <Search sx={{ 
+                      color: '#6366f1', 
                       mr: 1,
                       fontSize: 20
                     }} />
@@ -593,9 +604,9 @@ export function AdminTab() {
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.9 }}
                     >
-                      <Clear
-                        sx={{
-                          color: '#a1a1aa',
+                      <Clear 
+                        sx={{ 
+                          color: '#a1a1aa', 
                           cursor: 'pointer',
                           fontSize: 20,
                           '&:hover': { color: '#ef4444' }
@@ -643,7 +654,7 @@ export function AdminTab() {
               transition={{ delay: 0.6, duration: 0.6 }}
             >
               <Box sx={{ mt: 3, textAlign: 'center' }}>
-                <Typography variant="body2" sx={{
+                <Typography variant="body2" sx={{ 
                   color: '#a1a1aa',
                   background: 'rgba(99, 102, 241, 0.1)',
                   px: 2,
@@ -665,7 +676,7 @@ export function AdminTab() {
       <motion.div
         initial={{ opacity: 0, y: 30, scale: 0.95 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{
+        transition={{ 
           duration: 0.8,
           delay: 0.2,
           type: "spring",
@@ -715,9 +726,9 @@ export function AdminTab() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.3, duration: 0.6 }}
             >
-              <Typography variant="h5" sx={{
-                color: 'white',
-                fontWeight: 700,
+              <Typography variant="h5" sx={{ 
+                color: 'white', 
+                fontWeight: 700, 
                 mb: 3,
                 background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
                 backgroundClip: 'text',
@@ -727,7 +738,7 @@ export function AdminTab() {
                 Users ({filteredUsers.length})
               </Typography>
             </motion.div>
-
+            
             <List sx={{ maxHeight: 400, overflow: 'auto' }}>
               {filteredUsers.length === 0 ? (
                 <motion.div
@@ -735,23 +746,23 @@ export function AdminTab() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6 }}
                 >
-                  <Box sx={{
-                    textAlign: 'center',
+                  <Box sx={{ 
+                    textAlign: 'center', 
                     py: 6,
                     background: 'rgba(239, 68, 68, 0.1)',
                     borderRadius: 3,
                     border: '1px solid rgba(239, 68, 68, 0.2)',
                   }}>
-                    <Typography variant="h6" sx={{
-                      color: '#ef4444',
+                    <Typography variant="h6" sx={{ 
+                      color: '#ef4444', 
                       fontWeight: 600,
                       mb: 1
                     }}>
                       No users found
                     </Typography>
                     <Typography variant="body2" sx={{ color: '#a1a1aa' }}>
-                      {searchQuery
-                        ? 'Try adjusting your search criteria'
+                      {searchQuery 
+                        ? 'Try adjusting your search criteria' 
                         : 'No users available'
                       }
                     </Typography>
@@ -759,106 +770,106 @@ export function AdminTab() {
                 </motion.div>
               ) : (
                 filteredUsers.map((user, index) => (
-                  <motion.div
-                    key={user._id}
-                    initial={{ opacity: 0, x: -30, scale: 0.95 }}
-                    animate={{ opacity: 1, x: 0, scale: 1 }}
-                    transition={{
-                      duration: 0.6,
-                      delay: 0.4 + index * 0.05,
-                      type: "spring",
-                      stiffness: 100
+                <motion.div
+                  key={user._id}
+                  initial={{ opacity: 0, x: -30, scale: 0.95 }}
+                  animate={{ opacity: 1, x: 0, scale: 1 }}
+                  transition={{ 
+                    duration: 0.6, 
+                    delay: 0.4 + index * 0.05,
+                    type: "spring",
+                    stiffness: 100
+                  }}
+                  whileHover={{ scale: 1.02, x: 5 }}
+                >
+                  <ListItem
+                    component="div"
+                    onClick={() => setSelectedUser(user)}
+                    sx={{
+                      cursor: 'pointer',
+                      borderRadius: 3,
+                      mb: 1,
+                      background: selectedUser?._id === user._id 
+                        ? 'linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(139, 92, 246, 0.1) 100%)' 
+                        : 'linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%)',
+                      border: selectedUser?._id === user._id 
+                        ? '2px solid #6366f1' 
+                        : '1px solid rgba(255, 255, 255, 0.1)',
+                      boxShadow: selectedUser?._id === user._id 
+                        ? '0 8px 20px rgba(99, 102, 241, 0.3)'
+                        : '0 4px 10px rgba(0, 0, 0, 0.1)',
+                      transition: 'all 0.3s ease',
+                      '&:hover': {
+                        background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(139, 92, 246, 0.08) 100%)',
+                        transform: 'translateY(-2px)',
+                        boxShadow: '0 8px 25px rgba(99, 102, 241, 0.2)',
+                      },
                     }}
-                    whileHover={{ scale: 1.02, x: 5 }}
                   >
-                    <ListItem
-                      component="div"
-                      onClick={() => setSelectedUser(user)}
-                      sx={{
-                        cursor: 'pointer',
-                        borderRadius: 3,
-                        mb: 1,
-                        background: selectedUser?._id === user._id
-                          ? 'linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(139, 92, 246, 0.1) 100%)'
-                          : 'linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%)',
-                        border: selectedUser?._id === user._id
-                          ? '2px solid #6366f1'
-                          : '1px solid rgba(255, 255, 255, 0.1)',
-                        boxShadow: selectedUser?._id === user._id
-                          ? '0 8px 20px rgba(99, 102, 241, 0.3)'
-                          : '0 4px 10px rgba(0, 0, 0, 0.1)',
-                        transition: 'all 0.3s ease',
-                        '&:hover': {
-                          background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(139, 92, 246, 0.08) 100%)',
-                          transform: 'translateY(-2px)',
-                          boxShadow: '0 8px 25px rgba(99, 102, 241, 0.2)',
-                        },
-                      }}
-                    >
-                      <ListItemAvatar>
-                        <Avatar
-                          sx={{
-                            background: 'linear-gradient(135deg, #6366f1 0%, #ec4899 100%)',
-                            width: 56,
-                            height: 56,
-                          }}
-                        >
-                          {user.name.charAt(0).toUpperCase()}
-                        </Avatar>
-                      </ListItemAvatar>
-
-                      <ListItemText
-                        primary={
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                            <Typography variant="h6" sx={{ color: 'white', fontWeight: 600 }}>
-                              {user.name}
-                            </Typography>
-                            <Chip
-                              label={`Lv.${user.level}`}
-                              size="small"
-                              sx={{
-                                background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
-                                color: 'white',
-                                fontWeight: 600,
-                              }}
-                            />
-                          </Box>
-                        }
-                        secondary={
-                          <Box>
-                            <Typography variant="body2" sx={{ color: '#a1a1aa', mb: 1 }}>
-                              @{user.username}
-                            </Typography>
-                            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                              {badgeTypes.map((badge) => (
-                                <Box
-                                  key={badge.key}
-                                  sx={{
-                                    opacity: user.badges[badge.key as keyof typeof user.badges] ? 1 : 0.3,
-                                    fontSize: '1.2rem',
-                                  }}
-                                  title={`${badge.name} Badge`}
-                                >
-                                  {badge.emoji}
-                                </Box>
-                              ))}
-                            </Box>
-                          </Box>
-                        }
-                      />
-
-                      <ListItemSecondaryAction>
-                        <Box sx={{ textAlign: 'right' }}>
-                          <Typography variant="body2" sx={{ color: '#a1a1aa' }}>
-                            {user.xp} XP
+                    <ListItemAvatar>
+                      <Avatar
+                        sx={{
+                          background: 'linear-gradient(135deg, #6366f1 0%, #ec4899 100%)',
+                          width: 56,
+                          height: 56,
+                        }}
+                      >
+                        {user.name.charAt(0).toUpperCase()}
+                      </Avatar>
+                    </ListItemAvatar>
+                    
+                    <ListItemText
+                      primary={
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                          <Typography variant="h6" sx={{ color: 'white', fontWeight: 600 }}>
+                            {user.name}
                           </Typography>
-                          <Typography variant="body2" sx={{ color: '#a1a1aa' }}>
-                            {user.stats.messages} msgs
-                          </Typography>
+                          <Chip
+                            label={`Lv.${user.level}`}
+                            size="small"
+                            sx={{
+                              background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
+                              color: 'white',
+                              fontWeight: 600,
+                            }}
+                          />
                         </Box>
-                      </ListItemSecondaryAction>
-                    </ListItem>
-                  </motion.div>
+                      }
+                      secondary={
+                        <Box>
+                          <Typography variant="body2" sx={{ color: '#a1a1aa', mb: 1 }}>
+                            @{user.username}
+                          </Typography>
+                          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                            {badgeTypes.map((badge) => (
+                              <Box
+                                key={badge.key}
+                                sx={{
+                                  opacity: user.badges[badge.key as keyof typeof user.badges] ? 1 : 0.3,
+                                  fontSize: '1.2rem',
+                                }}
+                                title={`${badge.name} Badge`}
+                              >
+                                {badge.emoji}
+                              </Box>
+                            ))}
+                          </Box>
+                        </Box>
+                      }
+                    />
+                    
+                    <ListItemSecondaryAction>
+                      <Box sx={{ textAlign: 'right' }}>
+                        <Typography variant="body2" sx={{ color: '#a1a1aa' }}>
+                          {user.xp} XP
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: '#a1a1aa' }}>
+                          {user.stats.messages} msgs
+                        </Typography>
+                      </Box>
+                    </ListItemSecondaryAction>
+                  </ListItem>
+                </motion.div>
                 ))
               )}
             </List>
@@ -871,7 +882,7 @@ export function AdminTab() {
         <motion.div
           initial={{ opacity: 0, y: 30, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{
+          transition={{ 
             duration: 0.8,
             delay: 0.3,
             type: "spring",
@@ -920,9 +931,9 @@ export function AdminTab() {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.4, duration: 0.6 }}
               >
-                <Typography variant="h5" sx={{
-                  color: 'white',
-                  fontWeight: 700,
+                <Typography variant="h5" sx={{ 
+                  color: 'white', 
+                  fontWeight: 700, 
                   mb: 3,
                   background: 'linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%)',
                   backgroundClip: 'text',
@@ -953,24 +964,24 @@ export function AdminTab() {
                   >
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
                       <motion.div
-                        animate={{
+                        animate={{ 
                           rotate: [0, 5, -5, 0],
                           scale: [1, 1.05, 1]
                         }}
-                        transition={{
+                        transition={{ 
                           duration: 2,
                           repeat: Infinity,
                           repeatDelay: 3
                         }}
                       >
-                        <FlashOn sx={{
-                          color: '#fbbf24',
+                        <FlashOn sx={{ 
+                          color: '#fbbf24', 
                           fontSize: 28,
                           filter: 'drop-shadow(0 0 8px rgba(251, 191, 36, 0.5))'
                         }} />
                       </motion.div>
-                      <Typography variant="h6" sx={{
-                        color: 'white',
+                      <Typography variant="h6" sx={{ 
+                        color: 'white', 
                         fontWeight: 600,
                         background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
                         backgroundClip: 'text',
@@ -980,15 +991,15 @@ export function AdminTab() {
                         XP Management
                       </Typography>
                     </Box>
-                    <TextField
-                      label="XP Amount"
-                      type="number"
-                      value={xpAmount}
-                      onChange={(e) => setXpAmount(parseInt(e.target.value) || 0)}
-                      fullWidth
-                      sx={{ mb: 3 }}
-                      inputProps={{ min: 1, max: 1000 }}
-                    />
+                  <TextField
+                    label="XP Amount"
+                    type="number"
+                    value={xpAmount}
+                    onChange={(e) => setXpAmount(parseInt(e.target.value) || 0)}
+                    fullWidth
+                    sx={{ mb: 3 }}
+                    inputProps={{ min: 1, max: 1000 }}
+                  />
                     <motion.div
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
@@ -1033,24 +1044,24 @@ export function AdminTab() {
                   >
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
                       <motion.div
-                        animate={{
+                        animate={{ 
                           rotate: [0, -5, 5, 0],
                           scale: [1, 1.05, 1]
                         }}
-                        transition={{
+                        transition={{ 
                           duration: 2.5,
                           repeat: Infinity,
                           repeatDelay: 4
                         }}
                       >
-                        <WorkspacePremium sx={{
-                          color: '#8b5cf6',
+                        <WorkspacePremium sx={{ 
+                          color: '#8b5cf6', 
                           fontSize: 28,
                           filter: 'drop-shadow(0 0 8px rgba(139, 92, 246, 0.5))'
                         }} />
                       </motion.div>
-                      <Typography variant="h6" sx={{
-                        color: 'white',
+                      <Typography variant="h6" sx={{ 
+                        color: 'white', 
                         fontWeight: 600,
                         background: 'linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%)',
                         backgroundClip: 'text',
@@ -1061,37 +1072,37 @@ export function AdminTab() {
                       </Typography>
                     </Box>
 
-                    <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 3 }}>
-                      {badgeTypes.map((badge) => {
-                        const hasBadge = selectedUser.badges[badge.key as keyof typeof selectedUser.badges];
-                        return (
-                          <motion.div
-                            key={badge.key}
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                          >
-                            <Chip
-                              label={`${badge.emoji} ${badge.name}`}
-                              variant={hasBadge ? 'filled' : 'outlined'}
-                              color={hasBadge ? 'success' : 'default'}
-                              onClick={() => {
-                                setSelectedBadge(badge.key);
-                                setSelectedAction(hasBadge ? 'lock' : 'unlock');
-                                setOpenDialog(true);
-                              }}
-                              sx={{
-                                mb: 1,
-                                cursor: 'pointer',
-                                boxShadow: hasBadge ? '0 4px 12px rgba(16, 185, 129, 0.3)' : '0 2px 8px rgba(0, 0, 0, 0.1)',
-                                '&:hover': {
-                                  boxShadow: hasBadge ? '0 6px 16px rgba(16, 185, 129, 0.4)' : '0 4px 12px rgba(0, 0, 0, 0.2)',
-                                },
-                              }}
-                            />
-                          </motion.div>
-                        );
-                      })}
-                    </Box>
+                  <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 3 }}>
+                    {badgeTypes.map((badge) => {
+                      const hasBadge = selectedUser.badges[badge.key as keyof typeof selectedUser.badges];
+                      return (
+                        <motion.div
+                          key={badge.key}
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                        >
+                          <Chip
+                            label={`${badge.emoji} ${badge.name}`}
+                            variant={hasBadge ? 'filled' : 'outlined'}
+                            color={hasBadge ? 'success' : 'default'}
+                            onClick={() => {
+                              setSelectedBadge(badge.key);
+                              setSelectedAction(hasBadge ? 'lock' : 'unlock');
+                              setOpenDialog(true);
+                            }}
+                            sx={{
+                              mb: 1,
+                              cursor: 'pointer',
+                              boxShadow: hasBadge ? '0 4px 12px rgba(16, 185, 129, 0.3)' : '0 2px 8px rgba(0, 0, 0, 0.1)',
+                              '&:hover': {
+                                boxShadow: hasBadge ? '0 6px 16px rgba(16, 185, 129, 0.4)' : '0 4px 12px rgba(0, 0, 0, 0.2)',
+                              },
+                            }}
+                          />
+                        </motion.div>
+                      );
+                    })}
+                  </Box>
 
                     <motion.div
                       whileHover={{ scale: 1.05 }}
@@ -1145,7 +1156,7 @@ export function AdminTab() {
                 ))}
               </Select>
             </FormControl>
-
+            
             <FormControl fullWidth>
               <InputLabel>Action</InputLabel>
               <Select
@@ -1180,7 +1191,7 @@ export function AdminTab() {
       <motion.div
         initial={{ opacity: 0, y: 30, scale: 0.95 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{
+        transition={{ 
           duration: 0.8,
           delay: 0.2,
           type: "spring",
@@ -1210,24 +1221,24 @@ export function AdminTab() {
             >
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
                 <motion.div
-                  animate={{
+                  animate={{ 
                     rotate: [0, 5, -5, 0],
                     scale: [1, 1.05, 1]
                   }}
-                  transition={{
+                  transition={{ 
                     duration: 2,
                     repeat: Infinity,
                     repeatDelay: 3
                   }}
                 >
-                  <WorkspacePremium sx={{
-                    color: '#10b981',
+                  <WorkspacePremium sx={{ 
+                    color: '#10b981', 
                     fontSize: 28,
                     filter: 'drop-shadow(0 0 8px rgba(16, 185, 129, 0.5))'
                   }} />
                 </motion.div>
-                <Typography variant="h5" sx={{
-                  color: 'white',
+                <Typography variant="h5" sx={{ 
+                  color: 'white', 
                   fontWeight: 700,
                   background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
                   backgroundClip: 'text',
@@ -1244,14 +1255,55 @@ export function AdminTab() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4, duration: 0.6 }}
             >
-              <Typography variant="body1" sx={{
-                color: 'rgba(255, 255, 255, 0.8)',
+              <Typography variant="body1" sx={{ 
+                color: 'rgba(255, 255, 255, 0.8)', 
                 mb: 3,
                 lineHeight: 1.6
               }}>
                 Configure quest settings, XP rewards, and message requirements. Changes will affect all users.
               </Typography>
             </motion.div>
+
+            {/* Alert Display */}
+            {alert && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.3 }}
+              >
+                <Box
+                  sx={{
+                    p: 2,
+                    mb: 3,
+                    borderRadius: 2,
+                    background: alert.type === 'success' 
+                      ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)'
+                      : 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+                    color: 'white',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1,
+                  }}
+                >
+                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                    {alert.message}
+                  </Typography>
+                  <Button
+                    size="small"
+                    onClick={() => setAlert(null)}
+                    sx={{ 
+                      color: 'white', 
+                      minWidth: 'auto',
+                      p: 0.5,
+                      '&:hover': { background: 'rgba(255, 255, 255, 0.1)' }
+                    }}
+                  >
+                    ×
+                  </Button>
+                </Box>
+              </motion.div>
+            )}
 
             {/* Quest List */}
             <motion.div
@@ -1291,7 +1343,7 @@ export function AdminTab() {
                               label={quest.questType.toUpperCase()}
                               size="small"
                               sx={{
-                                background: quest.questType === 'daily'
+                                background: quest.questType === 'daily' 
                                   ? 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)'
                                   : 'linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%)',
                                 color: 'white',
@@ -1303,7 +1355,7 @@ export function AdminTab() {
                               label={quest.isActive ? 'ACTIVE' : 'INACTIVE'}
                               size="small"
                               sx={{
-                                background: quest.isActive
+                                background: quest.isActive 
                                   ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)'
                                   : 'linear-gradient(135deg, #6b7280 0%, #4b5563 100%)',
                                 color: 'white',
@@ -1323,19 +1375,19 @@ export function AdminTab() {
                               Objectives ({quest.objectives.length})
                             </Typography>
                             {quest.objectives.map((objective) => (
-                              <Box key={objective.id} sx={{
-                                display: 'flex',
-                                gap: 2,
-                                p: 1,
-                                background: 'rgba(255, 255, 255, 0.05)',
-                                borderRadius: 1
+                              <Box key={objective.id} sx={{ 
+                                display: 'flex', 
+                                gap: 2, 
+                                p: 1, 
+                                background: 'rgba(255, 255, 255, 0.05)', 
+                                borderRadius: 1 
                               }}>
                                 <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.8)', minWidth: '60px' }}>
                                   Step {objective.order}:
                                 </Typography>
                                 <Typography variant="body2" sx={{ color: 'white', flex: 1 }}>
-                                  {objective.messageCount > 0
-                                    ? `${objective.messageCount} messages`
+                                  {objective.messageCount > 0 
+                                    ? `${objective.messageCount} messages` 
                                     : `${objective.successMessageCount} success messages`
                                   }
                                 </Typography>
@@ -1416,22 +1468,22 @@ export function AdminTab() {
               <Typography variant="h6" sx={{ color: 'white', mb: 2 }}>
                 Quest Objectives
               </Typography>
-
+              
               {/* Current Objectives */}
               {questForm.objectives.map((objective) => (
-                <Box key={objective.id} sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 2,
-                  p: 2,
-                  background: 'rgba(255, 255, 255, 0.05)',
+                <Box key={objective.id} sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: 2, 
+                  p: 2, 
+                  background: 'rgba(255, 255, 255, 0.05)', 
                   borderRadius: 2,
                   mb: 2
                 }}>
                   <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.8)', minWidth: '60px' }}>
                     Step {objective.order}:
                   </Typography>
-
+                  
                   {editingObjective?.id === objective.id ? (
                     <Box sx={{ display: 'flex', gap: 2, flex: 1 }}>
                       {objective.id.includes("success") ? (<TextField
@@ -1455,8 +1507,6 @@ export function AdminTab() {
                         })}
                         sx={{ flex: 1 }}
                       />}
-
-
                       <TextField
                         label="XP Reward"
                         type="number"
@@ -1488,8 +1538,8 @@ export function AdminTab() {
                   ) : (
                     <>
                       <Typography variant="body2" sx={{ color: 'white', flex: 1 }}>
-                        {objective.messageCount > 0
-                          ? `${objective.messageCount} messages`
+                        {objective.messageCount > 0 
+                          ? `${objective.messageCount} messages` 
                           : `${objective.successMessageCount} success messages`
                         }
                       </Typography>
@@ -1517,6 +1567,63 @@ export function AdminTab() {
                 </Box>
               ))}
 
+              {/* Add New Objective */}
+              <Box sx={{ 
+                p: 2, 
+                background: 'rgba(255, 255, 255, 0.05)', 
+                borderRadius: 2,
+                border: '1px dashed rgba(255, 255, 255, 0.3)'
+              }}>
+                <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)', mb: 2 }}>
+                  Add New Objective
+                </Typography>
+                <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+                  <TextField
+                    label="Message Count"
+                    type="number"
+                    size="small"
+                    value={newObjective.messageCount}
+                    onChange={(e) => setNewObjective({
+                      ...newObjective,
+                      messageCount: parseInt(e.target.value) || 0
+                    })}
+                    sx={{ flex: 1 }}
+                  />
+                  <TextField
+                    label="Success Message Count"
+                    type="number"
+                    size="small"
+                    value={newObjective.successMessageCount}
+                    onChange={(e) => setNewObjective({
+                      ...newObjective,
+                      successMessageCount: parseInt(e.target.value) || 0
+                    })}
+                    sx={{ flex: 1 }}
+                  />
+                  <TextField
+                    label="XP Reward"
+                    type="number"
+                    size="small"
+                    value={newObjective.xpReward}
+                    onChange={(e) => setNewObjective({
+                      ...newObjective,
+                      xpReward: parseInt(e.target.value) || 0
+                    })}
+                    sx={{ flex: 1 }}
+                  />
+                </Box>
+                <Button
+                  variant="contained"
+                  size="small"
+                  onClick={addObjective}
+                  sx={{ 
+                    background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
+                    textTransform: 'none'
+                  }}
+                >
+                  Add Objective
+                </Button>
+              </Box>
             </Box>
           </Box>
         </DialogContent>
