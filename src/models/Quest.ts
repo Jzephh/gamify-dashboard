@@ -2,8 +2,6 @@ import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IQuestObjective {
   id: string;
-  title: string;
-  description: string;
   messageCount: number;
   successMessageCount: number;
   xpReward: number;
@@ -24,8 +22,6 @@ export interface IQuest extends Document {
 
 const QuestObjectiveSchema = new Schema<IQuestObjective>({
   id: { type: String, required: true },
-  title: { type: String, required: true },
-  description: { type: String, required: true },
   messageCount: { type: Number, required: true, default: 0 },
   successMessageCount: { type: Number, required: true, default: 0 },
   xpReward: { type: Number, required: true, default: 0 },

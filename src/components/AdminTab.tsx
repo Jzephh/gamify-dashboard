@@ -61,15 +61,21 @@ interface AdminUser {
   createdAt: string;
 }
 
+interface QuestObjective {
+  id: string;
+  messageCount: number;
+  successMessageCount: number;
+  xpReward: number;
+  order: number;
+}
+
 interface QuestConfig {
   _id: string;
   questId: string;
   questType: 'daily' | 'weekly';
   title: string;
   description: string;
-  messageCount: number;
-  successMessageCount: number;
-  xpReward: number;
+  objectives: QuestObjective[];
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -89,10 +95,14 @@ export function AdminTab() {
   const [questForm, setQuestForm] = useState({
     title: '',
     description: '',
+    objectives: [] as QuestObjective[],
+    isActive: true,
+  });
+  const [editingObjective, setEditingObjective] = useState<QuestObjective | null>(null);
+  const [newObjective, setNewObjective] = useState({
     messageCount: 0,
     successMessageCount: 0,
     xpReward: 0,
-    isActive: true,
   });
   const [actionLoading, setActionLoading] = useState(false);
   const [openDialog, setOpenDialog] = useState(false);
@@ -161,9 +171,7 @@ export function AdminTab() {
     setQuestForm({
       title: quest.title,
       description: quest.description,
-      messageCount: quest.messageCount,
-      successMessageCount: quest.successMessageCount,
-      xpReward: quest.xpReward,
+      objectives: quest.objectives,
       isActive: quest.isActive,
     });
     setQuestDialogOpen(true);
@@ -205,10 +213,81 @@ export function AdminTab() {
     setQuestForm({
       title: '',
       description: '',
+      objectives: [],
+      isActive: true,
+    });
+    setEditingObjective(null);
+    setNewObjective({
       messageCount: 0,
       successMessageCount: 0,
       xpReward: 0,
-      isActive: true,
+    });
+  };
+
+  const addObjective = () => {
+    if (newObjective.messageCount === 0 && newObjective.successMessageCount === 0) {
+      setAlert({ type: 'error', message: 'Please specify either message count or success message count' });
+      return;
+    }
+    if (newObjective.messageCount > 0 && newObjective.successMessageCount > 0) {
+      setAlert({ type: 'error', message: 'Please specify only one type of message count' });
+      return;
+    }
+
+    const objective: QuestObjective = {
+      id: `objective_${Date.now()}`,
+      messageCount: newObjective.messageCount,
+      successMessageCount: newObjective.successMessageCount,
+      xpReward: newObjective.xpReward,
+      order: questForm.objectives.length + 1,
+    };
+
+    setQuestForm({
+      ...questForm,
+      objectives: [...questForm.objectives, objective],
+    });
+
+    setNewObjective({
+      messageCount: 0,
+      successMessageCount: 0,
+      xpReward: 0,
+    });
+  };
+
+  const editObjective = (objective: QuestObjective) => {
+    setEditingObjective(objective);
+  };
+
+  const updateObjective = () => {
+    if (!editingObjective) return;
+
+    if (editingObjective.messageCount === 0 && editingObjective.successMessageCount === 0) {
+      setAlert({ type: 'error', message: 'Please specify either message count or success message count' });
+      return;
+    }
+    if (editingObjective.messageCount > 0 && editingObjective.successMessageCount > 0) {
+      setAlert({ type: 'error', message: 'Please specify only one type of message count' });
+      return;
+    }
+
+    setQuestForm({
+      ...questForm,
+      objectives: questForm.objectives.map(obj => 
+        obj.id === editingObjective.id ? editingObjective : obj
+      ),
+    });
+
+    setEditingObjective(null);
+  };
+
+  const removeObjective = (objectiveId: string) => {
+    const updatedObjectives = questForm.objectives
+      .filter(obj => obj.id !== objectiveId)
+      .map((obj, index) => ({ ...obj, order: index + 1 }));
+
+    setQuestForm({
+      ...questForm,
+      objectives: updatedObjectives,
     });
   };
 
@@ -1239,31 +1318,32 @@ export function AdminTab() {
                           <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)', mb: 2 }}>
                             {quest.description}
                           </Typography>
-                          <Box sx={{ display: 'flex', gap: 3 }}>
-                            <Box>
-                              <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '0.8rem' }}>
-                                Messages Required
-                              </Typography>
-                              <Typography variant="body1" sx={{ color: 'white', fontWeight: 600 }}>
-                                {quest.messageCount}
-                              </Typography>
-                            </Box>
-                            <Box>
-                              <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '0.8rem' }}>
-                                Success Messages Required
-                              </Typography>
-                              <Typography variant="body1" sx={{ color: 'white', fontWeight: 600 }}>
-                                {quest.successMessageCount}
-                              </Typography>
-                            </Box>
-                            <Box>
-                              <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '0.8rem' }}>
-                                XP Reward
-                              </Typography>
-                              <Typography variant="body1" sx={{ color: '#fbbf24', fontWeight: 600 }}>
-                                +{quest.xpReward} XP
-                              </Typography>
-                            </Box>
+                          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                            <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '0.8rem' }}>
+                              Objectives ({quest.objectives.length})
+                            </Typography>
+                            {quest.objectives.map((objective) => (
+                              <Box key={objective.id} sx={{ 
+                                display: 'flex', 
+                                gap: 2, 
+                                p: 1, 
+                                background: 'rgba(255, 255, 255, 0.05)', 
+                                borderRadius: 1 
+                              }}>
+                                <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.8)', minWidth: '60px' }}>
+                                  Step {objective.order}:
+                                </Typography>
+                                <Typography variant="body2" sx={{ color: 'white', flex: 1 }}>
+                                  {objective.messageCount > 0 
+                                    ? `${objective.messageCount} messages` 
+                                    : `${objective.successMessageCount} success messages`
+                                  }
+                                </Typography>
+                                <Typography variant="body2" sx={{ color: '#fbbf24', fontWeight: 600 }}>
+                                  +{objective.xpReward} XP
+                                </Typography>
+                              </Box>
+                            ))}
                           </Box>
                         </Box>
                         <motion.div
@@ -1319,29 +1399,6 @@ export function AdminTab() {
               sx={{ mb: 3 }}
             />
             <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
-              <TextField
-                label="Message Count"
-                type="number"
-                value={questForm.messageCount}
-                onChange={(e) => setQuestForm({ ...questForm, messageCount: parseInt(e.target.value) || 0 })}
-                sx={{ flex: 1 }}
-              />
-              <TextField
-                label="Success Message Count"
-                type="number"
-                value={questForm.successMessageCount}
-                onChange={(e) => setQuestForm({ ...questForm, successMessageCount: parseInt(e.target.value) || 0 })}
-                sx={{ flex: 1 }}
-              />
-            </Box>
-            <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
-              <TextField
-                label="XP Reward"
-                type="number"
-                value={questForm.xpReward}
-                onChange={(e) => setQuestForm({ ...questForm, xpReward: parseInt(e.target.value) || 0 })}
-                sx={{ flex: 1 }}
-              />
               <FormControl sx={{ flex: 1 }}>
                 <InputLabel>Status</InputLabel>
                 <Select
@@ -1353,6 +1410,169 @@ export function AdminTab() {
                   <MenuItem value="inactive">Inactive</MenuItem>
                 </Select>
               </FormControl>
+            </Box>
+            {/* Objectives Management */}
+            <Box sx={{ mb: 3 }}>
+              <Typography variant="h6" sx={{ color: 'white', mb: 2 }}>
+                Quest Objectives
+              </Typography>
+              
+              {/* Current Objectives */}
+              {questForm.objectives.map((objective) => (
+                <Box key={objective.id} sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: 2, 
+                  p: 2, 
+                  background: 'rgba(255, 255, 255, 0.05)', 
+                  borderRadius: 2,
+                  mb: 2
+                }}>
+                  <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.8)', minWidth: '60px' }}>
+                    Step {objective.order}:
+                  </Typography>
+                  
+                  {editingObjective?.id === objective.id ? (
+                    <Box sx={{ display: 'flex', gap: 2, flex: 1 }}>
+                      <TextField
+                        label="Message Count"
+                        type="number"
+                        size="small"
+                        value={editingObjective.messageCount}
+                        onChange={(e) => setEditingObjective({
+                          ...editingObjective,
+                          messageCount: parseInt(e.target.value) || 0
+                        })}
+                        sx={{ flex: 1 }}
+                      />
+                      <TextField
+                        label="Success Message Count"
+                        type="number"
+                        size="small"
+                        value={editingObjective.successMessageCount}
+                        onChange={(e) => setEditingObjective({
+                          ...editingObjective,
+                          successMessageCount: parseInt(e.target.value) || 0
+                        })}
+                        sx={{ flex: 1 }}
+                      />
+                      <TextField
+                        label="XP Reward"
+                        type="number"
+                        size="small"
+                        value={editingObjective.xpReward}
+                        onChange={(e) => setEditingObjective({
+                          ...editingObjective,
+                          xpReward: parseInt(e.target.value) || 0
+                        })}
+                        sx={{ flex: 1 }}
+                      />
+                      <Button
+                        variant="contained"
+                        size="small"
+                        onClick={updateObjective}
+                        sx={{ background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)' }}
+                      >
+                        Save
+                      </Button>
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        onClick={() => setEditingObjective(null)}
+                        sx={{ color: '#a1a1aa', borderColor: '#6b7280' }}
+                      >
+                        Cancel
+                      </Button>
+                    </Box>
+                  ) : (
+                    <>
+                      <Typography variant="body2" sx={{ color: 'white', flex: 1 }}>
+                        {objective.messageCount > 0 
+                          ? `${objective.messageCount} messages` 
+                          : `${objective.successMessageCount} success messages`
+                        }
+                      </Typography>
+                      <Typography variant="body2" sx={{ color: '#fbbf24', fontWeight: 600, minWidth: '80px' }}>
+                        +{objective.xpReward} XP
+                      </Typography>
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        onClick={() => editObjective(objective)}
+                        sx={{ color: '#a1a1aa', borderColor: '#6b7280' }}
+                      >
+                        Edit
+                      </Button>
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        onClick={() => removeObjective(objective.id)}
+                        sx={{ color: '#ef4444', borderColor: '#ef4444' }}
+                      >
+                        Remove
+                      </Button>
+                    </>
+                  )}
+                </Box>
+              ))}
+
+              {/* Add New Objective */}
+              <Box sx={{ 
+                p: 2, 
+                background: 'rgba(255, 255, 255, 0.05)', 
+                borderRadius: 2,
+                border: '1px dashed rgba(255, 255, 255, 0.3)'
+              }}>
+                <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)', mb: 2 }}>
+                  Add New Objective
+                </Typography>
+                <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+                  <TextField
+                    label="Message Count"
+                    type="number"
+                    size="small"
+                    value={newObjective.messageCount}
+                    onChange={(e) => setNewObjective({
+                      ...newObjective,
+                      messageCount: parseInt(e.target.value) || 0
+                    })}
+                    sx={{ flex: 1 }}
+                  />
+                  <TextField
+                    label="Success Message Count"
+                    type="number"
+                    size="small"
+                    value={newObjective.successMessageCount}
+                    onChange={(e) => setNewObjective({
+                      ...newObjective,
+                      successMessageCount: parseInt(e.target.value) || 0
+                    })}
+                    sx={{ flex: 1 }}
+                  />
+                  <TextField
+                    label="XP Reward"
+                    type="number"
+                    size="small"
+                    value={newObjective.xpReward}
+                    onChange={(e) => setNewObjective({
+                      ...newObjective,
+                      xpReward: parseInt(e.target.value) || 0
+                    })}
+                    sx={{ flex: 1 }}
+                  />
+                </Box>
+                <Button
+                  variant="contained"
+                  size="small"
+                  onClick={addObjective}
+                  sx={{ 
+                    background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
+                    textTransform: 'none'
+                  }}
+                >
+                  Add Objective
+                </Button>
+              </Box>
             </Box>
           </Box>
         </DialogContent>

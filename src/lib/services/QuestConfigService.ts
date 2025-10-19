@@ -1,4 +1,4 @@
-import { Quest, IQuest } from '@/models/Quest';
+import { Quest, IQuest, IQuestObjective } from '@/models/Quest';
 import connectDB from '@/lib/mongodb';
 
 export class QuestConfigService {
@@ -29,8 +29,6 @@ export class QuestConfigService {
           objectives: [
             {
               id: 'daily_success1',
-              title: 'Send 1 Success Message',
-              description: 'Send 1 message in a success channel',
               messageCount: 0,
               successMessageCount: 1,
               xpReward: 10,
@@ -38,8 +36,6 @@ export class QuestConfigService {
             },
             {
               id: 'daily_send10',
-              title: 'Send 10 Messages',
-              description: 'Send 10 messages in any channel',
               messageCount: 10,
               successMessageCount: 0,
               xpReward: 15,
@@ -56,8 +52,6 @@ export class QuestConfigService {
           objectives: [
             {
               id: 'weekly_send100',
-              title: 'Send 100 Messages',
-              description: 'Send 100 messages in any channel',
               messageCount: 100,
               successMessageCount: 0,
               xpReward: 15,
@@ -65,8 +59,6 @@ export class QuestConfigService {
             },
             {
               id: 'weekly_success10',
-              title: 'Send 10 Success Messages',
-              description: 'Send 10 messages in success channels',
               messageCount: 0,
               successMessageCount: 10,
               xpReward: 50,
@@ -117,9 +109,7 @@ export class QuestConfigService {
   async updateQuest(questId: string, updates: Partial<{
     title: string;
     description: string;
-    messageCount: number;
-    successMessageCount: number;
-    xpReward: number;
+    objectives: IQuestObjective[];
     isActive: boolean;
   }>): Promise<boolean> {
     try {

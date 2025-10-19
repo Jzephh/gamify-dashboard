@@ -5,8 +5,6 @@ import connectDB from '@/lib/mongodb';
 
 interface QuestObjective {
   id: string;
-  title: string;
-  description: string;
   progress: number;
   target: number;
   completed: boolean;
@@ -339,10 +337,19 @@ export class QuestService {
             const progress = objective.messageCount > 0 ? questDoc.dailyQuests.messages : questDoc.dailyQuests.successMessages;
             const target = objective.messageCount > 0 ? objective.messageCount : objective.successMessageCount;
 
+            // Generate title and description based on objective type
+            const isSuccessObjective = objective.successMessageCount > 0;
+            const title = isSuccessObjective 
+              ? `Send ${objective.successMessageCount} Success Message${objective.successMessageCount > 1 ? 's' : ''}`
+              : `Send ${objective.messageCount} Message${objective.messageCount > 1 ? 's' : ''}`;
+            const description = isSuccessObjective
+              ? `Send ${objective.successMessageCount} message${objective.successMessageCount > 1 ? 's' : ''} in success channels`
+              : `Send ${objective.messageCount} message${objective.messageCount > 1 ? 's' : ''} in any channel`;
+
             return {
               id: objective.id,
-              title: objective.title,
-              description: objective.description,
+              title,
+              description,
               progress: Math.min(progress, target),
               target,
               completed: objectiveProgress?.completed || false,
@@ -360,10 +367,19 @@ export class QuestService {
             const progress = objective.messageCount > 0 ? questDoc.weeklyQuests.messages : questDoc.weeklyQuests.successMessages;
             const target = objective.messageCount > 0 ? objective.messageCount : objective.successMessageCount;
 
+            // Generate title and description based on objective type
+            const isSuccessObjective = objective.successMessageCount > 0;
+            const title = isSuccessObjective 
+              ? `Send ${objective.successMessageCount} Success Message${objective.successMessageCount > 1 ? 's' : ''}`
+              : `Send ${objective.messageCount} Message${objective.messageCount > 1 ? 's' : ''}`;
+            const description = isSuccessObjective
+              ? `Send ${objective.successMessageCount} message${objective.successMessageCount > 1 ? 's' : ''} in success channels`
+              : `Send ${objective.messageCount} message${objective.messageCount > 1 ? 's' : ''} in any channel`;
+
             return {
               id: objective.id,
-              title: objective.title,
-              description: objective.description,
+              title,
+              description,
               progress: Math.min(progress, target),
               target,
               completed: objectiveProgress?.completed || false,
