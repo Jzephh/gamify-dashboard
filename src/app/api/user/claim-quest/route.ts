@@ -43,7 +43,7 @@ export async function POST(request: Request) {
 
     // Award XP for the objective
     if (claimResult.xp > 0) {
-      await xpEngine.awardXP(userId, claimResult.xp, false);
+      await xpEngine.awardQuestXP(userId, claimResult.xp);
     }
 
     return NextResponse.json({

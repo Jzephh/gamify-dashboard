@@ -39,6 +39,74 @@ export class XPEngine {
     return  Math.floor((-1 + Math.sqrt(1 + (4 * xp / 50))) / 2)
   }
 
+  // Award XP to user (for quest rewards)
+  async awardQuestXP(userId: string, xpAmount: number): Promise<{
+    success: boolean;
+    newLevel?: number;
+    levelUp?: boolean;
+    totalXP: number;
+    reason?: string;
+  }> {
+    try {
+      await connectDB();
+
+      // Get or create user
+      let user = await User.findOne({ companyId: this.companyId, userId });
+      if (!user) {
+        user = new User({
+          companyId: this.companyId,
+          userId,
+          username: 'unknown',
+          name: 'Unknown User',
+          xp: 0,
+          level: 0,
+          points: 0,
+          badges: {
+            bronze: false,
+            silver: false,
+            gold: false,
+            platinum: false,
+            apex: false,
+          },
+          roles: [],
+          stats: {
+            messages: 0,
+            successMessages: 0,
+            voiceMinutes: 0,
+          },
+          levelUpSeen: true,
+        });
+      }
+
+      // Award XP (quest reward)
+      const oldLevel = user.level;
+      user.xp += xpAmount;
+      user.level = this.calculateLevelFromXP(user.xp);
+
+      // Mark level up as unseen if user leveled up
+      if (user.level > oldLevel) {
+        user.levelUpSeen = false;
+      }
+
+      // Save user
+      await user.save();
+
+      const levelUp = user.level > oldLevel;
+      const response: { success: boolean; totalXP: number; newLevel?: number; levelUp?: boolean } = {
+        success: true,
+        totalXP: user.xp,
+      };
+      if (levelUp) {
+        response.newLevel = user.level;
+        response.levelUp = true;
+      }
+      return response;
+    } catch (error: unknown) {
+      console.error('Error awarding quest XP:', error);
+      return { success: false, totalXP: 0, reason: 'Database error' };
+    }
+  }
+
   // Award XP to user (simulated message)
   async awardXP(userId: string, xpAmount: number, isSuccessChannel: boolean = false): Promise<{
     success: boolean;
@@ -77,10 +145,8 @@ export class XPEngine {
         await settings.save();
       }
 
-      // Calculate XP amount
-      const baseXP = isSuccessChannel ? 
-        settings.xp.perMessage + settings.xp.successBonus : 
-        settings.xp.perMessage;
+      // Note: For quest rewards, we use the passed xpAmount directly
+      // For regular messages, we would calculate baseXP from settings
 
       // Get or create user
       let user = await User.findOne({ companyId: this.companyId, userId });
