@@ -36,7 +36,7 @@ export class XPEngine {
     // This simplifies to: level^2 + 5*level - 2*(xp-1500)/100 - 30 >= 0
     const discriminant = 25 + 8 * (xp - 1500) / 100 + 120;
     const level = Math.floor((-5 + Math.sqrt(discriminant)) / 2);
-    return Math.max(6, level);
+    return level;
   }
 
   // Award XP to user (simulated message)
