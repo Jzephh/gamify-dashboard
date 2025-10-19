@@ -36,17 +36,9 @@ export class QuestService {
 
       // Update daily progress
       const dailyProgress = await this.updateDailyProgress(userId, dateKey, isSuccessMessage);
-      if (dailyProgress) {
-        const dailyCompleted = await this.checkSequentialCompletion(userId, 'daily', dailyProgress);
-        completedObjectives.push(...dailyCompleted);
-      }
 
       // Update weekly progress
       const weeklyProgress = await this.updateWeeklyProgress(userId, weekKey, isSuccessMessage);
-      if (weeklyProgress) {
-        const weeklyCompleted = await this.checkSequentialCompletion(userId, 'weekly', weeklyProgress);
-        completedObjectives.push(...weeklyCompleted);
-      }
 
       return {
         dailyProgress,
@@ -168,14 +160,7 @@ export class QuestService {
       
       if (!objectiveProgress || objectiveProgress.completed) continue;
 
-      // Check if previous objectives are completed (claiming is optional for unlocking next)
-      const previousObjectives = objectives.slice(0, i);
-      const allPreviousCompleted = previousObjectives.every(prevObj => {
-        const prevProgress = objectiveArray.find(obj => obj.objectiveId === prevObj.id);
-        return prevProgress?.completed;
-      });
-
-      if (!allPreviousCompleted) break; // Can't complete this objective yet
+      // All objectives are independent - no sequential requirements
 
       // Check if current objective is completed
       let isCompleted = false;
@@ -261,24 +246,7 @@ export class QuestService {
         return { success: false, error: 'Objective already claimed', xp: 0 };
       }
 
-      // Check sequential order: ensure previous objectives are completed and claimed
-      const questConfigServiceForValidation = new QuestConfigService(this.companyId);
-      const allQuestsForValidation = await questConfigServiceForValidation.getAllQuests();
-      const targetQuest = allQuestsForValidation.find(q => q.objectives.some(obj => obj.id === objectiveId));
-      
-      if (targetQuest) {
-        const sortedObjectives = targetQuest.objectives.sort((a, b) => a.order - b.order);
-        const currentObjectiveIndex = sortedObjectives.findIndex(obj => obj.id === objectiveId);
-        
-        if (currentObjectiveIndex > 0) {
-          const previousObjective = sortedObjectives[currentObjectiveIndex - 1];
-          const previousObjectiveProgress = objectiveArray.find((obj: { objectiveId: string; completed: boolean; claimed: boolean }) => obj.objectiveId === previousObjective.id);
-          
-          if (!previousObjectiveProgress || !previousObjectiveProgress.completed) {
-            return { success: false, error: 'Previous objective must be completed first', xp: 0 };
-          }
-        }
-      }
+      // All objectives are independent - no sequential validation needed
 
       // Mark as claimed
       objectiveProgress.claimed = true;
@@ -348,10 +316,6 @@ export class QuestService {
       const weeklyQuest = weeklyQuests[0] || null;
 
       if (questDoc && dailyQuest && weeklyQuest) {
-        // Update sequential completion status
-        await this.checkSequentialCompletion(userId, 'daily', questDoc);
-        await this.checkSequentialCompletion(userId, 'weekly', questDoc);
-        
         // Build daily objectives
         const dailyObjectives = dailyQuest.objectives
           .sort((a: IQuestObjective, b: IQuestObjective) => a.order - b.order)

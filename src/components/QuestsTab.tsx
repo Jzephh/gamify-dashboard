@@ -235,15 +235,12 @@ export default function QuestsTab({ userId, onQuestUpdate }: QuestsTabProps) {
   const weeklyObjectives = progress?.weekly.objectives || [];
 
   // Objective Card Component
-  const ObjectiveCard = ({ objective, index, questType }: { 
+  const ObjectiveCard = ({ objective, index }: { 
     objective: QuestObjective; 
     index: number; 
-    questType: 'daily' | 'weekly';
   }) => {
     const progressPercentage = Math.min(100, (objective.progress / objective.target) * 100);
-    const isLocked = questType === 'daily' 
-      ? index > 0 && !dailyObjectives[index - 1]?.completed
-      : index > 0 && !weeklyObjectives[index - 1]?.completed;
+    const isLocked = false; // All objectives are independent - no sequential locking
     
     return (
       <motion.div
@@ -663,7 +660,6 @@ export default function QuestsTab({ userId, onQuestUpdate }: QuestsTabProps) {
                     key={objective.id} 
                     objective={objective} 
                     index={index}
-                    questType="daily"
                   />
                 ))
               ) : (
@@ -701,7 +697,6 @@ export default function QuestsTab({ userId, onQuestUpdate }: QuestsTabProps) {
                     key={objective.id} 
                     objective={objective} 
                     index={index}
-                    questType="weekly"
                   />
                 ))
               ) : (
