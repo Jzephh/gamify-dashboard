@@ -669,7 +669,10 @@ export default function Home() {
                 </TabPanel>
                 
                 <TabPanel value={tabValue} index={hasLevelUpNotifications ? 2 : 1}>
-                  <QuestsTab userId={userProfile.user.userId} onQuestUpdate={fetchQuestNotifications} />
+                  <QuestsTab userId={userProfile.user.userId} onQuestUpdate={() => {
+                    fetchQuestNotifications();
+                    fetchUserProfile(); // Also refresh user profile to show updated XP
+                  }} />
                 </TabPanel>
                 
                 {isAdmin && (
