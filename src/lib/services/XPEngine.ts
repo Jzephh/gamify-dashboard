@@ -112,7 +112,7 @@ export class XPEngine {
 
       // Award XP
       const oldLevel = user.level;
-      user.xp += baseXP;
+      user.xp += xpAmount; // Use the passed xpAmount instead of baseXP
       user.level = this.calculateLevelFromXP(user.xp);
       
       // Update stats
