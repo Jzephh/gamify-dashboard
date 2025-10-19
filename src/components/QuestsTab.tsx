@@ -261,18 +261,18 @@ export default function QuestsTab({ userId, onQuestUpdate }: QuestsTabProps) {
           sx={{
             background: isLocked 
               ? 'linear-gradient(135deg, #374151 0%, #1f2937 100%)'
-              : objective.completed 
+              : progressPercentage === 100
                 ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)'
                 : 'linear-gradient(135deg, #1f2937 0%, #111827 100%)',
             border: isLocked 
               ? '1px solid #6b7280'
-              : objective.completed 
+              : progressPercentage === 100
                 ? '1px solid #10b981'
                 : '1px solid #6366f1',
             borderRadius: 3,
             boxShadow: isLocked 
               ? '0 4px 12px rgba(0, 0, 0, 0.2)'
-              : objective.completed 
+              : progressPercentage === 100
                 ? '0 8px 25px rgba(16, 185, 129, 0.3)'
                 : '0 8px 25px rgba(99, 102, 241, 0.2)',
             position: 'relative',
@@ -285,19 +285,19 @@ export default function QuestsTab({ userId, onQuestUpdate }: QuestsTabProps) {
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                 <motion.div
-                  animate={objective.completed ? { 
+                  animate={progressPercentage === 100 ? { 
                     scale: [1, 1.2, 1],
                     rotate: [0, 360]
                   } : {}}
                   transition={{ 
                     duration: 0.6,
-                    repeat: objective.completed ? Infinity : 0,
+                    repeat: progressPercentage === 100 ? Infinity : 0,
                     repeatDelay: 2
                   }}
                 >
                   {isLocked ? (
                     <RadioButtonUnchecked sx={{ color: '#6b7280', fontSize: 24 }} />
-                  ) : objective.completed ? (
+                  ) : progressPercentage === 100 ? (
                     <CheckCircle sx={{ color: 'white', fontSize: 24, filter: 'drop-shadow(0 0 8px rgba(255, 255, 255, 0.5))' }} />
                   ) : (
                     <RadioButtonUnchecked sx={{ color: '#a1a1aa', fontSize: 24 }} />
@@ -396,7 +396,7 @@ export default function QuestsTab({ userId, onQuestUpdate }: QuestsTabProps) {
                   fontSize: '0.8rem',
                 }}
               />
-            ) : objective.completed && !objective.claimed ? (
+            ) : progressPercentage === 100 && !objective.claimed ? (
               <motion.div
                 initial={{ opacity: 0, scale: 0 }}
                 animate={{ opacity: 1, scale: 1 }}
