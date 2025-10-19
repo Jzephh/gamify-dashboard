@@ -168,11 +168,11 @@ export class QuestService {
       
       if (!objectiveProgress || objectiveProgress.completed) continue;
 
-      // Check if previous objectives are completed AND claimed
+      // Check if previous objectives are completed (claiming is optional for unlocking next)
       const previousObjectives = objectives.slice(0, i);
       const allPreviousCompleted = previousObjectives.every(prevObj => {
         const prevProgress = objectiveArray.find(obj => obj.objectiveId === prevObj.id);
-        return prevProgress?.completed && prevProgress?.claimed;
+        return prevProgress?.completed;
       });
 
       if (!allPreviousCompleted) break; // Can't complete this objective yet
@@ -274,8 +274,8 @@ export class QuestService {
           const previousObjective = sortedObjectives[currentObjectiveIndex - 1];
           const previousObjectiveProgress = objectiveArray.find((obj: { objectiveId: string; completed: boolean; claimed: boolean }) => obj.objectiveId === previousObjective.id);
           
-          if (!previousObjectiveProgress || !previousObjectiveProgress.completed || !previousObjectiveProgress.claimed) {
-            return { success: false, error: 'Previous objective must be completed and claimed first', xp: 0 };
+          if (!previousObjectiveProgress || !previousObjectiveProgress.completed) {
+            return { success: false, error: 'Previous objective must be completed first', xp: 0 };
           }
         }
       }
