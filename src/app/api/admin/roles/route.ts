@@ -31,7 +31,7 @@ export async function GET() {
     }
 
     await connectDB();
-    const roles = await Role.find({ companyId, isActive: true }).sort({ name: 1 });
+    const roles = await Role.find({ companyId }).sort({ name: 1 });
 
     return NextResponse.json(roles);
   } catch (error) {
@@ -186,9 +186,8 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: 'Role not found' }, { status: 404 });
     }
 
-    // Soft delete by setting isActive to false
-    role.isActive = false;
-    await role.save();
+    // Hard delete - remove the role completely
+    await Role.deleteOne({ _id: roleId, companyId });
 
     return NextResponse.json({ success: true });
   } catch (error) {

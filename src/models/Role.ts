@@ -4,7 +4,6 @@ export interface IRole extends Document {
   companyId: string;
   name: string;
   description: string;
-  isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -13,7 +12,6 @@ const RoleSchema = new Schema<IRole>({
   companyId: { type: String, required: true, index: true },
   name: { type: String, required: true },
   description: { type: String, required: true },
-  isActive: { type: Boolean, default: true },
 }, {
   timestamps: true,
 });
