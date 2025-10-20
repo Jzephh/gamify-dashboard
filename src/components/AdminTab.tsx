@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import {
   Box,
   Typography,
@@ -53,6 +54,7 @@ interface AdminUser {
   userId: string;
   username: string;
   name: string;
+  avatarUrl?: string;
   level: number;
   xp: number;
   badges: {
@@ -499,7 +501,7 @@ export function AdminTab() {
         );
         
         setAlert({ type: 'success', message: 'Role assigned successfully!' });
-        setUserRoleDialogOpen(false);
+        // Keep the dialog open after assigning a role
       } else {
         setAlert({ type: 'error', message: 'Failed to assign role' });
       }
@@ -563,11 +565,11 @@ export function AdminTab() {
   };
 
   const badgeTypes = [
-    { key: 'bronze', name: 'Bronze', emoji: '🥉', color: '#cd7f32' },
-    { key: 'silver', name: 'Silver', emoji: '🥈', color: '#c0c0c0' },
-    { key: 'gold', name: 'Gold', emoji: '🥇', color: '#ffd700' },
-    { key: 'platinum', name: 'Platinum', emoji: '💎', color: '#e5e4e2' },
-    { key: 'apex', name: 'Apex', emoji: '👑', color: '#ff6b35' },
+    { key: 'bronze', name: 'Bronze', image: '/badge/1.webp', color: '#cd7f32' },
+    { key: 'silver', name: 'Silver', image: '/badge/2.webp', color: '#c0c0c0' },
+    { key: 'gold', name: 'Gold', image: '/badge/3.webp', color: '#ffd700' },
+    { key: 'platinum', name: 'Platinum', image: '/badge/4.webp', color: '#e5e4e2' },
+    { key: 'apex', name: 'Apex', image: '/badge/5.webp', color: '#ff6b35' },
   ];
 
   if (loading) {
@@ -1014,13 +1016,14 @@ export function AdminTab() {
                   >
                     <ListItemAvatar>
                       <Avatar
+                        src={user.avatarUrl}
                         sx={{
-                          background: 'linear-gradient(135deg, #6366f1 0%, #ec4899 100%)',
                           width: 56,
                           height: 56,
+                          background: user.avatarUrl ? 'transparent' : 'linear-gradient(135deg, #6366f1 0%, #ec4899 100%)',
                         }}
                       >
-                        {user.name.charAt(0).toUpperCase()}
+                        {!user.avatarUrl && user.name.charAt(0).toUpperCase()}
                       </Avatar>
                     </ListItemAvatar>
                     
@@ -1052,11 +1055,23 @@ export function AdminTab() {
                                 key={badge.key}
                                 sx={{
                                   opacity: user.badges[badge.key as keyof typeof user.badges] ? 1 : 0.3,
-                                  fontSize: '1.2rem',
+                                  width: 24,
+                                  height: 24,
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
                                 }}
                                 title={`${badge.name} Badge`}
                               >
-                                {badge.emoji}
+                                <Image
+                                  src={badge.image}
+                                  alt={`${badge.name} Badge`}
+                                  width={24}
+                                  height={24}
+                                  style={{
+                                    objectFit: 'contain',
+                                  }}
+                                />
                               </Box>
                             ))}
                           </Box>
@@ -1288,7 +1303,18 @@ export function AdminTab() {
                           whileTap={{ scale: 0.95 }}
                         >
                           <Chip
-                            label={`${badge.emoji} ${badge.name}`}
+                            label={
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <Image
+                                  src={badge.image}
+                                  alt={`${badge.name} Badge`}
+                                  width={16}
+                                  height={16}
+                                  style={{ objectFit: 'contain' }}
+                                />
+                                {badge.name}
+                              </Box>
+                            }
                             variant={hasBadge ? 'filled' : 'outlined'}
                             color={hasBadge ? 'success' : 'default'}
                             onClick={() => {
@@ -1381,7 +1407,16 @@ export function AdminTab() {
               >
                 {badgeTypes.map((badge) => (
                   <MenuItem key={badge.key} value={badge.key}>
-                    {badge.emoji} {badge.name}
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Image
+                        src={badge.image}
+                        alt={`${badge.name} Badge`}
+                        width={16}
+                        height={16}
+                        style={{ objectFit: 'contain' }}
+                      />
+                      {badge.name}
+                    </Box>
                   </MenuItem>
                 ))}
               </Select>
