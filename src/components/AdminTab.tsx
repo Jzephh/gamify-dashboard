@@ -401,7 +401,9 @@ export function AdminTab() {
       });
 
       if (response.ok) {
-        fetchRoles();
+        const newRole = await response.json();
+        // Update roles list immediately for instant UI feedback
+        setRoles(prevRoles => [...prevRoles, newRole]);
         setAlert({ type: 'success', message: 'Role created successfully!' });
         setRoleDialogOpen(false);
         setRoleForm({ name: '', description: '', color: '#6366f1' });
@@ -429,7 +431,13 @@ export function AdminTab() {
       });
 
       if (response.ok) {
-        fetchRoles();
+        const updatedRole = await response.json();
+        // Update roles list immediately for instant UI feedback
+        setRoles(prevRoles => 
+          prevRoles.map(role => 
+            role._id === editingRole._id ? updatedRole : role
+          )
+        );
         setAlert({ type: 'success', message: 'Role updated successfully!' });
         setRoleDialogOpen(false);
         setEditingRole(null);
@@ -473,7 +481,23 @@ export function AdminTab() {
       });
 
       if (response.ok) {
-        fetchUsers();
+        // Update selectedUser immediately for instant UI feedback
+        if (selectedUser && selectedUser.userId === userId) {
+          setSelectedUser({
+            ...selectedUser,
+            roles: [...selectedUser.roles, roleName]
+          });
+        }
+        
+        // Update the users list
+        setUsers(prevUsers => 
+          prevUsers.map(user => 
+            user.userId === userId 
+              ? { ...user, roles: [...user.roles, roleName] }
+              : user
+          )
+        );
+        
         setAlert({ type: 'success', message: 'Role assigned successfully!' });
         setUserRoleDialogOpen(false);
       } else {
@@ -492,7 +516,23 @@ export function AdminTab() {
       });
 
       if (response.ok) {
-        fetchUsers();
+        // Update selectedUser immediately for instant UI feedback
+        if (selectedUser && selectedUser.userId === userId) {
+          setSelectedUser({
+            ...selectedUser,
+            roles: selectedUser.roles.filter(role => role !== roleName)
+          });
+        }
+        
+        // Update the users list
+        setUsers(prevUsers => 
+          prevUsers.map(user => 
+            user.userId === userId 
+              ? { ...user, roles: user.roles.filter(role => role !== roleName) }
+              : user
+          )
+        );
+        
         setAlert({ type: 'success', message: 'Role removed successfully!' });
       } else {
         setAlert({ type: 'error', message: 'Failed to remove role' });
