@@ -38,6 +38,17 @@ import {
   Clear,
 } from '@mui/icons-material';
 
+interface Role {
+  _id: string;
+  name: string;
+  description: string;
+  permissions: string[];
+  color: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
 interface AdminUser {
   _id: string;
   userId: string;
@@ -111,9 +122,22 @@ export function AdminTab() {
   const [alert, setAlert] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
 
+  // Role management state
+  const [roles, setRoles] = useState<Role[]>([]);
+  const [roleDialogOpen, setRoleDialogOpen] = useState(false);
+  const [roleForm, setRoleForm] = useState({
+    name: '',
+    description: '',
+    permissions: [] as string[],
+    color: '#6366f1',
+  });
+  const [editingRole, setEditingRole] = useState<Role | null>(null);
+  const [userRoleDialogOpen, setUserRoleDialogOpen] = useState(false);
+
   useEffect(() => {
     fetchUsers();
     fetchQuests();
+    fetchRoles();
   }, []);
 
   // Filter users based on search criteria
@@ -354,6 +378,151 @@ export function AdminTab() {
     if (selectedUser && selectedBadge && selectedAction) {
       updateBadge(selectedUser.userId, selectedBadge, selectedAction as 'unlock' | 'lock');
     }
+  };
+
+  // Role management functions
+  const fetchRoles = async () => {
+    try {
+      const response = await fetch('/api/admin/roles');
+      if (response.ok) {
+        const data = await response.json();
+        setRoles(data);
+      }
+    } catch (error) {
+      console.error('Error fetching roles:', error);
+    }
+  };
+
+  const handleCreateRole = async () => {
+    try {
+      setActionLoading(true);
+      const response = await fetch('/api/admin/roles', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(roleForm),
+      });
+
+      if (response.ok) {
+        fetchRoles();
+        setAlert({ type: 'success', message: 'Role created successfully!' });
+        setRoleDialogOpen(false);
+        setRoleForm({ name: '', description: '', permissions: [], color: '#6366f1' });
+      } else {
+        const error = await response.json();
+        setAlert({ type: 'error', message: error.error || 'Failed to create role' });
+      }
+    } catch (error) {
+      console.error('Error creating role:', error);
+      setAlert({ type: 'error', message: 'Failed to create role' });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleUpdateRole = async () => {
+    if (!editingRole) return;
+
+    try {
+      setActionLoading(true);
+      const response = await fetch('/api/admin/roles', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ roleId: editingRole._id, ...roleForm }),
+      });
+
+      if (response.ok) {
+        fetchRoles();
+        setAlert({ type: 'success', message: 'Role updated successfully!' });
+        setRoleDialogOpen(false);
+        setEditingRole(null);
+        setRoleForm({ name: '', description: '', permissions: [], color: '#6366f1' });
+      } else {
+        const error = await response.json();
+        setAlert({ type: 'error', message: error.error || 'Failed to update role' });
+      }
+    } catch (error) {
+      console.error('Error updating role:', error);
+      setAlert({ type: 'error', message: 'Failed to update role' });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleDeleteRole = async (roleId: string) => {
+    try {
+      const response = await fetch(`/api/admin/roles?roleId=${roleId}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        fetchRoles();
+        setAlert({ type: 'success', message: 'Role deleted successfully!' });
+      } else {
+        setAlert({ type: 'error', message: 'Failed to delete role' });
+      }
+    } catch (error) {
+      console.error('Error deleting role:', error);
+      setAlert({ type: 'error', message: 'Failed to delete role' });
+    }
+  };
+
+  const handleAssignRole = async (userId: string, roleName: string) => {
+    try {
+      const response = await fetch('/api/admin/user-roles', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ targetUserId: userId, roleName }),
+      });
+
+      if (response.ok) {
+        fetchUsers();
+        setAlert({ type: 'success', message: 'Role assigned successfully!' });
+        setUserRoleDialogOpen(false);
+      } else {
+        setAlert({ type: 'error', message: 'Failed to assign role' });
+      }
+    } catch (error) {
+      console.error('Error assigning role:', error);
+      setAlert({ type: 'error', message: 'Failed to assign role' });
+    }
+  };
+
+  const handleRemoveRole = async (userId: string, roleName: string) => {
+    try {
+      const response = await fetch(`/api/admin/user-roles?userId=${userId}&roleName=${roleName}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        fetchUsers();
+        setAlert({ type: 'success', message: 'Role removed successfully!' });
+      } else {
+        setAlert({ type: 'error', message: 'Failed to remove role' });
+      }
+    } catch (error) {
+      console.error('Error removing role:', error);
+      setAlert({ type: 'error', message: 'Failed to remove role' });
+    }
+  };
+
+  const openRoleDialog = (role?: Role) => {
+    if (role) {
+      setEditingRole(role);
+      setRoleForm({
+        name: role.name,
+        description: role.description,
+        permissions: role.permissions || [],
+        color: role.color || '#6366f1',
+      });
+    } else {
+      setEditingRole(null);
+      setRoleForm({ name: '', description: '', permissions: [], color: '#6366f1' });
+    }
+    setRoleDialogOpen(true);
+  };
+
+  const openUserRoleDialog = () => {
+    setUserRoleDialogOpen(true);
   };
 
   const badgeTypes = [
@@ -1127,6 +1296,30 @@ export function AdminTab() {
                         Manage Badges
                       </Button>
                     </motion.div>
+
+                    <motion.div
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <Button
+                        variant="outlined"
+                        onClick={openUserRoleDialog}
+                        fullWidth
+                        startIcon={<Security />}
+                        sx={{
+                          borderColor: '#10b981',
+                          color: '#10b981',
+                          boxShadow: '0 4px 12px rgba(16, 185, 129, 0.2)',
+                          '&:hover': {
+                            borderColor: '#059669',
+                            background: 'rgba(16, 185, 129, 0.1)',
+                            boxShadow: '0 6px 16px rgba(16, 185, 129, 0.3)',
+                          },
+                        }}
+                      >
+                        Manage Roles
+                      </Button>
+                    </motion.div>
                   </Paper>
                 </motion.div>
               </Stack>
@@ -1640,6 +1833,235 @@ export function AdminTab() {
             }}
           >
             {actionLoading ? 'Saving...' : 'Save Changes'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Role Management Dialog */}
+      <Dialog 
+        open={roleDialogOpen} 
+        onClose={() => setRoleDialogOpen(false)}
+        maxWidth="md"
+        fullWidth
+        PaperProps={{
+          sx: {
+            background: 'linear-gradient(135deg, rgba(15, 15, 35, 0.95) 0%, rgba(30, 30, 60, 0.95) 100%)',
+            border: '1px solid rgba(139, 92, 246, 0.3)',
+            boxShadow: '0 20px 40px rgba(0, 0, 0, 0.5)',
+          }
+        }}
+      >
+        <DialogTitle sx={{ color: 'white', textAlign: 'center', fontSize: '1.5rem', fontWeight: 'bold' }}>
+          {editingRole ? 'Edit Role' : 'Create New Role'}
+        </DialogTitle>
+        <DialogContent>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 2 }}>
+            <TextField
+              label="Role Name"
+              value={roleForm.name}
+              onChange={(e) => setRoleForm({ ...roleForm, name: e.target.value })}
+              fullWidth
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  color: 'white',
+                  '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.3)' },
+                  '&:hover fieldset': { borderColor: 'rgba(255, 255, 255, 0.5)' },
+                  '&.Mui-focused fieldset': { borderColor: '#8b5cf6' },
+                },
+                '& .MuiInputLabel-root': { color: 'rgba(255, 255, 255, 0.7)' },
+              }}
+            />
+            <TextField
+              label="Description"
+              value={roleForm.description}
+              onChange={(e) => setRoleForm({ ...roleForm, description: e.target.value })}
+              fullWidth
+              multiline
+              rows={3}
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  color: 'white',
+                  '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.3)' },
+                  '&:hover fieldset': { borderColor: 'rgba(255, 255, 255, 0.5)' },
+                  '&.Mui-focused fieldset': { borderColor: '#8b5cf6' },
+                },
+                '& .MuiInputLabel-root': { color: 'rgba(255, 255, 255, 0.7)' },
+              }}
+            />
+            <TextField
+              label="Color (Hex)"
+              value={roleForm.color}
+              onChange={(e) => setRoleForm({ ...roleForm, color: e.target.value })}
+              fullWidth
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  color: 'white',
+                  '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.3)' },
+                  '&:hover fieldset': { borderColor: 'rgba(255, 255, 255, 0.5)' },
+                  '&.Mui-focused fieldset': { borderColor: '#8b5cf6' },
+                },
+                '& .MuiInputLabel-root': { color: 'rgba(255, 255, 255, 0.7)' },
+              }}
+            />
+            <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+              <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+                Preview:
+              </Typography>
+              <Chip
+                label={roleForm.name || 'Role Name'}
+                sx={{
+                  backgroundColor: roleForm.color,
+                  color: 'white',
+                  fontWeight: 'bold',
+                }}
+              />
+            </Box>
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ background: 'rgba(15, 15, 35, 0.9)' }}>
+          <Button onClick={() => setRoleDialogOpen(false)} sx={{ color: '#a1a1aa' }}>
+            Cancel
+          </Button>
+          <Button
+            onClick={editingRole ? handleUpdateRole : handleCreateRole}
+            disabled={actionLoading || !roleForm.name || !roleForm.description}
+            variant="contained"
+            sx={{
+              background: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
+            }}
+          >
+            {actionLoading ? 'Saving...' : editingRole ? 'Update Role' : 'Create Role'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* User Role Assignment Dialog */}
+      <Dialog 
+        open={userRoleDialogOpen} 
+        onClose={() => setUserRoleDialogOpen(false)}
+        maxWidth="md"
+        fullWidth
+        PaperProps={{
+          sx: {
+            background: 'linear-gradient(135deg, rgba(15, 15, 35, 0.95) 0%, rgba(30, 30, 60, 0.95) 100%)',
+            border: '1px solid rgba(16, 185, 129, 0.3)',
+            boxShadow: '0 20px 40px rgba(0, 0, 0, 0.5)',
+          }
+        }}
+      >
+        <DialogTitle sx={{ color: 'white', textAlign: 'center', fontSize: '1.5rem', fontWeight: 'bold' }}>
+          Role Management
+        </DialogTitle>
+        <DialogContent>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 2 }}>
+            {/* Role List */}
+            <Box>
+              <Typography variant="h6" sx={{ color: 'white', mb: 2 }}>
+                Available Roles
+              </Typography>
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                {roles.map((role) => (
+                  <motion.div
+                    key={role._id}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <Chip
+                      label={role.name}
+                      sx={{
+                        backgroundColor: role.color,
+                        color: 'white',
+                        fontWeight: 'bold',
+                        cursor: 'pointer',
+                        '&:hover': {
+                          backgroundColor: role.color,
+                          opacity: 0.8,
+                        },
+                      }}
+                      onClick={() => {
+                        if (selectedUser) {
+                          const hasRole = selectedUser.roles.includes(role.name);
+                          if (hasRole) {
+                            handleRemoveRole(selectedUser.userId, role.name);
+                          } else {
+                            handleAssignRole(selectedUser.userId, role.name);
+                          }
+                        }
+                      }}
+                      variant={selectedUser?.roles.includes(role.name) ? 'filled' : 'outlined'}
+                    />
+                  </motion.div>
+                ))}
+              </Box>
+            </Box>
+
+            {/* User's Current Roles */}
+            {selectedUser && (
+              <Box>
+                <Typography variant="h6" sx={{ color: 'white', mb: 2 }}>
+                  {selectedUser.name}&apos;s Roles
+                </Typography>
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                  {selectedUser.roles.map((roleName) => {
+                    const role = roles.find(r => r.name === roleName);
+                    return (
+                      <Chip
+                        key={roleName}
+                        label={roleName}
+                        sx={{
+                          backgroundColor: role?.color || '#6366f1',
+                          color: 'white',
+                          fontWeight: 'bold',
+                        }}
+                        onDelete={() => handleRemoveRole(selectedUser.userId, roleName)}
+                      />
+                    );
+                  })}
+                </Box>
+              </Box>
+            )}
+
+            {/* Role Management Actions */}
+            <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
+              <Button
+                variant="outlined"
+                startIcon={<Add />}
+                onClick={() => openRoleDialog()}
+                sx={{
+                  borderColor: '#8b5cf6',
+                  color: '#8b5cf6',
+                  '&:hover': {
+                    borderColor: '#7c3aed',
+                    background: 'rgba(139, 92, 246, 0.1)',
+                  },
+                }}
+              >
+                Create Role
+              </Button>
+              <Button
+                variant="outlined"
+                startIcon={<Security />}
+                onClick={() => {
+                  // Show role list for editing
+                  setUserRoleDialogOpen(false);
+                }}
+                sx={{
+                  borderColor: '#10b981',
+                  color: '#10b981',
+                  '&:hover': {
+                    borderColor: '#059669',
+                    background: 'rgba(16, 185, 129, 0.1)',
+                  },
+                }}
+              >
+                Manage Roles
+              </Button>
+            </Box>
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ background: 'rgba(15, 15, 35, 0.9)' }}>
+          <Button onClick={() => setUserRoleDialogOpen(false)} sx={{ color: '#a1a1aa' }}>
+            Close
           </Button>
         </DialogActions>
       </Dialog>
