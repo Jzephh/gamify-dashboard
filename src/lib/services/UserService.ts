@@ -296,7 +296,7 @@ export class UserService {
       if (!user) return false;
 
       // Check if user has any roles (admin roles are in the roles array)
-      return user.roles.length > 0;
+      return user.roles.includes('admin') || user.roles.includes("Admin");
     } catch (error) {
       console.error('Error checking admin status:', error);
       return false;

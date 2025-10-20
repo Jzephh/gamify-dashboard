@@ -47,7 +47,20 @@ export async function GET() {
     } catch {
       // ignore
     }
-    const roles = await Role.find({ companyId }).sort({ name: 1 });
+    
+    // Check if any roles exist for this company
+    let roles = await Role.find({ companyId }).sort({ name: 1 });
+    
+    // If no roles exist, create a default Admin role
+    if (roles.length === 0) {
+      const adminRole = new Role({
+        companyId,
+        name: 'Admin',
+        description: 'administrator role with full access',
+      });
+      await adminRole.save();
+      roles = [adminRole];
+    }
 
     return NextResponse.json(roles);
   } catch (error) {

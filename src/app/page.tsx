@@ -164,7 +164,7 @@ export default function Home() {
 
       const profile: UserProfile = await response.json();
       setUserProfile(profile);
-      setIsAdmin(profile.user.roles.length > 0);
+      setIsAdmin(profile.user.roles.includes('admin') || profile.user.roles.includes("Admin"));
       
       // Check if user has level-up notifications to show
       setHasLevelUpNotifications(!profile.user.levelUpSeen);
