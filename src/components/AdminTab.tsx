@@ -42,7 +42,6 @@ interface Role {
   _id: string;
   name: string;
   description: string;
-  permissions: string[];
   color: string;
   isActive: boolean;
   createdAt: string;
@@ -128,7 +127,6 @@ export function AdminTab() {
   const [roleForm, setRoleForm] = useState({
     name: '',
     description: '',
-    permissions: [] as string[],
     color: '#6366f1',
   });
   const [editingRole, setEditingRole] = useState<Role | null>(null);
@@ -406,7 +404,7 @@ export function AdminTab() {
         fetchRoles();
         setAlert({ type: 'success', message: 'Role created successfully!' });
         setRoleDialogOpen(false);
-        setRoleForm({ name: '', description: '', permissions: [], color: '#6366f1' });
+        setRoleForm({ name: '', description: '', color: '#6366f1' });
       } else {
         const error = await response.json();
         setAlert({ type: 'error', message: error.error || 'Failed to create role' });
@@ -435,7 +433,7 @@ export function AdminTab() {
         setAlert({ type: 'success', message: 'Role updated successfully!' });
         setRoleDialogOpen(false);
         setEditingRole(null);
-        setRoleForm({ name: '', description: '', permissions: [], color: '#6366f1' });
+        setRoleForm({ name: '', description: '', color: '#6366f1' });
       } else {
         const error = await response.json();
         setAlert({ type: 'error', message: error.error || 'Failed to update role' });
@@ -511,12 +509,11 @@ export function AdminTab() {
       setRoleForm({
         name: role.name,
         description: role.description,
-        permissions: role.permissions || [],
         color: role.color || '#6366f1',
       });
     } else {
       setEditingRole(null);
-      setRoleForm({ name: '', description: '', permissions: [], color: '#6366f1' });
+      setRoleForm({ name: '', description: '', color: '#6366f1' });
     }
     setRoleDialogOpen(true);
   };
@@ -1836,6 +1833,121 @@ export function AdminTab() {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Role Management Section */}
+      <motion.div
+        initial={{ opacity: 0, y: 30, scale: 0.95 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ 
+          duration: 0.8,
+          delay: 0.3,
+          type: "spring",
+          stiffness: 100,
+          damping: 20
+        }}
+      >
+        <Card sx={{
+          background: 'linear-gradient(135deg, rgba(15, 15, 35, 0.9) 0%, rgba(30, 30, 60, 0.9) 100%)',
+          border: '1px solid rgba(16, 185, 129, 0.3)',
+          borderRadius: 4,
+          boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3)',
+          backdropFilter: 'blur(10px)',
+          overflow: 'hidden',
+          position: 'relative',
+        }}>
+          <CardContent sx={{ p: 4 }}>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2, duration: 0.6 }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
+                <Box sx={{
+                  p: 1.5,
+                  borderRadius: '50%',
+                  background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}>
+                  <Security sx={{ color: 'white', fontSize: 24 }} />
+                </Box>
+                <Typography variant="h4" sx={{
+                  fontWeight: 'bold',
+                  background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                  backgroundClip: 'text',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                }}>
+                  Role Management
+                </Typography>
+              </Box>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4, duration: 0.6 }}
+            >
+              <Typography variant="body1" sx={{ 
+                color: 'rgba(255, 255, 255, 0.8)', 
+                mb: 3,
+                lineHeight: 1.6
+              }}>
+                Create and manage user roles. Assign roles to users to control their permissions and access levels.
+              </Typography>
+            </motion.div>
+
+            {/* Role List */}
+            <Box sx={{ mb: 3 }}>
+              <Typography variant="h6" sx={{ color: 'white', mb: 2 }}>
+                Available Roles ({roles.length})
+              </Typography>
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 3 }}>
+                {roles.map((role) => (
+                  <motion.div
+                    key={role._id}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <Chip
+                      label={role.name}
+                      sx={{
+                        backgroundColor: role.color,
+                        color: 'white',
+                        fontWeight: 'bold',
+                        cursor: 'pointer',
+                        '&:hover': {
+                          backgroundColor: role.color,
+                          opacity: 0.8,
+                        },
+                      }}
+                      onClick={() => openRoleDialog(role)}
+                    />
+                  </motion.div>
+                ))}
+              </Box>
+            </Box>
+
+            {/* Role Management Actions */}
+            <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
+              <Button
+                variant="contained"
+                startIcon={<Add />}
+                onClick={() => openRoleDialog()}
+                sx={{
+                  background: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
+                  '&:hover': {
+                    background: 'linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)',
+                  },
+                }}
+              >
+                Create New Role
+              </Button>
+            </Box>
+          </CardContent>
+        </Card>
+      </motion.div>
 
       {/* Role Management Dialog */}
       <Dialog 

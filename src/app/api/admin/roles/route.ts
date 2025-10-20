@@ -63,7 +63,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
     }
 
-    const { name, description, permissions, color } = await request.json();
+    const { name, description, color } = await request.json();
     
     if (!name || !description) {
       return NextResponse.json({ error: 'Name and description are required' }, { status: 400 });
@@ -81,7 +81,6 @@ export async function POST(request: Request) {
       companyId,
       name,
       description,
-      permissions: permissions || [],
       color: color || '#6366f1',
     });
 
@@ -117,7 +116,7 @@ export async function PUT(request: Request) {
       return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
     }
 
-    const { roleId, name, description, permissions, color } = await request.json();
+    const { roleId, name, description, color } = await request.json();
     
     if (!roleId) {
       return NextResponse.json({ error: 'Role ID is required' }, { status: 400 });
@@ -141,7 +140,6 @@ export async function PUT(request: Request) {
     // Update role
     if (name) role.name = name;
     if (description) role.description = description;
-    if (permissions) role.permissions = permissions;
     if (color) role.color = color;
 
     await role.save();

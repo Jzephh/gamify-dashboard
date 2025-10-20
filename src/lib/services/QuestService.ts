@@ -20,6 +20,17 @@ export class QuestService {
     this.companyId = companyId;
   }
 
+  // Ensure quests are initialized for this company
+  private async ensureQuestsInitialized(): Promise<void> {
+    try {
+      await connectDB();
+      const questConfigService = new QuestConfigService(this.companyId);
+      await questConfigService.initializeDefaultQuests();
+    } catch (error) {
+      console.error('Error ensuring quests are initialized:', error);
+    }
+  }
+
   // Update quest progress for a message
   async updateProgress(userId: string, isSuccessMessage: boolean = false): Promise<{
     dailyProgress?: IQuestProgress;
@@ -60,6 +71,9 @@ export class QuestService {
     });
 
     if (!progress) {
+      // Ensure quests are initialized for this company
+      await this.ensureQuestsInitialized();
+      
       // Initialize with quest configurations
       const questConfigService = new QuestConfigService(this.companyId);
       const dailyQuests = await questConfigService.getQuestsByType('daily');
@@ -126,6 +140,9 @@ export class QuestService {
 
     // Ensure weekly objectives exist
     if (progress.weeklyObjectives.length === 0) {
+      // Ensure quests are initialized for this company
+      await this.ensureQuestsInitialized();
+      
       const questConfigService = new QuestConfigService(this.companyId);
       const weeklyQuests = await questConfigService.getQuestsByType('weekly');
       const weeklyQuest = weeklyQuests[0];
@@ -201,6 +218,9 @@ export class QuestService {
       const now = new Date();
       const dateKey = this.getDateKey(now);
 
+      // Ensure quests are initialized for this company
+      await this.ensureQuestsInitialized();
+      
       // Get quest configuration
       const questConfigService = new QuestConfigService(this.companyId);
       const allQuests = await questConfigService.getAllQuests();
@@ -321,6 +341,9 @@ export class QuestService {
         dateKey
       });
 
+      // Ensure quests are initialized for this company
+      await this.ensureQuestsInitialized();
+      
       // Get quest configurations
       const questConfigService = new QuestConfigService(this.companyId);
       const dailyQuests = await questConfigService.getQuestsByType('daily');
