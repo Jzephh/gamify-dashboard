@@ -130,6 +130,7 @@ export function LeaderboardTab() {
         user.username.toLowerCase().includes(lower)
       );
     }
+    users = [...users].sort((a, b) => b.xp - a.xp);
     return users;
   };
 
