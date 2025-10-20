@@ -12,29 +12,16 @@ import {
   Pagination,
   CircularProgress,
   Alert,
-  Divider,
   TextField,
   Container,
-  Grid,
   Paper,
-  LinearProgress,
   Tooltip,
-  IconButton,
-  Fade,
-  Zoom,
 } from '@mui/material';
 import {
   EmojiEvents,
   MilitaryTech,
   Star,
-  EmojiEvents as Trophy,
   Search as SearchIcon,
-  TrendingUp,
-  Person,
-  Message,
-  AutoAwesome,
-  StarBorder,
-  Star as StarFilled,
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 import InputAdornment from '@mui/material/InputAdornment';

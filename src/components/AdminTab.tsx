@@ -37,6 +37,7 @@ import {
   AdminPanelSettings,
   Search,
   Clear,
+  Delete,
 } from '@mui/icons-material';
 
 interface Role {
@@ -130,6 +131,8 @@ export function AdminTab() {
     description: '',
   });
   const [editingRole, setEditingRole] = useState<Role | null>(null);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [roleToDelete, setRoleToDelete] = useState<Role | null>(null);
   const [userRoleDialogOpen, setUserRoleDialogOpen] = useState(false);
 
   useEffect(() => {
@@ -469,6 +472,19 @@ export function AdminTab() {
     } catch (error) {
       console.error('Error deleting role:', error);
       setAlert({ type: 'error', message: 'Failed to delete role' });
+    }
+  };
+
+  const confirmDeleteRole = (role: Role) => {
+    setRoleToDelete(role);
+    setDeleteConfirmOpen(true);
+  };
+
+  const executeDeleteRole = async () => {
+    if (roleToDelete) {
+      await handleDeleteRole(roleToDelete._id);
+      setDeleteConfirmOpen(false);
+      setRoleToDelete(null);
     }
   };
 
@@ -1984,6 +2000,8 @@ export function AdminTab() {
                   >
                     <Chip
                       label={role.name}
+                      onDelete={() => confirmDeleteRole(role)}
+                      deleteIcon={<Delete sx={{ color: 'white' }} />}
                       sx={{
                         backgroundColor: '#6366f1',
                         color: 'white',
@@ -1992,6 +2010,12 @@ export function AdminTab() {
                         '&:hover': {
                           opacity: 0.8,
                           backgroundColor: '#5252d0',
+                        },
+                        '& .MuiChip-deleteIcon': {
+                          color: 'white',
+                          '&:hover': {
+                            color: '#ff6b6b',
+                          },
                         },
                       }}
                       onClick={() => openRoleDialog(role)}
@@ -2175,7 +2199,6 @@ export function AdminTab() {
                 </Typography>
                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                   {selectedUser.roles.map((roleName) => {
-                    const role = roles.find(r => r.name === roleName);
                     return (
                       <Chip
                         key={roleName}
@@ -2237,6 +2260,57 @@ export function AdminTab() {
         <DialogActions sx={{ background: 'rgba(15, 15, 35, 0.9)' }}>
           <Button onClick={() => setUserRoleDialogOpen(false)} sx={{ color: '#a1a1aa' }}>
             Close
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Delete Role Confirmation Dialog */}
+      <Dialog
+        open={deleteConfirmOpen}
+        onClose={() => setDeleteConfirmOpen(false)}
+        PaperProps={{
+          sx: {
+            background: 'linear-gradient(135deg, rgba(15, 15, 35, 0.95) 0%, rgba(30, 30, 60, 0.95) 100%)',
+            border: '1px solid rgba(239, 68, 68, 0.3)',
+            boxShadow: '0 20px 40px rgba(0, 0, 0, 0.5)',
+          }
+        }}
+      >
+        <DialogTitle sx={{ color: 'white', textAlign: 'center', fontSize: '1.5rem', fontWeight: 'bold' }}>
+          Delete Role
+        </DialogTitle>
+        <DialogContent>
+          <Typography variant="body1" sx={{ color: 'white', textAlign: 'center', mt: 2 }}>
+            Are you sure you want to delete the role <strong>&quot;{roleToDelete?.name}&quot;</strong>?
+            <br />
+            <br />
+            This action cannot be undone and will remove the role from all users who currently have it assigned.
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ background: 'rgba(15, 15, 35, 0.9)', justifyContent: 'center', gap: 2 }}>
+          <Button 
+            onClick={() => setDeleteConfirmOpen(false)} 
+            sx={{ 
+              color: '#a1a1aa',
+              '&:hover': {
+                background: 'rgba(255, 255, 255, 0.1)',
+              }
+            }}
+          >
+            Cancel
+          </Button>
+          <Button 
+            onClick={executeDeleteRole}
+            variant="contained"
+            startIcon={<Delete />}
+            sx={{
+              background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+              '&:hover': {
+                background: 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)',
+              },
+            }}
+          >
+            Delete Role
           </Button>
         </DialogActions>
       </Dialog>
