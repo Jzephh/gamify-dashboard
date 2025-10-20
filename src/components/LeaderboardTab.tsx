@@ -13,6 +13,8 @@ import {
   CircularProgress,
   Alert,
   Divider,
+  TextField,
+  MenuItem,
 } from '@mui/material';
 import {
   EmojiEvents,
@@ -88,18 +90,16 @@ export function LeaderboardTab() {
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize] = useState(10);
+  const [search, setSearch] = useState('');
 
   const fetchLeaderboard = useCallback(async (page: number = 1) => {
     try {
       setLoading(true);
       setError(null);
-      
       const response = await fetch(`/api/user/leaderboard?page=${page}&limit=${pageSize}`);
-      
       if (!response.ok) {
         throw new Error('Failed to fetch leaderboard');
       }
-      
       const data = await response.json();
       setLeaderboardData(data);
     } catch (err) {
@@ -118,6 +118,21 @@ export function LeaderboardTab() {
     setCurrentPage(page);
   };
 
+  // Filter and sort users (client-side for current page)
+  const getFilteredSortedUsers = () => {
+    if (!leaderboardData) return [];
+    let users = leaderboardData.users;
+    // Filter
+    if (search.trim()) {
+      const lower = search.trim().toLowerCase();
+      users = users.filter(user =>
+        user.name.toLowerCase().includes(lower) ||
+        user.username.toLowerCase().includes(lower)
+      );
+    }
+    return users;
+  };
+
   if (loading) {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
@@ -125,7 +140,6 @@ export function LeaderboardTab() {
       </Box>
     );
   }
-
   if (error) {
     return (
       <Box p={3}>
@@ -133,7 +147,6 @@ export function LeaderboardTab() {
       </Box>
     );
   }
-
   if (!leaderboardData || leaderboardData.users.length === 0) {
     return (
       <Box p={3}>
@@ -142,8 +155,22 @@ export function LeaderboardTab() {
     );
   }
 
+  // Get users for display after filter/sort
+  const usersToShow = getFilteredSortedUsers();
+
   return (
     <Box sx={{ p: 3 }}>
+      {/* Search and Sort Controls */}
+      <Box mb={3} sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, alignItems: 'center', justifyContent: 'center' }}>
+        <TextField
+          label="Search users"
+          variant="outlined"
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          size="small"
+          sx={{ minWidth: 220, background: 'rgba(255,255,255,0.03)' }}
+        />
+      </Box>
       {/* Header */}
       <Box sx={{ mb: 4, textAlign: 'center' }}>
         <motion.div
@@ -160,10 +187,9 @@ export function LeaderboardTab() {
           </Typography>
         </motion.div>
       </Box>
-
       {/* Leaderboard Cards */}
       <Box sx={{ mb: 3 }}>
-        {leaderboardData.users.map((user, index) => (
+        {usersToShow.map((user, index) => (
           <Box key={user.userId} sx={{ mb: 2 }}>
             <motion.div
               initial={{ opacity: 0, y: 20 }}
