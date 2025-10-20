@@ -31,6 +31,22 @@ export async function GET() {
     }
 
     await connectDB();
+    // Silent cleanup: drop legacy index on roleId if it exists (from older schema)
+    try {
+      type IndexInfo = { name?: string; key?: Record<string, unknown> };
+      const coll = Role.collection as unknown as {
+        indexes: () => Promise<IndexInfo[]>;
+        dropIndex: (name: string) => Promise<void>;
+      };
+      const idx = await coll.indexes();
+      const legacy = idx.find(i => i?.name === 'roleId_1' || (i?.key && Object.prototype.hasOwnProperty.call(i.key, 'roleId')));
+      if (legacy?.name) {
+        await coll.dropIndex(legacy.name).catch(() => {});
+      }
+      await Role.syncIndexes().catch(() => {});
+    } catch {
+      // ignore
+    }
     const roles = await Role.find({ companyId }).sort({ name: 1 });
 
     return NextResponse.json(roles);
@@ -65,42 +81,42 @@ export async function POST(request: Request) {
 
     const { name, description } = await request.json();
     
-    if (!name || !description) {
-      return NextResponse.json({ error: 'Name and description are required' }, { status: 400 });
+    if (!name) {
+      return NextResponse.json({ error: 'Name is required' }, { status: 400 });
     }
 
     // Validate input
-    if (typeof name !== 'string' || typeof description !== 'string') {
-      return NextResponse.json({ error: 'Name and description must be strings' }, { status: 400 });
+    if (typeof name !== 'string') {
+      return NextResponse.json({ error: 'Name must be a string' }, { status: 400 });
     }
-
-    if (name.trim().length === 0 || description.trim().length === 0) {
-      return NextResponse.json({ error: 'Name and description cannot be empty' }, { status: 400 });
+    if (description != null && typeof description !== 'string') {
+      return NextResponse.json({ error: 'Description must be a string' }, { status: 400 });
+    }
+    if (name.trim().length === 0) {
+      return NextResponse.json({ error: 'Name cannot be empty' }, { status: 400 });
     }
 
     await connectDB();
-    
+
     // Check if role name already exists
     const existingRole = await Role.findOne({ companyId, name });
     if (existingRole) {
       return NextResponse.json({ error: 'Role name already exists' }, { status: 400 });
     }
 
-    const role = new Role({
-      companyId,
-      name,
-      description,
-    });
-
+    const role = new Role({ companyId, name, description: description ?? '' });
     await role.save();
-
     return NextResponse.json(role);
-  } catch (error) {
+  } catch (error: unknown) {
+    // Duplicate key error handling
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const err: any = error;
+    const message = (err && (err.message || err.errmsg)) || 'Unknown error';
+    if (message.includes('E11000')) {
+      return NextResponse.json({ error: 'Role name already exists' }, { status: 400 });
+    }
     console.error('Error creating role:', error);
-    return NextResponse.json({ 
-      error: 'Internal server error',
-      message: error instanceof Error ? error.message : 'Unknown error'
-    }, { status: 500 });
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 

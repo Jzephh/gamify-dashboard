@@ -3,7 +3,7 @@ import mongoose, { Document, Schema } from 'mongoose';
 export interface IRole extends Document {
   companyId: string;
   name: string;
-  description: string;
+  description?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -11,7 +11,7 @@ export interface IRole extends Document {
 const RoleSchema = new Schema<IRole>({
   companyId: { type: String, required: true, index: true },
   name: { type: String, required: true },
-  description: { type: String, required: true },
+  description: { type: String, required: false, default: '' },
 }, {
   timestamps: true,
 });

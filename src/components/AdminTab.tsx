@@ -401,7 +401,8 @@ export function AdminTab() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(roleForm),
       });
-
+      console.log("create role log", response);
+      
       if (response.ok) {
         const newRole = await response.json();
         // Update roles list immediately for instant UI feedback
