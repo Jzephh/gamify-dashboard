@@ -43,7 +43,6 @@ interface Role {
   _id: string;
   name: string;
   description: string;
-  color: string;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -129,7 +128,6 @@ export function AdminTab() {
   const [roleForm, setRoleForm] = useState({
     name: '',
     description: '',
-    color: '#6366f1',
   });
   const [editingRole, setEditingRole] = useState<Role | null>(null);
   const [userRoleDialogOpen, setUserRoleDialogOpen] = useState(false);
@@ -408,7 +406,7 @@ export function AdminTab() {
         setRoles(prevRoles => [...prevRoles, newRole]);
         setAlert({ type: 'success', message: 'Role created successfully!' });
         setRoleDialogOpen(false);
-        setRoleForm({ name: '', description: '', color: '#6366f1' });
+        setRoleForm({ name: '', description: '' });
       } else {
         const error = await response.json();
         setAlert({ type: 'error', message: error.error || 'Failed to create role' });
@@ -443,7 +441,7 @@ export function AdminTab() {
         setAlert({ type: 'success', message: 'Role updated successfully!' });
         setRoleDialogOpen(false);
         setEditingRole(null);
-        setRoleForm({ name: '', description: '', color: '#6366f1' });
+        setRoleForm({ name: '', description: '' });
       } else {
         const error = await response.json();
         setAlert({ type: 'error', message: error.error || 'Failed to update role' });
@@ -551,11 +549,10 @@ export function AdminTab() {
       setRoleForm({
         name: role.name,
         description: role.description,
-        color: role.color || '#6366f1',
       });
     } else {
       setEditingRole(null);
-      setRoleForm({ name: '', description: '', color: '#6366f1' });
+      setRoleForm({ name: '', description: '' });
     }
     setRoleDialogOpen(true);
   };
@@ -1988,13 +1985,13 @@ export function AdminTab() {
                     <Chip
                       label={role.name}
                       sx={{
-                        backgroundColor: role.color,
+                        backgroundColor: '#6366f1',
                         color: 'white',
                         fontWeight: 'bold',
                         cursor: 'pointer',
                         '&:hover': {
-                          backgroundColor: role.color,
                           opacity: 0.8,
+                          backgroundColor: '#5252d0',
                         },
                       }}
                       onClick={() => openRoleDialog(role)}
@@ -2075,21 +2072,6 @@ export function AdminTab() {
                 '& .MuiInputLabel-root': { color: 'rgba(255, 255, 255, 0.7)' },
               }}
             />
-            <TextField
-              label="Color (Hex)"
-              value={roleForm.color}
-              onChange={(e) => setRoleForm({ ...roleForm, color: e.target.value })}
-              fullWidth
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  color: 'white',
-                  '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.3)' },
-                  '&:hover fieldset': { borderColor: 'rgba(255, 255, 255, 0.5)' },
-                  '&.Mui-focused fieldset': { borderColor: '#8b5cf6' },
-                },
-                '& .MuiInputLabel-root': { color: 'rgba(255, 255, 255, 0.7)' },
-              }}
-            />
             <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
               <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
                 Preview:
@@ -2097,9 +2079,12 @@ export function AdminTab() {
               <Chip
                 label={roleForm.name || 'Role Name'}
                 sx={{
-                  backgroundColor: roleForm.color,
                   color: 'white',
                   fontWeight: 'bold',
+                  backgroundColor: '#6366f1',
+                  '&:hover': {
+                    backgroundColor: '#5252d0',
+                  },
                 }}
               />
             </Box>
@@ -2156,13 +2141,13 @@ export function AdminTab() {
                     <Chip
                       label={role.name}
                       sx={{
-                        backgroundColor: role.color,
+                        backgroundColor: '#6366f1',
                         color: 'white',
                         fontWeight: 'bold',
                         cursor: 'pointer',
                         '&:hover': {
-                          backgroundColor: role.color,
                           opacity: 0.8,
+                          backgroundColor: '#5252d0',
                         },
                       }}
                       onClick={() => {
@@ -2196,9 +2181,12 @@ export function AdminTab() {
                         key={roleName}
                         label={roleName}
                         sx={{
-                          backgroundColor: role?.color || '#6366f1',
                           color: 'white',
                           fontWeight: 'bold',
+                          backgroundColor: '#6366f1',
+                          '&:hover': {
+                            backgroundColor: '#5252d0',
+                          },
                         }}
                         onDelete={() => handleRemoveRole(selectedUser.userId, roleName)}
                       />
