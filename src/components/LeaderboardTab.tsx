@@ -14,7 +14,14 @@ import {
   Alert,
   Divider,
   TextField,
-  MenuItem,
+  Container,
+  Grid,
+  Paper,
+  LinearProgress,
+  Tooltip,
+  IconButton,
+  Fade,
+  Zoom,
 } from '@mui/material';
 import {
   EmojiEvents,
@@ -22,8 +29,14 @@ import {
   Star,
   EmojiEvents as Trophy,
   Search as SearchIcon,
+  TrendingUp,
+  Person,
+  Message,
+  AutoAwesome,
+  StarBorder,
+  Star as StarFilled,
 } from '@mui/icons-material';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import InputAdornment from '@mui/material/InputAdornment';
 
 interface LeaderboardUser {
@@ -58,10 +71,73 @@ interface LeaderboardData {
 }
 
 const getRankIcon = (rank: number) => {
-  if (rank === 1) return <EmojiEvents sx={{ color: '#FFD700', fontSize: 24 }} />;
-  if (rank === 2) return <MilitaryTech sx={{ color: '#C0C0C0', fontSize: 24 }} />;
-  if (rank === 3) return <Star sx={{ color: '#CD7F32', fontSize: 24 }} />;
-  return <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'text.secondary' }}>#{rank}</Typography>;
+  if (rank === 1) return (
+    <Box sx={{ 
+      position: 'relative',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      width: 48,
+      height: 48,
+      background: 'linear-gradient(135deg, #FFD700, #FFA500)',
+      borderRadius: '50%',
+      boxShadow: '0 4px 20px rgba(255, 215, 0, 0.4)',
+      animation: 'pulse 2s infinite',
+      '@keyframes pulse': {
+        '0%': { transform: 'scale(1)', boxShadow: '0 4px 20px rgba(255, 215, 0, 0.4)' },
+        '50%': { transform: 'scale(1.05)', boxShadow: '0 6px 25px rgba(255, 215, 0, 0.6)' },
+        '100%': { transform: 'scale(1)', boxShadow: '0 4px 20px rgba(255, 215, 0, 0.4)' },
+      }
+    }}>
+      <EmojiEvents sx={{ color: '#fff', fontSize: 28, filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' }} />
+    </Box>
+  );
+  if (rank === 2) return (
+    <Box sx={{ 
+      position: 'relative',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      width: 48,
+      height: 48,
+      background: 'linear-gradient(135deg, #C0C0C0, #A8A8A8)',
+      borderRadius: '50%',
+      boxShadow: '0 4px 20px rgba(192, 192, 192, 0.4)',
+    }}>
+      <MilitaryTech sx={{ color: '#fff', fontSize: 28, filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' }} />
+    </Box>
+  );
+  if (rank === 3) return (
+    <Box sx={{ 
+      position: 'relative',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      width: 48,
+      height: 48,
+      background: 'linear-gradient(135deg, #CD7F32, #B8860B)',
+      borderRadius: '50%',
+      boxShadow: '0 4px 20px rgba(205, 127, 50, 0.4)',
+    }}>
+      <Star sx={{ color: '#fff', fontSize: 28, filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' }} />
+    </Box>
+  );
+  return (
+    <Box sx={{ 
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      width: 48,
+      height: 48,
+      background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+      borderRadius: '50%',
+      boxShadow: '0 4px 15px rgba(99, 102, 241, 0.3)',
+    }}>
+      <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'white', fontSize: '1.1rem' }}>
+        #{rank}
+      </Typography>
+    </Box>
+  );
 };
 
 const getBadgeIcon = (badgeType: string): React.ReactElement | undefined => {
@@ -162,200 +238,386 @@ export function LeaderboardTab() {
   const usersToShow = getFilteredSortedUsers();
 
   return (
-    <Box sx={{ p: { xs: 1, md: 3 } }}>
-      {/* Modern Floating/Glow Search Box */}
-      <Box sx={{ 
-        display: 'flex', justifyContent: 'center', alignItems: 'center', mb: 4, 
-        mt: { xs: 2, md: 4 },
-        zIndex: 2,
-      }}>
-        <TextField
-          label="Search users"
-          variant="outlined"
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          size="medium"
-          sx={{
-            minWidth: { xs: 220, sm: 280, md: 340 },
-            background: 'rgba(60,65,130,0.24)',
-            borderRadius: 3,
-            boxShadow: '0 8px 32px 0 rgba(100,104,252,0.10)',
-            input: { color: 'white' },
-            '& label': { color: '#a1a1aa' },
-            '& fieldset': { borderColor: 'rgba(139,92,246,0.25)' },
-            '&:hover fieldset': { borderColor: '#8b5cf6' },
-            mx: 'auto',
-          }}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <SearchIcon sx={{ color: '#a1a1aa' }} />
-              </InputAdornment>
-            ),
-          }}
-        />
-      </Box>
-      {/* Modern Leaderboard Header */}
-      <Box sx={{ mb: 2, textAlign: 'center' }}>
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-        >
-          <Typography
-            variant="h3"
-            sx={{
-              fontWeight: 900,
-              fontSize: { xs: '2rem', sm: '2.6rem', md: '3rem' },
-              lineHeight: 1.1,
-              background: 'linear-gradient(90deg, #8b5cf6, #818cf8 40%, #38bdf8 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              mb: 0.5,
-              letterSpacing: '-1px',
-              textShadow: '0 2px 18px #07043d88',
-              display: 'inline-block'
-            }}
+    <Container maxWidth="lg" sx={{ py: 4 }}>
+      {/* Hero Section with Search */}
+      <motion.div
+        initial={{ opacity: 0, y: -30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8 }}
+      >
+        <Box sx={{ textAlign: 'center', mb: 6 }}>
+          {/* Animated Title */}
+          <motion.div
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
           >
-            <Trophy sx={{ mr: 1, mb: -0.3, fontSize: 36, color: '#ffd700', filter: 'drop-shadow(0px 2px 4px #0002)' }} />
-            Leaderboard
-          </Typography>
-          <Typography variant="subtitle1" color="text.secondary" sx={{ mb: 1 }}>
-            Top {leaderboardData.totalCount} users ranked by XP and level
-          </Typography>
-          <Divider sx={{ mx: 'auto', opacity: 0.1, width: { xs: '80%', md: '33%' }, borderBottomWidth: 3 }} />
-        </motion.div>
-      </Box>
-      {/* User Cards */}
-      <Box sx={{ mb: 3 }}>
-        {usersToShow.map((user, index) => (
-          <Box key={user.userId} sx={{ mb: 2, px: { xs: 0, sm: 1, md: 2 } }}>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: index * 0.08 }}
+            <Typography
+              variant="h2"
+              sx={{
+                fontWeight: 900,
+                fontSize: { xs: '2.5rem', sm: '3.5rem', md: '4rem' },
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                mb: 2,
+                textShadow: '0 4px 20px rgba(102, 126, 234, 0.3)',
+                position: 'relative',
+                '&::after': {
+                  content: '""',
+                  position: 'absolute',
+                  bottom: -10,
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  width: '60%',
+                  height: 4,
+                  background: 'linear-gradient(90deg, transparent, #667eea, transparent)',
+                  borderRadius: 2,
+                }
+              }}
             >
-              <Card
-                sx={{
-                  background: user.rank <= 3 
-                    ? `linear-gradient(120deg, ${user.rank === 1 ? '#fff8e133' : user.rank === 2 ? '#f5f8ff33' : '#241c1b44'}, rgba(36,34,67,0.44))`
-                    : 'rgba(22,22,34,0.76)',
-                  border: user.rank <= 3 ? `2px solid ${user.rank === 1 ? '#FFD700cc' : user.rank === 2 ? '#C0C0C0cc' : '#CD7F32cc'}` : '1px solid #232344',
-                  borderRadius: 3.5,
-                  boxShadow: user.rank <= 3 
-                    ? `0 8px 24px rgba(124,58,237,0.08)` : '0 2px 10px rgba(8,10,44,0.12)',
-                  px: { xs: 1.5, sm: 4 },
-                  py: { xs: 1.5, sm: 3 },
-                  transition: 'all 0.25s',
-                  '&:hover': {
-                    background:
-                      user.rank === 1
-                        ? 'linear-gradient(95deg, #ffe174e3, #ffebb8aa, #c7d2fe40)'
-                        : user.rank === 2
-                        ? 'linear-gradient(95deg, #e6e7ed90, #c7d2fe44, #e0e7f8aa)'
-                        : user.rank === 3
-                        ? 'linear-gradient(95deg, #fadebc99, #c19c6a55, #f8fafc30)'
-                        : 'rgba(27,27,34,0.84)',
-                    transform: 'translateY(-6px) scale(1.022)',
+              🏆 Leaderboard
+            </Typography>
+          </motion.div>
+          
+          <Typography variant="h6" sx={{ color: 'text.secondary', mb: 4, fontWeight: 300 }}>
+            Top {leaderboardData.totalCount} users competing for glory
+          </Typography>
+
+          {/* Premium Search Bar */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+          >
+            <Paper
+              elevation={0}
+              sx={{
+                maxWidth: 500,
+                mx: 'auto',
+                background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1))',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                borderRadius: 4,
+                p: 2,
+                boxShadow: '0 8px 32px rgba(102, 126, 234, 0.2)',
+              }}
+            >
+              <TextField
+                fullWidth
+                placeholder="Search by name or username..."
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                variant="standard"
+                InputProps={{
+                  disableUnderline: true,
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SearchIcon sx={{ color: '#667eea', mr: 1 }} />
+                    </InputAdornment>
+                  ),
+                  sx: {
+                    fontSize: '1.1rem',
+                    color: 'white',
+                    '& input': {
+                      color: 'white',
+                      '&::placeholder': {
+                        color: 'rgba(255, 255, 255, 0.7)',
+                        opacity: 1,
+                      }
+                    }
                   }
                 }}
-              >
-                <CardContent>
-                  <Box display="flex" alignItems="center" flexDirection={{ xs: 'column', sm: 'row' }} justifyContent="space-between" gap={3}>
-                    {/* Rank-Avatar-Name */}
-                    <Box display="flex" alignItems="center" gap={2} minWidth={120} width={{ xs: '100%', sm: 'auto' }}>
-                      <Box display="flex" alignItems="center" justifyContent="center" minWidth={54} minHeight={54}>
-                        {getRankIcon(user.rank)}
-                      </Box>
-                      <Avatar
-                        src={user.avatarUrl}
-                        alt={user.name}
-                        sx={{ width: 56, height: 56, border: user.rank <= 3 ? '2px solid #6366f1' : '1px solid #655', boxShadow: '0 2px 8px #312e8125' }}
-                      >
-                        {user.name.charAt(0).toUpperCase()}
-                      </Avatar>
-                      <Box sx={{ ml: 1, minWidth: 88 }}>
-                        <Typography variant="h6" sx={{ fontWeight: 'bold', letterSpacing: '-1px', color: 'white' }}>
-                          {user.name}
-                        </Typography>
-                        <Typography variant="body2" sx={{ color: 'rgba(173,176,255,0.8)', fontSize: 14 }}>
-                          @{user.username}
-                        </Typography>
-                      </Box>
-                    </Box>
-                    {/* Stats Pill Row */}
-                    <Box display="flex" flexWrap="wrap" gap={2} justifyContent="center">
-                      <Box textAlign="center" minWidth={78}>
-                        <Box sx={{ fontWeight: 'bold', fontSize: 19, borderRadius: 12, px: 2, py: 0.5, background: 'linear-gradient(92deg,#312e81bb 44%,#818cf844 100%)', color: '#facc15', display: 'inline-block', mb: 0.5 }}>
-                          Level {user.level}
-                        </Box>
-                        <Typography variant="caption" sx={{ color: '#636a85', fontWeight: 500 }}>
-                          Level
-                        </Typography>
-                      </Box>
-                      <Box textAlign="center" minWidth={80}>
-                        <Box sx={{ fontWeight: 'bold', fontSize: 19, borderRadius: 12, px: 2, py: 0.5, background: 'linear-gradient(92deg, #14532d99 44%, #bbf7d0aa 100%)', color: '#22d3ee', display: 'inline-block', mb: 0.5 }}>
-                          {user.xp.toLocaleString()} XP
-                        </Box>
-                        <Typography variant="caption" sx={{ color: '#636a85', fontWeight: 500 }}>
-                          XP
-                        </Typography>
-                      </Box>
-                      <Box textAlign="center" minWidth={82}>
-                        <Box sx={{ fontWeight: 'bold', fontSize: 19, borderRadius: 12, px: 2, py: 0.5, background: 'linear-gradient(92deg,#581c87cc 44%,#e9d5ff44 100%)', color: '#fff', display: 'inline-block', mb: 0.5 }}>
-                          {user.stats.messages.toLocaleString()}
-                        </Box>
-                        <Typography variant="caption" sx={{ color: '#636a85', fontWeight: 500 }}>
-                          Messages
-                        </Typography>
-                      </Box>
-                    </Box>
-                    {/* Badges */}
-                    <Box display="flex" gap={1} mt={{ xs: 1.5, sm: 0 }} flexWrap="wrap" justifyContent="center">
-                      {Object.entries(user.badges).map(([badgeType, hasBadge]) =>
-                        hasBadge ? (
-                          <Chip
-                            key={badgeType}
-                            icon={getBadgeIcon(badgeType)}
-                            label={badgeType.charAt(0).toUpperCase() + badgeType.slice(1)}
-                            size="small"
-                            sx={{
-                              backgroundColor: getBadgeColor(badgeType),
-                              color: badgeType === 'silver' || badgeType === 'platinum' ? '#000' : '#fff',
-                              fontWeight: 'bold',
-                              textShadow: '0 1px 4px #2e1065',
-                              borderRadius: 8,
-                            }}
-                          />
-                        ) : null
-                      )}
-                    </Box>
-                  </Box>
-                </CardContent>
-              </Card>
-            </motion.div>
-          </Box>
-        ))}
-      </Box>
-      {/* Pagination and Page Info */}
-      {leaderboardData.totalPages > 1 && (
-        <Box display="flex" justifyContent="center" mt={4}>
-          <Pagination
-            count={leaderboardData.totalPages}
-            page={currentPage}
-            onChange={handlePageChange}
-            color="primary"
-            size="large"
-            showFirstButton
-            showLastButton
-          />
+              />
+            </Paper>
+          </motion.div>
         </Box>
+      </motion.div>
+
+      {/* Leaderboard Cards */}
+      <AnimatePresence>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.6, delay: 0.6 }}
+        >
+          <Box>
+            {usersToShow.map((user, index) => (
+              <Box key={user.userId} sx={{ mb: 3 }}>
+                <motion.div
+                  initial={{ opacity: 0, y: 50, scale: 0.9 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -50, scale: 0.9 }}
+                  transition={{ 
+                    duration: 0.5, 
+                    delay: index * 0.1,
+                    type: "spring",
+                    stiffness: 100
+                  }}
+                  whileHover={{ 
+                    y: -8,
+                    transition: { duration: 0.2 }
+                  }}
+                >
+                  <Card
+                    sx={{
+                      background: user.rank <= 3 
+                        ? `linear-gradient(135deg, ${
+                            user.rank === 1 ? 'rgba(255, 215, 0, 0.15), rgba(255, 165, 0, 0.1)' :
+                            user.rank === 2 ? 'rgba(192, 192, 192, 0.15), rgba(168, 168, 168, 0.1)' :
+                            'rgba(205, 127, 50, 0.15), rgba(184, 134, 11, 0.1)'
+                          }, rgba(30, 30, 30, 0.8))`
+                        : 'linear-gradient(135deg, rgba(30, 30, 30, 0.9), rgba(20, 20, 20, 0.8))',
+                      border: user.rank <= 3 
+                        ? `2px solid ${
+                            user.rank === 1 ? '#FFD700' : 
+                            user.rank === 2 ? '#C0C0C0' : 
+                            '#CD7F32'
+                          }`
+                        : '1px solid rgba(255, 255, 255, 0.1)',
+                      borderRadius: 4,
+                      overflow: 'hidden',
+                      position: 'relative',
+                      '&::before': user.rank <= 3 ? {
+                        content: '""',
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        height: 4,
+                        background: `linear-gradient(90deg, ${
+                          user.rank === 1 ? '#FFD700, #FFA500' :
+                          user.rank === 2 ? '#C0C0C0, #A8A8A8' :
+                          '#CD7F32, #B8860B'
+                        })`,
+                        zIndex: 1,
+                      } : {},
+                      '&:hover': {
+                        boxShadow: user.rank <= 3 
+                          ? `0 20px 40px rgba(${
+                              user.rank === 1 ? '255, 215, 0, 0.3' :
+                              user.rank === 2 ? '192, 192, 192, 0.3' :
+                              '205, 127, 50, 0.3'
+                            })`
+                          : '0 20px 40px rgba(102, 126, 234, 0.2)',
+                        transform: 'translateY(-4px)',
+                      },
+                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                    }}
+                  >
+                    <CardContent sx={{ p: 4 }}>
+                      <Box display="flex" alignItems="center" justifyContent="space-between" flexWrap="wrap" gap={3}>
+                        {/* Left Section: Rank + Avatar + Info */}
+                        <Box display="flex" alignItems="center" gap={3} flex={1} minWidth={300}>
+                          {/* Rank Badge */}
+                          <Box sx={{ position: 'relative' }}>
+                            {getRankIcon(user.rank)}
+                            {user.rank <= 3 && (
+                              <Box
+                                sx={{
+                                  position: 'absolute',
+                                  top: -8,
+                                  right: -8,
+                                  background: 'linear-gradient(135deg, #ff6b6b, #ee5a24)',
+                                  borderRadius: '50%',
+                                  width: 24,
+                                  height: 24,
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  fontSize: '0.75rem',
+                                  fontWeight: 'bold',
+                                  color: 'white',
+                                  boxShadow: '0 2px 8px rgba(255, 107, 107, 0.4)',
+                                }}
+                              >
+                                {user.rank}
+                              </Box>
+                            )}
+                          </Box>
+
+                          {/* Avatar */}
+                          <Avatar
+                            src={user.avatarUrl}
+                            alt={user.name}
+                            sx={{ 
+                              width: 72, 
+                              height: 72, 
+                              border: user.rank <= 3 ? '3px solid #667eea' : '2px solid rgba(255, 255, 255, 0.2)',
+                              boxShadow: '0 8px 25px rgba(0, 0, 0, 0.3)',
+                              background: 'linear-gradient(135deg, #667eea, #764ba2)',
+                            }}
+                          >
+                            {user.name.charAt(0).toUpperCase()}
+                          </Avatar>
+
+                          {/* User Info */}
+                          <Box sx={{ flex: 1, minWidth: 0 }}>
+                            <Typography 
+                              variant="h5" 
+                              sx={{ 
+                                fontWeight: 700, 
+                                color: 'white',
+                                mb: 0.5,
+                                background: user.rank <= 3 
+                                  ? `linear-gradient(135deg, ${
+                                      user.rank === 1 ? '#FFD700, #FFA500' :
+                                      user.rank === 2 ? '#C0C0C0, #A8A8A8' :
+                                      '#CD7F32, #B8860B'
+                                    })`
+                                  : 'linear-gradient(135deg, #667eea, #764ba2)',
+                                WebkitBackgroundClip: 'text',
+                                WebkitTextFillColor: 'transparent',
+                              }}
+                            >
+                              {user.name}
+                            </Typography>
+                            <Typography variant="body1" sx={{ color: 'rgba(255, 255, 255, 0.7)', mb: 1 }}>
+                              @{user.username}
+                            </Typography>
+                            <Box display="flex" gap={1} flexWrap="wrap">
+                              {Object.entries(user.badges).map(([badgeType, hasBadge]) =>
+                                hasBadge ? (
+                                  <Tooltip key={badgeType} title={`${badgeType.charAt(0).toUpperCase() + badgeType.slice(1)} Badge`}>
+                                    <Chip
+                                      icon={getBadgeIcon(badgeType)}
+                                      label={badgeType.charAt(0).toUpperCase() + badgeType.slice(1)}
+                                      size="small"
+                                      sx={{
+                                        background: `linear-gradient(135deg, ${getBadgeColor(badgeType)}, ${getBadgeColor(badgeType)}dd)`,
+                                        color: badgeType === 'silver' || badgeType === 'platinum' ? '#000' : '#fff',
+                                        fontWeight: 600,
+                                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
+                                        '&:hover': {
+                                          transform: 'scale(1.05)',
+                                        },
+                                        transition: 'transform 0.2s',
+                                      }}
+                                    />
+                                  </Tooltip>
+                                ) : null
+                              )}
+                            </Box>
+                          </Box>
+                        </Box>
+
+                        {/* Right Section: Stats */}
+                        <Box display="flex" gap={4} alignItems="center" flexWrap="wrap">
+                          {/* Level */}
+                          <Box textAlign="center">
+                            <Box
+                              sx={{
+                                background: 'linear-gradient(135deg, #667eea, #764ba2)',
+                                borderRadius: 3,
+                                px: 3,
+                                py: 1.5,
+                                mb: 1,
+                                boxShadow: '0 4px 15px rgba(102, 126, 234, 0.3)',
+                              }}
+                            >
+                              <Typography variant="h4" sx={{ fontWeight: 800, color: 'white' }}>
+                                {user.level}
+                              </Typography>
+                            </Box>
+                            <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontWeight: 500 }}>
+                              Level
+                            </Typography>
+                          </Box>
+
+                          {/* XP */}
+                          <Box textAlign="center">
+                            <Box
+                              sx={{
+                                background: 'linear-gradient(135deg, #11998e, #38ef7d)',
+                                borderRadius: 3,
+                                px: 3,
+                                py: 1.5,
+                                mb: 1,
+                                boxShadow: '0 4px 15px rgba(17, 153, 142, 0.3)',
+                              }}
+                            >
+                              <Typography variant="h4" sx={{ fontWeight: 800, color: 'white' }}>
+                                {user.xp.toLocaleString()}
+                              </Typography>
+                            </Box>
+                            <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontWeight: 500 }}>
+                              XP
+                            </Typography>
+                          </Box>
+
+                          {/* Messages */}
+                          <Box textAlign="center">
+                            <Box
+                              sx={{
+                                background: 'linear-gradient(135deg, #ff6b6b, #ee5a24)',
+                                borderRadius: 3,
+                                px: 3,
+                                py: 1.5,
+                                mb: 1,
+                                boxShadow: '0 4px 15px rgba(255, 107, 107, 0.3)',
+                              }}
+                            >
+                              <Typography variant="h4" sx={{ fontWeight: 800, color: 'white' }}>
+                                {user.stats.messages.toLocaleString()}
+                              </Typography>
+                            </Box>
+                            <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontWeight: 500 }}>
+                              Messages
+                            </Typography>
+                          </Box>
+                        </Box>
+                      </Box>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              </Box>
+            ))}
+          </Box>
+        </motion.div>
+      </AnimatePresence>
+
+      {/* Pagination */}
+      {leaderboardData.totalPages > 1 && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.8 }}
+        >
+          <Box display="flex" justifyContent="center" mt={6}>
+            <Pagination
+              count={leaderboardData.totalPages}
+              page={currentPage}
+              onChange={handlePageChange}
+              color="primary"
+              size="large"
+              showFirstButton
+              showLastButton
+              sx={{
+                '& .MuiPaginationItem-root': {
+                  color: 'white',
+                  '&.Mui-selected': {
+                    background: 'linear-gradient(135deg, #667eea, #764ba2)',
+                    color: 'white',
+                  },
+                },
+              }}
+            />
+          </Box>
+        </motion.div>
       )}
-      <Box textAlign="center" mt={3} mb={1}>
-        <Typography variant="body2" color="text.secondary">
-          Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, leaderboardData.totalCount)} of {leaderboardData.totalCount} users
-        </Typography>
-      </Box>
-    </Box>
+
+      {/* Footer Info */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.6, delay: 1 }}
+      >
+        <Box textAlign="center" mt={4}>
+          <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.6)' }}>
+            Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, leaderboardData.totalCount)} of {leaderboardData.totalCount} users
+          </Typography>
+        </Box>
+      </motion.div>
+    </Container>
   );
 }
