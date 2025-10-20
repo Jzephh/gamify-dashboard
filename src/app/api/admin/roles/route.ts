@@ -69,6 +69,15 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Name and description are required' }, { status: 400 });
     }
 
+    // Validate input
+    if (typeof name !== 'string' || typeof description !== 'string') {
+      return NextResponse.json({ error: 'Name and description must be strings' }, { status: 400 });
+    }
+
+    if (name.trim().length === 0 || description.trim().length === 0) {
+      return NextResponse.json({ error: 'Name and description cannot be empty' }, { status: 400 });
+    }
+
     await connectDB();
     
     // Check if role name already exists
@@ -88,7 +97,10 @@ export async function POST(request: Request) {
     return NextResponse.json(role);
   } catch (error) {
     console.error('Error creating role:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ 
+      error: 'Internal server error',
+      message: error instanceof Error ? error.message : 'Unknown error'
+    }, { status: 500 });
   }
 }
 

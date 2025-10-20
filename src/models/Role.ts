@@ -17,6 +17,11 @@ const RoleSchema = new Schema<IRole>({
 });
 
 // Compound index to ensure unique role names per company
-RoleSchema.index({ companyId: 1, name: 1 }, { unique: true });
+// RoleSchema.index({ companyId: 1, name: 1 }, { unique: true });
 
-export default mongoose.models.Role || mongoose.model<IRole>('Role', RoleSchema);
+// Clear any existing model to avoid conflicts
+if (mongoose.models.Role) {
+  delete mongoose.models.Role;
+}
+
+export default mongoose.model<IRole>('Role', RoleSchema);
