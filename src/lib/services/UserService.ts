@@ -206,6 +206,88 @@ export class UserService {
     }
   }
 
+  // Get leaderboard with pagination
+  async getLeaderboard(offset: number = 0, limit: number = 10): Promise<{
+    users: Array<{
+      rank: number;
+      userId: string;
+      username: string;
+      name: string;
+      avatarUrl?: string;
+      level: number;
+      xp: number;
+      badges: {
+        bronze: boolean;
+        silver: boolean;
+        gold: boolean;
+        platinum: boolean;
+        apex: boolean;
+      };
+      stats: {
+        messages: number;
+        successMessages: number;
+        voiceMinutes: number;
+      };
+    }>;
+    totalCount: number;
+    currentPage: number;
+    totalPages: number;
+    hasNextPage: boolean;
+    hasPrevPage: boolean;
+  }> {
+    try {
+      await connectDB();
+      
+      // Get total count
+      const totalCount = await User.countDocuments({ companyId: this.companyId });
+      
+      // Get users sorted by XP (descending), then by level (descending)
+      const users = await User.find({ companyId: this.companyId })
+        .sort({ xp: -1, level: -1, 'stats.messages': -1 })
+        .skip(offset)
+        .limit(limit)
+        .select('userId username name avatarUrl level xp badges stats')
+        .lean();
+
+      // Add rank to each user
+      const usersWithRank = users.map((user, index) => ({
+        rank: offset + index + 1,
+        userId: user.userId,
+        username: user.username,
+        name: user.name,
+        avatarUrl: user.avatarUrl,
+        level: user.level,
+        xp: user.xp,
+        badges: user.badges,
+        stats: user.stats,
+      }));
+
+      const currentPage = Math.floor(offset / limit) + 1;
+      const totalPages = Math.ceil(totalCount / limit);
+      const hasNextPage = currentPage < totalPages;
+      const hasPrevPage = currentPage > 1;
+
+      return {
+        users: usersWithRank,
+        totalCount,
+        currentPage,
+        totalPages,
+        hasNextPage,
+        hasPrevPage,
+      };
+    } catch (error) {
+      console.error('Error getting leaderboard:', error);
+      return {
+        users: [],
+        totalCount: 0,
+        currentPage: 1,
+        totalPages: 0,
+        hasNextPage: false,
+        hasPrevPage: false,
+      };
+    }
+  }
+
   // Check if user is admin
   async isAdmin(userId: string): Promise<boolean> {
     try {

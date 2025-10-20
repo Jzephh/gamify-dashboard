@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ProfileTab } from '@/components/ProfileTab';
 import QuestsTab from '@/components/QuestsTab';
 import { AdminTab } from '@/components/AdminTab';
+import { LeaderboardTab } from '@/components/LeaderboardTab';
 import { LevelUpModal } from '@/components/LevelUpModal';
 import { LevelUpTab } from '@/components/LevelUpTab';
 import { UserProfile } from '@/lib/services/UserService';
@@ -639,6 +640,7 @@ export default function Home() {
                   </Box>
                 }
               />
+              <Tab label="Leaderboard" />
               {isAdmin && <Tab label="Admin" />}
             </Tabs>
             
@@ -675,8 +677,12 @@ export default function Home() {
                   }} />
                 </TabPanel>
                 
+                <TabPanel value={tabValue} index={hasLevelUpNotifications ? 3 : 2}>
+                  <LeaderboardTab />
+                </TabPanel>
+                
                 {isAdmin && (
-                  <TabPanel value={tabValue} index={hasLevelUpNotifications ? 3 : 2}>
+                  <TabPanel value={tabValue} index={hasLevelUpNotifications ? 4 : 3}>
                     <AdminTab />
                   </TabPanel>
                 )}
