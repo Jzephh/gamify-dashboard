@@ -1992,36 +1992,42 @@ export function AdminTab() {
                 Available Roles ({roles.length})
               </Typography>
               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 3 }}>
-                {roles.map((role) => (
-                  <motion.div
-                    key={role._id}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    <Chip
-                      label={role.name}
-                      onDelete={() => confirmDeleteRole(role)}
-                      deleteIcon={<Delete sx={{ color: 'white' }} />}
-                      sx={{
-                        backgroundColor: '#6366f1',
-                        color: 'white',
-                        fontWeight: 'bold',
-                        cursor: 'pointer',
-                        '&:hover': {
-                          opacity: 0.8,
-                          backgroundColor: '#5252d0',
-                        },
-                        '& .MuiChip-deleteIcon': {
+                {roles.map((role) => {
+                  const isProtectedRole = ['Admin', 'Level Member'].some(protectedRole => 
+                    role.name.toLowerCase() === protectedRole.toLowerCase()
+                  );
+                  
+                  return (
+                    <motion.div
+                      key={role._id}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <Chip
+                        label={role.name}
+                        onDelete={isProtectedRole ? undefined : () => confirmDeleteRole(role)}
+                        deleteIcon={isProtectedRole ? undefined : <Delete sx={{ color: 'white' }} />}
+                        sx={{
+                          backgroundColor: isProtectedRole ? '#10b981' : '#6366f1',
                           color: 'white',
+                          fontWeight: 'bold',
+                          cursor: 'pointer',
                           '&:hover': {
-                            color: '#ff6b6b',
+                            opacity: 0.8,
+                            backgroundColor: isProtectedRole ? '#059669' : '#5252d0',
                           },
-                        },
-                      }}
-                      onClick={() => openRoleDialog(role)}
-                    />
-                  </motion.div>
-                ))}
+                          '& .MuiChip-deleteIcon': {
+                            color: 'white',
+                            '&:hover': {
+                              color: '#ff6b6b',
+                            },
+                          },
+                        }}
+                        onClick={() => openRoleDialog(role)}
+                      />
+                    </motion.div>
+                  );
+                })}
               </Box>
             </Box>
 
@@ -2063,71 +2069,96 @@ export function AdminTab() {
           {editingRole ? 'Edit Role' : 'Create New Role'}
         </DialogTitle>
         <DialogContent>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 2 }}>
-            <TextField
-              label="Role Name"
-              value={roleForm.name}
-              onChange={(e) => setRoleForm({ ...roleForm, name: e.target.value })}
-              fullWidth
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  color: 'white',
-                  '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.3)' },
-                  '&:hover fieldset': { borderColor: 'rgba(255, 255, 255, 0.5)' },
-                  '&.Mui-focused fieldset': { borderColor: '#8b5cf6' },
-                },
-                '& .MuiInputLabel-root': { color: 'rgba(255, 255, 255, 0.7)' },
-              }}
-            />
-            <TextField
-              label="Description"
-              value={roleForm.description}
-              onChange={(e) => setRoleForm({ ...roleForm, description: e.target.value })}
-              fullWidth
-              multiline
-              rows={3}
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  color: 'white',
-                  '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.3)' },
-                  '&:hover fieldset': { borderColor: 'rgba(255, 255, 255, 0.5)' },
-                  '&.Mui-focused fieldset': { borderColor: '#8b5cf6' },
-                },
-                '& .MuiInputLabel-root': { color: 'rgba(255, 255, 255, 0.7)' },
-              }}
-            />
-            <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-              <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
-                Preview:
-              </Typography>
-              <Chip
-                label={roleForm.name || 'Role Name'}
-                sx={{
-                  color: 'white',
-                  fontWeight: 'bold',
-                  backgroundColor: '#6366f1',
-                  '&:hover': {
-                    backgroundColor: '#5252d0',
-                  },
-                }}
-              />
-            </Box>
-          </Box>
+          {(() => {
+            const isProtectedRole = editingRole && ['Admin', 'Level Member'].some(protectedRole => 
+              editingRole.name.toLowerCase() === protectedRole.toLowerCase()
+            );
+            
+            return (
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 2 }}>
+                {isProtectedRole && (
+                  <Alert severity="info" sx={{ backgroundColor: 'rgba(16, 185, 129, 0.1)', border: '1px solid #10b981' }}>
+                    <Typography variant="body2" sx={{ color: '#10b981' }}>
+                      This is a system-protected role and cannot be edited.
+                    </Typography>
+                  </Alert>
+                )}
+                <TextField
+                  label="Role Name"
+                  value={roleForm.name}
+                  onChange={(e) => setRoleForm({ ...roleForm, name: e.target.value })}
+                  disabled={!!isProtectedRole}
+                  fullWidth
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      color: 'white',
+                      '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.3)' },
+                      '&:hover fieldset': { borderColor: 'rgba(255, 255, 255, 0.5)' },
+                      '&.Mui-focused fieldset': { borderColor: '#8b5cf6' },
+                    },
+                    '& .MuiInputLabel-root': { color: 'rgba(255, 255, 255, 0.7)' },
+                  }}
+                />
+                <TextField
+                  label="Description"
+                  value={roleForm.description}
+                  onChange={(e) => setRoleForm({ ...roleForm, description: e.target.value })}
+                  disabled={!!isProtectedRole}
+                  fullWidth
+                  multiline
+                  rows={3}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      color: 'white',
+                      '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.3)' },
+                      '&:hover fieldset': { borderColor: 'rgba(255, 255, 255, 0.5)' },
+                      '&.Mui-focused fieldset': { borderColor: '#8b5cf6' },
+                    },
+                    '& .MuiInputLabel-root': { color: 'rgba(255, 255, 255, 0.7)' },
+                  }}
+                />
+                <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                  <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+                    Preview:
+                  </Typography>
+                  <Chip
+                    label={roleForm.name || 'Role Name'}
+                    sx={{
+                      color: 'white',
+                      fontWeight: 'bold',
+                      backgroundColor: '#6366f1',
+                      '&:hover': {
+                        backgroundColor: '#5252d0',
+                      },
+                    }}
+                  />
+                </Box>
+              </Box>
+            );
+          })()}
         </DialogContent>
         <DialogActions sx={{ background: 'rgba(15, 15, 35, 0.9)' }}>
           <Button onClick={() => setRoleDialogOpen(false)} sx={{ color: '#a1a1aa' }}>
             Cancel
           </Button>
-          <Button
-            onClick={editingRole ? handleUpdateRole : handleCreateRole}
-            disabled={actionLoading || !roleForm.name || !roleForm.description}
-            variant="contained"
-            sx={{
-              background: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
-            }}
-          >
-            {actionLoading ? 'Saving...' : editingRole ? 'Update Role' : 'Create Role'}
-          </Button>
+          {(() => {
+            const isProtectedRole = editingRole && ['Admin', 'Level Member'].some(protectedRole => 
+              editingRole.name.toLowerCase() === protectedRole.toLowerCase()
+            );
+            
+            return (
+              <Button
+                onClick={editingRole ? handleUpdateRole : handleCreateRole}
+                disabled={actionLoading || !roleForm.name || !roleForm.description || !!isProtectedRole}
+                variant="contained"
+                sx={{
+                  background: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
+                }}
+              >
+                {actionLoading ? 'Saving...' : editingRole ? 'Update Role' : 'Create Role'}
+              </Button>
+            );
+          })()}
         </DialogActions>
       </Dialog>
 

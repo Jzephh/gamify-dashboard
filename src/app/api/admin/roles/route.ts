@@ -184,6 +184,16 @@ export async function PUT(request: Request) {
       return NextResponse.json({ error: 'Role not found' }, { status: 404 });
     }
 
+    // Protect system roles from being edited
+    const protectedRoles = ['Admin', 'Level Member'];
+    if (protectedRoles.some(protectedRole => 
+      role.name.toLowerCase() === protectedRole.toLowerCase()
+    )) {
+      return NextResponse.json({ 
+        error: 'Cannot edit system-protected roles (Admin, Level Member)' 
+      }, { status: 403 });
+    }
+
     // Check if new name conflicts with existing role
     if (name && name !== role.name) {
       const existingRole = await Role.findOne({ companyId, name });
@@ -240,6 +250,16 @@ export async function DELETE(request: Request) {
     const role = await Role.findOne({ _id: roleId, companyId });
     if (!role) {
       return NextResponse.json({ error: 'Role not found' }, { status: 404 });
+    }
+
+    // Protect system roles from being deleted
+    const protectedRoles = ['Admin', 'Level Member'];
+    if (protectedRoles.some(protectedRole => 
+      role.name.toLowerCase() === protectedRole.toLowerCase()
+    )) {
+      return NextResponse.json({ 
+        error: 'Cannot delete system-protected roles (Admin, Level Member)' 
+      }, { status: 403 });
     }
 
     // Hard delete - remove the role completely
