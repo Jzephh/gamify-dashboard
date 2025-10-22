@@ -51,15 +51,30 @@ export async function GET() {
     // Check if any roles exist for this company
     let roles = await Role.find({ companyId }).sort({ name: 1 });
     
-    // If no roles exist, create a default Admin role
-    if (roles.length === 0) {
-      const adminRole = new Role({
-        companyId,
-        name: 'Admin',
-        description: 'administrator role with full access',
-      });
-      await adminRole.save();
-      roles = [adminRole];
+    // Ensure required roles exist
+    const requiredRoles = [
+      { name: 'Level Member', description: 'Standard member role with level access' },
+      { name: 'Admin', description: 'administrator role with full access' }
+    ];
+    
+    let needsUpdate = false;
+    for (const requiredRole of requiredRoles) {
+      const exists = roles.find(role => role.name.toLowerCase() === requiredRole.name.toLowerCase());
+      if (!exists) {
+        const newRole = new Role({
+          companyId,
+          name: requiredRole.name,
+          description: requiredRole.description,
+        });
+        await newRole.save();
+        roles.push(newRole);
+        needsUpdate = true;
+      }
+    }
+    
+    // Re-sort roles after potential additions
+    if (needsUpdate) {
+      roles = roles.sort((a, b) => a.name.localeCompare(b.name));
     }
 
     return NextResponse.json(roles);

@@ -27,6 +27,15 @@ export async function GET() {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
+    // Check if user has "Level Member" role
+    const hasLevelMemberRole = profile.user.roles.some(role => 
+      role.toLowerCase() === 'level member' || role.toLowerCase() === 'levelmember'
+    );
+
+    if (!hasLevelMemberRole) {
+      return NextResponse.json({ error: 'Access denied: Level Member role required' }, { status: 403 });
+    }
+
     return NextResponse.json(profile);
   } catch (error) {
     console.error('Error getting user profile:', error);

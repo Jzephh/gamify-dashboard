@@ -20,13 +20,28 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Company ID not configured' }, { status: 500 });
     }
 
+    // Check if user has "Level Member" role
+    const userService = new UserService(companyId);
+    const profile = await userService.getUserProfile(userId);
+    
+    if (!profile) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    const hasLevelMemberRole = profile.user.roles.some(role => 
+      role.toLowerCase() === 'level member' || role.toLowerCase() === 'levelmember'
+    );
+
+    if (!hasLevelMemberRole) {
+      return NextResponse.json({ error: 'Access denied: Level Member role required' }, { status: 403 });
+    }
+
     // Get pagination parameters
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '10');
     const offset = (page - 1) * limit;
 
-    const userService = new UserService(companyId);
     const leaderboard = await userService.getLeaderboard(offset, limit);
 
     return NextResponse.json(leaderboard);

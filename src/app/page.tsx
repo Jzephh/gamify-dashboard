@@ -163,6 +163,18 @@ export default function Home() {
       }
 
       const profile: UserProfile = await response.json();
+      
+      // Check if user has "Level Member" role
+      const hasLevelMemberRole = profile.user.roles.some(role => 
+        role.toLowerCase() === 'level member' || role.toLowerCase() === 'levelmember'
+      );
+      
+      if (!hasLevelMemberRole) {
+        setError('Access denied: You need the "Level Member" role to access this application');
+        setLoading(false);
+        return;
+      }
+      
       setUserProfile(profile);
       setIsAdmin(profile.user.roles.includes('admin') || profile.user.roles.includes("Admin"));
       
@@ -240,6 +252,8 @@ export default function Home() {
   }
 
   if (error) {
+    const isAccessDenied = error.includes('Access denied') || error.includes('Level Member');
+    
     return (
       <ThemeProvider theme={theme}>
         <CssBaseline />
@@ -250,19 +264,76 @@ export default function Home() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
+            p: 3,
           }}
         >
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
+            style={{ textAlign: 'center', maxWidth: '600px' }}
           >
-            <Typography variant="h1" sx={{ textAlign: 'center', mb: 2 }}>
-              ⚠️
-            </Typography>
-            <Typography variant="h2" sx={{ textAlign: 'center' }}>
-              {error}
-            </Typography>
+            <Paper
+              elevation={24}
+              sx={{
+                p: 4,
+                background: 'rgba(15, 15, 35, 0.9)',
+                border: isAccessDenied ? '2px solid #ef4444' : '2px solid #f59e0b',
+                borderRadius: 3,
+                backdropFilter: 'blur(10px)',
+              }}
+            >
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
+              >
+                <Typography 
+                  variant="h1" 
+                  sx={{ 
+                    fontSize: '4rem',
+                    mb: 2,
+                    color: isAccessDenied ? '#ef4444' : '#f59e0b'
+                  }}
+                >
+                  {isAccessDenied ? '🚫' : '⚠️'}
+                </Typography>
+              </motion.div>
+              
+              <Typography 
+                variant="h2" 
+                sx={{ 
+                  mb: 2,
+                  color: isAccessDenied ? '#ef4444' : '#f59e0b',
+                  fontWeight: 700
+                }}
+              >
+                {isAccessDenied ? 'Access Denied' : 'Error'}
+              </Typography>
+              
+              <Typography 
+                variant="h6" 
+                sx={{ 
+                  mb: 3,
+                  color: '#a1a1aa',
+                  lineHeight: 1.6
+                }}
+              >
+                {error}
+              </Typography>
+              
+              {isAccessDenied && (
+                <Typography 
+                  variant="body1" 
+                  sx={{ 
+                    color: '#6b7280',
+                    fontStyle: 'italic'
+                  }}
+                >
+                  Please contact an administrator to get the &quot;Level Member&quot; role assigned to your account.
+                </Typography>
+              )}
+            </Paper>
           </motion.div>
         </Box>
       </ThemeProvider>

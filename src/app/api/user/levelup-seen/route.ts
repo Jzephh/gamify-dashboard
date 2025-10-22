@@ -20,7 +20,22 @@ export async function POST() {
       return NextResponse.json({ error: 'Company ID not configured' }, { status: 500 });
     }
 
+    // Check if user has "Level Member" role
     const userService = new UserService(companyId);
+    const profile = await userService.getUserProfile(userId);
+    
+    if (!profile) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    const hasLevelMemberRole = profile.user.roles.some(role => 
+      role.toLowerCase() === 'level member' || role.toLowerCase() === 'levelmember'
+    );
+
+    if (!hasLevelMemberRole) {
+      return NextResponse.json({ error: 'Access denied: Level Member role required' }, { status: 403 });
+    }
+
     const success = await userService.markLevelUpSeen(userId);
 
     if (!success) {
