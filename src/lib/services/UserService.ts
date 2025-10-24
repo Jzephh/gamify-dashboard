@@ -3,6 +3,7 @@ import { XPEngine } from './XPEngine';
 import { BadgeService } from './BadgeService';
 import { getWhopSdk } from '@/lib/whop';
 import connectDB from '@/lib/mongodb';
+import { BOT_USER_ID } from '@/lib/constants';
 
 const whopSdk = getWhopSdk();
 
@@ -238,11 +239,17 @@ export class UserService {
     try {
       await connectDB();
       
-      // Get total count
-      const totalCount = await User.countDocuments({ companyId: this.companyId });
+      // Get total count (excluding bot user)
+      const totalCount = await User.countDocuments({ 
+        companyId: this.companyId,
+        userId: { $ne: BOT_USER_ID } // Exclude bot user
+      });
       
       // Get users sorted by XP (descending), then by level (descending)
-      const users = await User.find({ companyId: this.companyId })
+      const users = await User.find({ 
+        companyId: this.companyId,
+        userId: { $ne: BOT_USER_ID } // Exclude bot user
+      })
         .sort({ xp: -1, level: -1, 'stats.messages': -1 })
         .skip(offset)
         .limit(limit)

@@ -4,6 +4,7 @@ import { UserService } from '@/lib/services/UserService';
 import { User } from '@/models/User';
 import connectDB from '@/lib/mongodb';
 import { headers } from 'next/headers';
+import { BOT_USER_ID } from '@/lib/constants';
 
 export const runtime = 'nodejs';
 
@@ -30,7 +31,10 @@ export async function GET() {
     }
 
     await connectDB();
-    const users = await User.find({ companyId })
+    const users = await User.find({ 
+      companyId,
+      userId: { $ne: BOT_USER_ID } // Exclude bot user
+    })
       .sort({ level: -1, xp: -1 })
       .limit(100)
       .select('userId username name level xp badges roles stats createdAt');
