@@ -151,15 +151,16 @@ const getBadgeColor = (badgeType: string) => {
 
 export function LeaderboardTab() {
   const [leaderboardData, setLeaderboardData] = useState<LeaderboardData | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [leaderboardLoading, setLeaderboardLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize] = useState(10);
-  const [search, setSearch] = useState('');
+  const [searchInput, setSearchInput] = useState(''); // Input field value
+  const [searchQuery, setSearchQuery] = useState(''); // Actual search query sent to API
 
   const fetchLeaderboard = useCallback(async (page: number = 1, searchQuery: string = '') => {
     try {
-      setLoading(true);
+      setLeaderboardLoading(true);
       setError(null);
       const params = new URLSearchParams({
         page: page.toString(),
@@ -177,27 +178,27 @@ export function LeaderboardTab() {
       console.error('Error fetching leaderboard:', err);
       setError('Failed to load leaderboard');
     } finally {
-      setLoading(false);
+      setLeaderboardLoading(false);
     }
   }, [pageSize]);
 
-  useEffect(() => {
-    fetchLeaderboard(currentPage, search);
-  }, [currentPage, fetchLeaderboard, search]);
-
-  // Handle search changes with debouncing
+  // Debounce search input to actual search query
   useEffect(() => {
     const timeoutId = setTimeout(() => {
+      setSearchQuery(searchInput);
       setCurrentPage(1); // Reset to first page when searching
-      fetchLeaderboard(1, search);
-    }, 500); // Debounce search
+    }, 800); // Wait 800ms after user stops typing
 
     return () => clearTimeout(timeoutId);
-  }, [search, fetchLeaderboard]);
+  }, [searchInput]);
+
+  // Fetch data when search query or page changes
+  useEffect(() => {
+    fetchLeaderboard(currentPage, searchQuery);
+  }, [currentPage, searchQuery, fetchLeaderboard]);
 
   const handlePageChange = (event: React.ChangeEvent<unknown>, page: number) => {
     setCurrentPage(page);
-    fetchLeaderboard(page, search);
   };
 
   // Get users from leaderboard data (no client-side filtering needed)
@@ -206,13 +207,6 @@ export function LeaderboardTab() {
     return leaderboardData.users;
   };
 
-  if (loading) {
-    return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
-        <CircularProgress size={60} />
-      </Box>
-    );
-  }
   if (error) {
     return (
       <Box p={3}>
@@ -300,8 +294,8 @@ export function LeaderboardTab() {
               <TextField
                 fullWidth
                 placeholder="Search by name or username..."
-                value={search}
-                onChange={e => setSearch(e.target.value)}
+                value={searchInput}
+                onChange={e => setSearchInput(e.target.value)}
                 variant="standard"
                 InputProps={{
                   disableUnderline: true,
@@ -336,6 +330,27 @@ export function LeaderboardTab() {
           transition={{ duration: 0.6, delay: 0.6 }}
         >
           <Box>
+            {leaderboardLoading ? (
+              <Box sx={{ 
+                display: 'flex', 
+                justifyContent: 'center', 
+                alignItems: 'center',
+                py: 6
+              }}>
+                <CircularProgress 
+                  size={50} 
+                  sx={{ color: '#667eea' }}
+                />
+                <Typography variant="body1" sx={{ 
+                  color: '#a1a1aa', 
+                  ml: 3,
+                  fontSize: '1.1rem'
+                }}>
+                  Loading leaderboard...
+                </Typography>
+              </Box>
+            ) : (
+            <>
             {usersToShow.map((user, index) => (
               <Box key={user.userId} sx={{ mb: 3 }}>
                 <motion.div
@@ -566,6 +581,8 @@ export function LeaderboardTab() {
                 </motion.div>
               </Box>
             ))}
+            </>
+            )}
           </Box>
         </motion.div>
       </AnimatePresence>

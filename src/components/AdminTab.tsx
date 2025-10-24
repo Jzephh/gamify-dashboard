@@ -27,6 +27,7 @@ import {
   Select,
   MenuItem,
   Alert,
+  CircularProgress,
 } from '@mui/material';
 import { motion } from 'framer-motion';
 import {
@@ -94,7 +95,9 @@ interface QuestConfig {
 
 export function AdminTab() {
   const [filteredUsers, setFilteredUsers] = useState<AdminUser[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [usersLoading, setUsersLoading] = useState(false);
+  const [rolesLoading, setRolesLoading] = useState(false);
+  const [questsLoading, setQuestsLoading] = useState(false);
   const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
   const [xpAmount, setXpAmount] = useState(10);
   
@@ -125,7 +128,8 @@ export function AdminTab() {
   const [selectedBadge, setSelectedBadge] = useState('');
   const [selectedAction, setSelectedAction] = useState('');
   const [alert, setAlert] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchInput, setSearchInput] = useState(''); // Input field value
+  const [searchQuery, setSearchQuery] = useState(''); // Actual search query sent to API
 
   // Role management state
   const [roles, setRoles] = useState<Role[]>([]);
@@ -141,7 +145,7 @@ export function AdminTab() {
 
   const fetchUsers = useCallback(async (page: number = 1, search: string = '') => {
     try {
-      setLoading(true);
+      setUsersLoading(true);
       const params = new URLSearchParams({
         page: page.toString(),
         limit: pageSize.toString(),
@@ -160,43 +164,45 @@ export function AdminTab() {
       console.error('Error fetching users:', error);
       setAlert({ type: 'error', message: 'Failed to fetch users' });
     } finally {
-      setLoading(false);
+      setUsersLoading(false);
     }
   }, [pageSize]);
 
   useEffect(() => {
-    fetchUsers(1, searchQuery);
+    fetchUsers(1, '');
     fetchQuests();
     fetchRoles();
-  }, [fetchUsers, searchQuery]);
+  }, [fetchUsers]);
 
-  // Handle search changes
+  // Debounce search input to actual search query
   useEffect(() => {
     const timeoutId = setTimeout(() => {
-      if (searchQuery !== '') {
-        fetchUsers(1, searchQuery);
-      } else {
-        fetchUsers(1);
-      }
-    }, 500); // Debounce search
+      setSearchQuery(searchInput);
+      setCurrentPage(1); // Reset to first page when searching
+    }, 800); // Wait 800ms after user stops typing
 
     return () => clearTimeout(timeoutId);
-  }, [searchQuery, fetchUsers]);
+  }, [searchInput]);
+
+  // Fetch data when search query or page changes
+  useEffect(() => {
+    fetchUsers(currentPage, searchQuery);
+  }, [currentPage, searchQuery, fetchUsers]);
 
   const clearSearch = () => {
+    setSearchInput('');
     setSearchQuery('');
     setCurrentPage(1);
-    fetchUsers(1);
   };
 
   const handlePageChange = (event: React.ChangeEvent<unknown>, page: number) => {
     setCurrentPage(page);
-    fetchUsers(page, searchQuery);
   };
 
   // Quest management functions
   const fetchQuests = async () => {
     try {
+      setQuestsLoading(true);
       const response = await fetch('/api/admin/quests');
       if (response.ok) {
         const data = await response.json();
@@ -205,6 +211,8 @@ export function AdminTab() {
     } catch (error) {
       console.error('Error fetching quests:', error);
       setAlert({ type: 'error', message: 'Failed to fetch quests' });
+    } finally {
+      setQuestsLoading(false);
     }
   };
 
@@ -401,6 +409,7 @@ export function AdminTab() {
   // Role management functions
   const fetchRoles = async () => {
     try {
+      setRolesLoading(true);
       const response = await fetch('/api/admin/roles');
       if (response.ok) {
         const data = await response.json();
@@ -408,6 +417,8 @@ export function AdminTab() {
       }
     } catch (error) {
       console.error('Error fetching roles:', error);
+    } finally {
+      setRolesLoading(false);
     }
   };
 
@@ -602,16 +613,6 @@ export function AdminTab() {
     { key: 'platinum', name: 'Platinum', image: '/badge/4.webp', color: '#e5e4e2' },
     { key: 'apex', name: 'Apex', image: '/badge/5.webp', color: '#ff6b35' },
   ];
-
-  if (loading) {
-    return (
-      <Box sx={{ p: 3, textAlign: 'center' }}>
-        <Typography variant="h4" sx={{ color: 'white' }}>
-          Loading admin panel...
-        </Typography>
-      </Box>
-    );
-  }
 
   return (
     <Box sx={{ 
@@ -828,8 +829,8 @@ export function AdminTab() {
                   fullWidth
                 label="Search Users"
                 placeholder="Search by username or display name..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
                   InputProps={{
                     startAdornment: (
                       <Search sx={{ 
@@ -838,7 +839,7 @@ export function AdminTab() {
                         fontSize: 20
                       }} />
                     ),
-                  endAdornment: searchQuery && (
+                  endAdornment: searchInput && (
                       <motion.div
                         whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.9 }}
@@ -979,7 +980,25 @@ export function AdminTab() {
             </motion.div>
             
             <List sx={{ maxHeight: 400, overflow: 'auto' }}>
-              {filteredUsers.length === 0 ? (
+              {usersLoading ? (
+                <Box sx={{ 
+                  display: 'flex', 
+                  justifyContent: 'center', 
+                  alignItems: 'center',
+                  py: 4
+                }}>
+                  <CircularProgress 
+                    size={40} 
+                    sx={{ color: '#6366f1' }}
+                  />
+                  <Typography variant="body2" sx={{ 
+                    color: '#a1a1aa', 
+                    ml: 2 
+                  }}>
+                    Loading users...
+                  </Typography>
+                </Box>
+              ) : filteredUsers.length === 0 ? (
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -1705,6 +1724,25 @@ export function AdminTab() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5, duration: 0.6 }}
             >
+              {questsLoading ? (
+                <Box sx={{ 
+                  display: 'flex', 
+                  justifyContent: 'center', 
+                  alignItems: 'center',
+                  py: 4
+                }}>
+                  <CircularProgress 
+                    size={40} 
+                    sx={{ color: '#10b981' }}
+                  />
+                  <Typography variant="body2" sx={{ 
+                    color: '#a1a1aa', 
+                    ml: 2 
+                  }}>
+                    Loading quests...
+                  </Typography>
+                </Box>
+              ) : (
               <Stack spacing={2}>
                 {quests.map((quest, index) => (
                   <motion.div
@@ -1816,6 +1854,7 @@ export function AdminTab() {
                   </motion.div>
                 ))}
               </Stack>
+              )}
             </motion.div>
           </CardContent>
         </Card>
@@ -2107,6 +2146,25 @@ export function AdminTab() {
               <Typography variant="h6" sx={{ color: 'white', mb: 2 }}>
                 Available Roles ({roles.length})
               </Typography>
+              {rolesLoading ? (
+                <Box sx={{ 
+                  display: 'flex', 
+                  justifyContent: 'center', 
+                  alignItems: 'center',
+                  py: 3
+                }}>
+                  <CircularProgress 
+                    size={30} 
+                    sx={{ color: '#6366f1' }}
+                  />
+                  <Typography variant="body2" sx={{ 
+                    color: '#a1a1aa', 
+                    ml: 2 
+                  }}>
+                    Loading roles...
+                  </Typography>
+                </Box>
+              ) : (
               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 3 }}>
                 {roles.map((role) => {
                   const isAdmin = role.name.toLowerCase() === 'admin';
@@ -2176,6 +2234,7 @@ export function AdminTab() {
                   );
                 })}
               </Box>
+              )}
             </Box>
 
             {/* Role Management Actions */}
