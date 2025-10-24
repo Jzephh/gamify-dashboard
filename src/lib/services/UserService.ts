@@ -264,17 +264,37 @@ export class UserService {
         .select('userId username name avatarUrl level xp badges stats')
         .lean();
 
-      // Add rank to each user
-      const usersWithRank = users.map((user, index) => ({
-        rank: offset + index + 1,
-        userId: user.userId,
-        username: user.username,
-        name: user.name,
-        avatarUrl: user.avatarUrl,
-        level: user.level,
-        xp: user.xp,
-        badges: user.badges,
-        stats: user.stats,
+      // Add rank to each user based on their global position
+      const usersWithRank = await Promise.all(users.map(async (user) => {
+        // Calculate global rank by counting users with higher XP
+        const globalRank = await User.countDocuments({
+          companyId: this.companyId,
+          userId: { $ne: BOT_USER_ID },
+          $or: [
+            { xp: { $gt: user.xp } },
+            { 
+              xp: user.xp,
+              level: { $gt: user.level }
+            },
+            {
+              xp: user.xp,
+              level: user.level,
+              'stats.messages': { $gt: user.stats.messages }
+            }
+          ]
+        }) + 1;
+
+        return {
+          rank: globalRank,
+          userId: user.userId,
+          username: user.username,
+          name: user.name,
+          avatarUrl: user.avatarUrl,
+          level: user.level,
+          xp: user.xp,
+          badges: user.badges,
+          stats: user.stats,
+        };
       }));
 
       const currentPage = Math.floor(offset / limit) + 1;
