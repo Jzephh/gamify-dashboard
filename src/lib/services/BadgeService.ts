@@ -27,7 +27,7 @@ export class BadgeService {
       if (!user) return { newBadges: [], allBadges: [] };
 
       const settings = await Settings.findOne({ companyId: this.companyId });
-      if (!settings) return { newBadges: [], allBadges: [] };
+      // Note: Settings is optional for basic badge updates (level-based badges)
 
       const newBadges: string[] = [];
 
@@ -52,8 +52,8 @@ export class BadgeService {
         newBadges.push('platinum');
       }
 
-      // Check for Apex badge (role-based)
-      if (settings.apexRoleId && user.roles.includes(settings.apexRoleId) && !user.badges.apex) {
+      // Check for Apex badge (role-based) - only if settings exist
+      if (settings && settings.apexRoleId && user.roles.includes(settings.apexRoleId) && !user.badges.apex) {
         user.badges.apex = true;
         newBadges.push('apex');
       }

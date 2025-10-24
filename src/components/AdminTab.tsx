@@ -801,72 +801,72 @@ export function AdminTab() {
               </Box>
             </motion.div>
 
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3, duration: 0.6 }}
-            >
-              <TextField
-                fullWidth
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3, duration: 0.6 }}
+              >
+                <TextField
+                  fullWidth
                 label="Search Users"
                 placeholder="Search by username or display name..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                InputProps={{
-                  startAdornment: (
-                    <Search sx={{ 
-                      color: '#6366f1', 
-                      mr: 1,
-                      fontSize: 20
-                    }} />
-                  ),
+                  InputProps={{
+                    startAdornment: (
+                      <Search sx={{ 
+                        color: '#6366f1', 
+                        mr: 1,
+                        fontSize: 20
+                      }} />
+                    ),
                   endAdornment: searchQuery && (
-                    <motion.div
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
-                    >
-                      <Clear 
-                        sx={{ 
-                          color: '#a1a1aa', 
-                          cursor: 'pointer',
-                          fontSize: 20,
-                          '&:hover': { color: '#ef4444' }
-                        }}
+                      <motion.div
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                      >
+                        <Clear 
+                          sx={{ 
+                            color: '#a1a1aa', 
+                            cursor: 'pointer',
+                            fontSize: 20,
+                            '&:hover': { color: '#ef4444' }
+                          }}
                         onClick={clearSearch}
-                      />
-                    </motion.div>
-                  )
-                }}
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    background: 'rgba(15, 15, 35, 0.8)',
-                    border: '1px solid rgba(99, 102, 241, 0.3)',
-                    borderRadius: 3,
-                    '&:hover': {
-                      border: '1px solid rgba(99, 102, 241, 0.5)',
-                      boxShadow: '0 0 20px rgba(99, 102, 241, 0.2)',
+                        />
+                      </motion.div>
+                    )
+                  }}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      background: 'rgba(15, 15, 35, 0.8)',
+                      border: '1px solid rgba(99, 102, 241, 0.3)',
+                      borderRadius: 3,
+                      '&:hover': {
+                        border: '1px solid rgba(99, 102, 241, 0.5)',
+                        boxShadow: '0 0 20px rgba(99, 102, 241, 0.2)',
+                      },
+                      '&.Mui-focused': {
+                        border: '2px solid #6366f1',
+                        boxShadow: '0 0 25px rgba(99, 102, 241, 0.3)',
+                      },
                     },
-                    '&.Mui-focused': {
-                      border: '2px solid #6366f1',
-                      boxShadow: '0 0 25px rgba(99, 102, 241, 0.3)',
+                    '& .MuiInputLabel-root': {
+                      color: '#a1a1aa',
+                      '&.Mui-focused': {
+                        color: '#6366f1',
+                      },
                     },
-                  },
-                  '& .MuiInputLabel-root': {
-                    color: '#a1a1aa',
-                    '&.Mui-focused': {
-                      color: '#6366f1',
+                    '& .MuiOutlinedInput-input': {
+                      color: 'white',
+                      '&::placeholder': {
+                        color: '#6b7280',
+                        opacity: 1,
+                      },
                     },
-                  },
-                  '& .MuiOutlinedInput-input': {
-                    color: 'white',
-                    '&::placeholder': {
-                      color: '#6b7280',
-                      opacity: 1,
-                    },
-                  },
-                }}
-              />
-            </motion.div>
+                  }}
+                />
+              </motion.div>
 
             {/* Search Results Info */}
             <motion.div
@@ -1525,7 +1525,7 @@ export function AdminTab() {
                 }}>
                   Quest Management
                 </Typography>
-              </Box>
+    </Box>
             </motion.div>
 
             <motion.div
@@ -1993,38 +1993,69 @@ export function AdminTab() {
               </Typography>
               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 3 }}>
                 {roles.map((role) => {
-                  const isProtectedRole = ['Admin', 'Level Member'].some(protectedRole => 
-                    role.name.toLowerCase() === protectedRole.toLowerCase()
-                  );
-                  
+                  const isAdmin = role.name.toLowerCase() === 'admin';
                   return (
                     <motion.div
                       key={role._id}
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                     >
-                      <Chip
-                        label={role.name}
-                        onDelete={isProtectedRole ? undefined : () => confirmDeleteRole(role)}
-                        deleteIcon={isProtectedRole ? undefined : <Delete sx={{ color: 'white' }} />}
-                        sx={{
-                          backgroundColor: isProtectedRole ? '#10b981' : '#6366f1',
-                          color: 'white',
-                          fontWeight: 'bold',
-                          cursor: 'pointer',
-                          '&:hover': {
-                            opacity: 0.8,
-                            backgroundColor: isProtectedRole ? '#059669' : '#5252d0',
-                          },
-                          '& .MuiChip-deleteIcon': {
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Chip
+                          label={role.name}
+                          onDelete={isAdmin ? undefined : () => confirmDeleteRole(role)}
+                          deleteIcon={isAdmin ? undefined : <Delete sx={{ color: 'white' }} />}
+                          sx={{
+                            backgroundColor: isAdmin ? '#10b981' : '#6366f1',
                             color: 'white',
+                            fontWeight: 'bold',
+                            cursor: 'pointer',
                             '&:hover': {
-                              color: '#ff6b6b',
+                              opacity: 0.8,
+                              backgroundColor: isAdmin ? '#059669' : '#5252d0',
                             },
-                          },
-                        }}
-                        onClick={() => openRoleDialog(role)}
-                      />
+                            '& .MuiChip-deleteIcon': {
+                              color: 'white',
+                              '&:hover': {
+                                color: '#ff6b6b',
+                              },
+                            },
+                          }}
+                          onClick={isAdmin ? undefined : () => openRoleDialog(role)}
+                        />
+                        {!isAdmin && (
+                          <Button
+                            size="small"
+                            variant="outlined"
+                            onClick={() => openRoleDialog(role)}
+                            sx={{
+                              color: '#a1a1aa',
+                              borderColor: '#6b7280',
+                              minWidth: 'auto',
+                              px: 1,
+                              '&:hover': {
+                                borderColor: '#a1a1aa',
+                                backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                              },
+                            }}
+                          >
+                            Edit
+                          </Button>
+                        )}
+                        {isAdmin && (
+                          <Typography 
+                            variant="caption" 
+                            sx={{ 
+                              color: '#10b981', 
+                              fontSize: '0.75rem',
+                              fontWeight: 'bold',
+                              textTransform: 'uppercase'
+                            }}
+                          >
+                            Protected
+                          </Typography>
+                        )}
+                      </Box>
                     </motion.div>
                   );
                 })}
@@ -2069,96 +2100,71 @@ export function AdminTab() {
           {editingRole ? 'Edit Role' : 'Create New Role'}
         </DialogTitle>
         <DialogContent>
-          {(() => {
-            const isProtectedRole = editingRole && ['Admin', 'Level Member'].some(protectedRole => 
-              editingRole.name.toLowerCase() === protectedRole.toLowerCase()
-            );
-            
-            return (
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 2 }}>
-                {isProtectedRole && (
-                  <Alert severity="info" sx={{ backgroundColor: 'rgba(16, 185, 129, 0.1)', border: '1px solid #10b981' }}>
-                    <Typography variant="body2" sx={{ color: '#10b981' }}>
-                      This is a system-protected role and cannot be edited.
-                    </Typography>
-                  </Alert>
-                )}
-                <TextField
-                  label="Role Name"
-                  value={roleForm.name}
-                  onChange={(e) => setRoleForm({ ...roleForm, name: e.target.value })}
-                  disabled={!!isProtectedRole}
-                  fullWidth
-                  sx={{
-                    '& .MuiOutlinedInput-root': {
-                      color: 'white',
-                      '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.3)' },
-                      '&:hover fieldset': { borderColor: 'rgba(255, 255, 255, 0.5)' },
-                      '&.Mui-focused fieldset': { borderColor: '#8b5cf6' },
-                    },
-                    '& .MuiInputLabel-root': { color: 'rgba(255, 255, 255, 0.7)' },
-                  }}
-                />
-                <TextField
-                  label="Description"
-                  value={roleForm.description}
-                  onChange={(e) => setRoleForm({ ...roleForm, description: e.target.value })}
-                  disabled={!!isProtectedRole}
-                  fullWidth
-                  multiline
-                  rows={3}
-                  sx={{
-                    '& .MuiOutlinedInput-root': {
-                      color: 'white',
-                      '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.3)' },
-                      '&:hover fieldset': { borderColor: 'rgba(255, 255, 255, 0.5)' },
-                      '&.Mui-focused fieldset': { borderColor: '#8b5cf6' },
-                    },
-                    '& .MuiInputLabel-root': { color: 'rgba(255, 255, 255, 0.7)' },
-                  }}
-                />
-                <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-                  <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
-                    Preview:
-                  </Typography>
-                  <Chip
-                    label={roleForm.name || 'Role Name'}
-                    sx={{
-                      color: 'white',
-                      fontWeight: 'bold',
-                      backgroundColor: '#6366f1',
-                      '&:hover': {
-                        backgroundColor: '#5252d0',
-                      },
-                    }}
-                  />
-                </Box>
-              </Box>
-            );
-          })()}
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 2 }}>
+            <TextField
+              label="Role Name"
+              value={roleForm.name}
+              onChange={(e) => setRoleForm({ ...roleForm, name: e.target.value })}
+              fullWidth
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  color: 'white',
+                  '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.3)' },
+                  '&:hover fieldset': { borderColor: 'rgba(255, 255, 255, 0.5)' },
+                  '&.Mui-focused fieldset': { borderColor: '#8b5cf6' },
+                },
+                '& .MuiInputLabel-root': { color: 'rgba(255, 255, 255, 0.7)' },
+              }}
+            />
+            <TextField
+              label="Description"
+              value={roleForm.description}
+              onChange={(e) => setRoleForm({ ...roleForm, description: e.target.value })}
+              fullWidth
+              multiline
+              rows={3}
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  color: 'white',
+                  '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.3)' },
+                  '&:hover fieldset': { borderColor: 'rgba(255, 255, 255, 0.5)' },
+                  '&.Mui-focused fieldset': { borderColor: '#8b5cf6' },
+                },
+                '& .MuiInputLabel-root': { color: 'rgba(255, 255, 255, 0.7)' },
+              }}
+            />
+            <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+              <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+                Preview:
+              </Typography>
+              <Chip
+                label={roleForm.name || 'Role Name'}
+                sx={{
+                  color: 'white',
+                  fontWeight: 'bold',
+                  backgroundColor: '#6366f1',
+                  '&:hover': {
+                    backgroundColor: '#5252d0',
+                  },
+                }}
+              />
+            </Box>
+          </Box>
         </DialogContent>
         <DialogActions sx={{ background: 'rgba(15, 15, 35, 0.9)' }}>
           <Button onClick={() => setRoleDialogOpen(false)} sx={{ color: '#a1a1aa' }}>
             Cancel
           </Button>
-          {(() => {
-            const isProtectedRole = editingRole && ['Admin', 'Level Member'].some(protectedRole => 
-              editingRole.name.toLowerCase() === protectedRole.toLowerCase()
-            );
-            
-            return (
-              <Button
-                onClick={editingRole ? handleUpdateRole : handleCreateRole}
-                disabled={actionLoading || !roleForm.name || !roleForm.description || !!isProtectedRole}
-                variant="contained"
-                sx={{
-                  background: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
-                }}
-              >
-                {actionLoading ? 'Saving...' : editingRole ? 'Update Role' : 'Create Role'}
-              </Button>
-            );
-          })()}
+          <Button
+            onClick={editingRole ? handleUpdateRole : handleCreateRole}
+            disabled={actionLoading || !roleForm.name || !roleForm.description}
+            variant="contained"
+            sx={{
+              background: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
+            }}
+          >
+            {actionLoading ? 'Saving...' : editingRole ? 'Update Role' : 'Create Role'}
+          </Button>
         </DialogActions>
       </Dialog>
 

@@ -51,30 +51,15 @@ export async function GET() {
     // Check if any roles exist for this company
     let roles = await Role.find({ companyId }).sort({ name: 1 });
     
-    // Ensure required roles exist
-    const requiredRoles = [
-      { name: 'Level Member', description: 'Standard member role with level access' },
-      { name: 'Admin', description: 'administrator role with full access' }
-    ];
-    
-    let needsUpdate = false;
-    for (const requiredRole of requiredRoles) {
-      const exists = roles.find(role => role.name.toLowerCase() === requiredRole.name.toLowerCase());
-      if (!exists) {
-        const newRole = new Role({
-          companyId,
-          name: requiredRole.name,
-          description: requiredRole.description,
-        });
-        await newRole.save();
-        roles.push(newRole);
-        needsUpdate = true;
-      }
-    }
-    
-    // Re-sort roles after potential additions
-    if (needsUpdate) {
-      roles = roles.sort((a, b) => a.name.localeCompare(b.name));
+    // If no roles exist, create a default Admin role
+    if (roles.length === 0) {
+      const adminRole = new Role({
+        companyId,
+        name: 'Admin',
+        description: 'administrator role with full access',
+      });
+      await adminRole.save();
+      roles = [adminRole];
     }
 
     return NextResponse.json(roles);
@@ -180,21 +165,18 @@ export async function PUT(request: Request) {
     await connectDB();
     
     const role = await Role.findOne({ _id: roleId, companyId });
-    if (!role) {
-      return NextResponse.json({ error: 'Role not found' }, { status: 404 });
-    }
+      if (!role) {
+        return NextResponse.json({ error: 'Role not found' }, { status: 404 });
+      }
 
-    // Protect system roles from being edited
-    const protectedRoles = ['Admin', 'Level Member'];
-    if (protectedRoles.some(protectedRole => 
-      role.name.toLowerCase() === protectedRole.toLowerCase()
-    )) {
-      return NextResponse.json({ 
-        error: 'Cannot edit system-protected roles (Admin, Level Member)' 
-      }, { status: 403 });
-    }
+      // Protect Admin role from being edited
+      if (role.name.toLowerCase() === 'admin') {
+        return NextResponse.json({ 
+          error: 'Cannot edit the Admin role' 
+        }, { status: 403 });
+      }
 
-    // Check if new name conflicts with existing role
+      // Check if new name conflicts with existing role
     if (name && name !== role.name) {
       const existingRole = await Role.findOne({ companyId, name });
       if (existingRole) {
@@ -248,21 +230,18 @@ export async function DELETE(request: Request) {
     await connectDB();
     
     const role = await Role.findOne({ _id: roleId, companyId });
-    if (!role) {
-      return NextResponse.json({ error: 'Role not found' }, { status: 404 });
-    }
+      if (!role) {
+        return NextResponse.json({ error: 'Role not found' }, { status: 404 });
+      }
 
-    // Protect system roles from being deleted
-    const protectedRoles = ['Admin', 'Level Member'];
-    if (protectedRoles.some(protectedRole => 
-      role.name.toLowerCase() === protectedRole.toLowerCase()
-    )) {
-      return NextResponse.json({ 
-        error: 'Cannot delete system-protected roles (Admin, Level Member)' 
-      }, { status: 403 });
-    }
+      // Protect Admin role from being deleted
+      if (role.name.toLowerCase() === 'admin') {
+        return NextResponse.json({ 
+          error: 'Cannot delete the Admin role' 
+        }, { status: 403 });
+      }
 
-    // Hard delete - remove the role completely
+      // Hard delete - remove the role completely
     await Role.deleteOne({ _id: roleId, companyId });
 
     return NextResponse.json({ success: true });
