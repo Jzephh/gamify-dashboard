@@ -207,8 +207,8 @@ export class UserService {
     }
   }
 
-  // Get leaderboard with pagination
-  async getLeaderboard(offset: number = 0, limit: number = 10): Promise<{
+  // Get leaderboard with pagination and search
+  async getLeaderboard(offset: number = 0, limit: number = 10, search: string = ''): Promise<{
     users: Array<{
       rank: number;
       userId: string;
@@ -239,17 +239,25 @@ export class UserService {
     try {
       await connectDB();
       
-      // Get total count (excluding bot user)
-      const totalCount = await User.countDocuments({ 
+      // Build query
+      const query: Record<string, unknown> = { 
         companyId: this.companyId,
         userId: { $ne: BOT_USER_ID } // Exclude bot user
-      });
+      };
+
+      // Add search filter if provided
+      if (search.trim()) {
+        query.$or = [
+          { name: { $regex: search, $options: 'i' } },
+          { username: { $regex: search, $options: 'i' } }
+        ];
+      }
+      
+      // Get total count (excluding bot user)
+      const totalCount = await User.countDocuments(query);
       
       // Get users sorted by XP (descending), then by level (descending)
-      const users = await User.find({ 
-        companyId: this.companyId,
-        userId: { $ne: BOT_USER_ID } // Exclude bot user
-      })
+      const users = await User.find(query)
         .sort({ xp: -1, level: -1, 'stats.messages': -1 })
         .skip(offset)
         .limit(limit)

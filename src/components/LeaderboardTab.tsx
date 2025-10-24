@@ -157,11 +157,17 @@ export function LeaderboardTab() {
   const [pageSize] = useState(10);
   const [search, setSearch] = useState('');
 
-  const fetchLeaderboard = useCallback(async (page: number = 1) => {
+  const fetchLeaderboard = useCallback(async (page: number = 1, searchQuery: string = '') => {
     try {
       setLoading(true);
       setError(null);
-      const response = await fetch(`/api/user/leaderboard?page=${page}&limit=${pageSize}`);
+      const params = new URLSearchParams({
+        page: page.toString(),
+        limit: pageSize.toString(),
+        ...(searchQuery && { search: searchQuery })
+      });
+      
+      const response = await fetch(`/api/user/leaderboard?${params}`);
       if (!response.ok) {
         throw new Error('Failed to fetch leaderboard');
       }
@@ -176,27 +182,28 @@ export function LeaderboardTab() {
   }, [pageSize]);
 
   useEffect(() => {
-    fetchLeaderboard(currentPage);
-  }, [currentPage, fetchLeaderboard]);
+    fetchLeaderboard(currentPage, search);
+  }, [currentPage, fetchLeaderboard, search]);
+
+  // Handle search changes with debouncing
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      setCurrentPage(1); // Reset to first page when searching
+      fetchLeaderboard(1, search);
+    }, 500); // Debounce search
+
+    return () => clearTimeout(timeoutId);
+  }, [search, fetchLeaderboard]);
 
   const handlePageChange = (event: React.ChangeEvent<unknown>, page: number) => {
     setCurrentPage(page);
+    fetchLeaderboard(page, search);
   };
 
-  // Filter and sort users (client-side for current page)
-  const getFilteredSortedUsers = () => {
+  // Get users from leaderboard data (no client-side filtering needed)
+  const getUsers = () => {
     if (!leaderboardData) return [];
-    let users = leaderboardData.users;
-    // Filter
-    if (search.trim()) {
-      const lower = search.trim().toLowerCase();
-      users = users.filter(user =>
-        user.name.toLowerCase().includes(lower) ||
-        user.username.toLowerCase().includes(lower)
-      );
-    }
-    users = [...users].sort((a, b) => b.xp - a.xp);
-    return users;
+    return leaderboardData.users;
   };
 
   if (loading) {
@@ -221,8 +228,8 @@ export function LeaderboardTab() {
     );
   }
 
-  // Get users for display after filter/sort
-  const usersToShow = getFilteredSortedUsers();
+  // Get users for display
+  const usersToShow = getUsers();
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>

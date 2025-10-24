@@ -8,7 +8,7 @@ import { BOT_USER_ID } from '@/lib/constants';
 
 export const runtime = 'nodejs';
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
     const whopSdk = getWhopSdk();
     const hdrs = await headers();
@@ -30,16 +30,54 @@ export async function GET() {
       return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
     }
 
+    // Get pagination parameters
+    const { searchParams } = new URL(request.url);
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = parseInt(searchParams.get('limit') || '10');
+    const search = searchParams.get('search') || '';
+    const offset = (page - 1) * limit;
+
     await connectDB();
-    const users = await User.find({ 
+    
+    // Build query
+    const query: Record<string, unknown> = { 
       companyId,
       userId: { $ne: BOT_USER_ID } // Exclude bot user
-    })
+    };
+
+    // Add search filter if provided
+    if (search.trim()) {
+      query.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { username: { $regex: search, $options: 'i' } }
+      ];
+    }
+
+    // Get total count
+    const totalCount = await User.countDocuments(query);
+
+    // Get users with pagination
+    const users = await User.find(query)
       .sort({ level: -1, xp: -1 })
-      .limit(100)
+      .skip(offset)
+      .limit(limit)
       .select('userId username name level xp badges roles stats createdAt');
 
-    return NextResponse.json(users);
+    const totalPages = Math.ceil(totalCount / limit);
+    const hasNextPage = page < totalPages;
+    const hasPrevPage = page > 1;
+
+    return NextResponse.json({
+      users,
+      pagination: {
+        currentPage: page,
+        totalPages,
+        totalCount,
+        hasNextPage,
+        hasPrevPage,
+        limit
+      }
+    });
   } catch (error) {
     console.error('Error getting users:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

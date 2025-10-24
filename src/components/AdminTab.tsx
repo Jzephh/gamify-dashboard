@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import Image from 'next/image';
 import {
   Box,
@@ -93,11 +93,16 @@ interface QuestConfig {
 }
 
 export function AdminTab() {
-  const [users, setUsers] = useState<AdminUser[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
   const [xpAmount, setXpAmount] = useState(10);
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const [pageSize] = useState(10);
   
   // Quest management state
   const [quests, setQuests] = useState<QuestConfig[]>([]);
@@ -134,35 +139,22 @@ export function AdminTab() {
   const [roleToDelete, setRoleToDelete] = useState<Role | null>(null);
   const [userRoleDialogOpen, setUserRoleDialogOpen] = useState(false);
 
-  useEffect(() => {
-    fetchUsers();
-    fetchQuests();
-    fetchRoles();
-  }, []);
-
-  // Filter users based on search criteria
-  useEffect(() => {
-    let filtered = users;
-
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(user => 
-        user.username.toLowerCase().includes(query) ||
-        user.name.toLowerCase().includes(query)
-      );
-    }
-
-    setFilteredUsers(filtered);
-  }, [users, searchQuery]);
-
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async (page: number = 1, search: string = '') => {
     try {
       setLoading(true);
-      const response = await fetch('/api/admin/users');
+      const params = new URLSearchParams({
+        page: page.toString(),
+        limit: pageSize.toString(),
+        ...(search && { search })
+      });
+      
+      const response = await fetch(`/api/admin/users?${params}`);
       if (response.ok) {
         const data = await response.json();
-        setUsers(data);
-        setFilteredUsers(data);
+        setFilteredUsers(data.users);
+        setCurrentPage(data.pagination.currentPage);
+        setTotalPages(data.pagination.totalPages);
+        setTotalCount(data.pagination.totalCount);
       }
     } catch (error) {
       console.error('Error fetching users:', error);
@@ -170,10 +162,36 @@ export function AdminTab() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [pageSize]);
+
+  useEffect(() => {
+    fetchUsers(1, searchQuery);
+    fetchQuests();
+    fetchRoles();
+  }, [fetchUsers, searchQuery]);
+
+  // Handle search changes
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (searchQuery !== '') {
+        fetchUsers(1, searchQuery);
+      } else {
+        fetchUsers(1);
+      }
+    }, 500); // Debounce search
+
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery, fetchUsers]);
 
   const clearSearch = () => {
     setSearchQuery('');
+    setCurrentPage(1);
+    fetchUsers(1);
+  };
+
+  const handlePageChange = (event: React.ChangeEvent<unknown>, page: number) => {
+    setCurrentPage(page);
+    fetchUsers(page, searchQuery);
   };
 
   // Quest management functions
@@ -506,7 +524,7 @@ export function AdminTab() {
         }
         
         // Update the users list
-        setUsers(prevUsers => 
+        setFilteredUsers(prevUsers => 
           prevUsers.map(user => 
             user.userId === userId 
               ? { ...user, roles: [...user.roles, roleName] }
@@ -541,7 +559,7 @@ export function AdminTab() {
         }
         
         // Update the users list
-        setUsers(prevUsers => 
+        setFilteredUsers(prevUsers => 
           prevUsers.map(user => 
             user.userId === userId 
               ? { ...user, roles: user.roles.filter(role => role !== roleName) }
@@ -884,7 +902,7 @@ export function AdminTab() {
                   display: 'inline-block',
                   border: '1px solid rgba(99, 102, 241, 0.2)',
                 }}>
-                  Showing {filteredUsers.length} of {users.length} users
+                  Showing {filteredUsers.length} of {totalCount} users
                   {searchQuery && ' (filtered)'}
                 </Typography>
               </Box>
@@ -1107,6 +1125,104 @@ export function AdminTab() {
                 ))
               )}
             </List>
+            
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <Box sx={{ 
+                display: 'flex', 
+                justifyContent: 'center', 
+                alignItems: 'center',
+                mt: 3,
+                gap: 2,
+                flexWrap: 'wrap'
+              }}>
+                <Typography variant="body2" sx={{ color: '#a1a1aa' }}>
+                  Page {currentPage} of {totalPages} ({totalCount} total users)
+                </Typography>
+                <Box sx={{ display: 'flex', gap: 1 }}>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    onClick={() => handlePageChange({} as React.ChangeEvent<unknown>, 1)}
+                    disabled={currentPage === 1}
+                    sx={{
+                      color: '#a1a1aa',
+                      borderColor: '#6b7280',
+                      '&:hover': {
+                        borderColor: '#a1a1aa',
+                        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                      },
+                      '&:disabled': {
+                        color: '#6b7280',
+                        borderColor: '#4b5563',
+                      }
+                    }}
+                  >
+                    First
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    onClick={() => handlePageChange({} as React.ChangeEvent<unknown>, currentPage - 1)}
+                    disabled={currentPage === 1}
+                    sx={{
+                      color: '#a1a1aa',
+                      borderColor: '#6b7280',
+                      '&:hover': {
+                        borderColor: '#a1a1aa',
+                        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                      },
+                      '&:disabled': {
+                        color: '#6b7280',
+                        borderColor: '#4b5563',
+                      }
+                    }}
+                  >
+                    Previous
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    onClick={() => handlePageChange({} as React.ChangeEvent<unknown>, currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    sx={{
+                      color: '#a1a1aa',
+                      borderColor: '#6b7280',
+                      '&:hover': {
+                        borderColor: '#a1a1aa',
+                        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                      },
+                      '&:disabled': {
+                        color: '#6b7280',
+                        borderColor: '#4b5563',
+                      }
+                    }}
+                  >
+                    Next
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    onClick={() => handlePageChange({} as React.ChangeEvent<unknown>, totalPages)}
+                    disabled={currentPage === totalPages}
+                    sx={{
+                      color: '#a1a1aa',
+                      borderColor: '#6b7280',
+                      '&:hover': {
+                        borderColor: '#a1a1aa',
+                        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                      },
+                      '&:disabled': {
+                        color: '#6b7280',
+                        borderColor: '#4b5563',
+                      }
+                    }}
+                  >
+                    Last
+                  </Button>
+                </Box>
+              </Box>
+            )}
           </CardContent>
         </Card>
       </motion.div>

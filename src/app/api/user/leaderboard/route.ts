@@ -20,14 +20,15 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Company ID not configured' }, { status: 500 });
     }
 
-    // Get pagination parameters
+    // Get pagination and search parameters
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '10');
+    const search = searchParams.get('search') || '';
     const offset = (page - 1) * limit;
 
     const userService = new UserService(companyId);
-    const leaderboard = await userService.getLeaderboard(offset, limit);
+    const leaderboard = await userService.getLeaderboard(offset, limit, search);
 
     return NextResponse.json(leaderboard);
   } catch (error) {
